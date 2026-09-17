@@ -10,7 +10,7 @@
 | :---: | :---: |
 | ![Title Screen](screenshots/title-screen.png) | ![Gameplay Screen](screenshots/gameplay.png) |
 
-| Lifelines & Modals | Game Over Screen |
+| Checkpoint | Game Over Screen |
 | :---: | :---: |
 | ![Checkpoint Modal](screenshots/checkpoint-modal.png) | ![Game Over Screen](screenshots/gameover-screen.png) |
 
