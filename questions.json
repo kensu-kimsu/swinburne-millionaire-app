@@ -1,0 +1,1302 @@
+[
+  {
+    "id": 1,
+    "domain": "Networking",
+    "question": "What does IP stand for in networking?",
+    "options": {
+      "A": "Internal Protocol",
+      "B": "Internet Protocol",
+      "C": "Interconnected Path",
+      "D": "Interface Process"
+    },
+    "answer": "B",
+    "explanation": "IP stands for Internet Protocol, which routes traffic across networks."
+  },
+  {
+    "id": 2,
+    "domain": "Networking",
+    "question": "Which default port is used for unencrypted HTTP web traffic?",
+    "options": {
+      "A": "21",
+      "B": "22",
+      "C": "80",
+      "D": "443"
+    },
+    "answer": "C",
+    "explanation": "HTTP uses TCP port 80 by default for unencrypted communications."
+  },
+  {
+    "id": 3,
+    "domain": "Networking",
+    "question": "Which protocol provides encrypted secure web browsing?",
+    "options": {
+      "A": "FTP",
+      "B": "HTTPS",
+      "C": "HTTP",
+      "D": "Telnet"
+    },
+    "answer": "B",
+    "explanation": "HTTPS adds TLS/SSL encryption over standard HTTP to secure web interactions."
+  },
+  {
+    "id": 4,
+    "domain": "Networking",
+    "question": "What is the primary role of a DNS server?",
+    "options": {
+      "A": "Assign IP addresses automatically",
+      "B": "Translate domain names to IP addresses",
+      "C": "Block malicious network traffic",
+      "D": "Encrypt local hard drives"
+    },
+    "answer": "B",
+    "explanation": "DNS (Domain Name System) translates human-readable names (e.g., example.com) into numerical IP addresses."
+  },
+  {
+    "id": 5,
+    "domain": "Networking",
+    "question": "Which device connects multiple local network devices and broadcasts traffic to ALL connected ports?",
+    "options": {
+      "A": "Switch",
+      "B": "Router",
+      "C": "Hub",
+      "D": "Firewall"
+    },
+    "answer": "C",
+    "explanation": "A network hub forwards incoming data packets to every connected port without filtering."
+  },
+  {
+    "id": 6,
+    "domain": "Networking",
+    "question": "Which protocol automatically assigns IP addresses to devices on a network?",
+    "options": {
+      "A": "DNS",
+      "B": "DHCP",
+      "C": "SMTP",
+      "D": "SNMP"
+    },
+    "answer": "B",
+    "explanation": "DHCP (Dynamic Host Configuration Protocol) dynamically manages and leases IP configurations to clients."
+  },
+  {
+    "id": 7,
+    "domain": "Networking",
+    "question": "What port does SSH (Secure Shell) use by default?",
+    "options": {
+      "A": "20",
+      "B": "22",
+      "C": "23",
+      "D": "25"
+    },
+    "answer": "B",
+    "explanation": "SSH runs on TCP port 22 by default to provide secure remote command-line access."
+  },
+  {
+    "id": 8,
+    "domain": "Networking",
+    "question": "Which network topology connects every device to a central switch or hub?",
+    "options": {
+      "A": "Bus",
+      "B": "Ring",
+      "C": "Star",
+      "D": "Mesh"
+    },
+    "answer": "C",
+    "explanation": "In a Star topology, all endpoints connect directly to a single central network device."
+  },
+  {
+    "id": 9,
+    "domain": "Networking",
+    "question": "What standard address format consists of 4 octets separated by dots (e.g., 192.168.1.1)?",
+    "options": {
+      "A": "IPv4",
+      "B": "IPv6",
+      "C": "MAC Address",
+      "D": "Subnet Prefix"
+    },
+    "answer": "A",
+    "explanation": "IPv4 addresses use a 32-bit dotted-decimal notation split into 4 octets."
+  },
+  {
+    "id": 10,
+    "domain": "Networking",
+    "question": "Which utility is used to test basic network connectivity between two hosts?",
+    "options": {
+      "A": "ping",
+      "B": "grep",
+      "C": "chmod",
+      "D": "ssh"
+    },
+    "answer": "A",
+    "explanation": "'ping' uses ICMP Echo Request/Reply messages to verify host reachability."
+  },
+  {
+    "id": 11,
+    "domain": "Networking",
+    "question": "What type of address is a permanent 48-bit physical hardware address burned into a network card?",
+    "options": {
+      "A": "IP Address",
+      "B": "MAC Address",
+      "C": "Port Address",
+      "D": "DNS Address"
+    },
+    "answer": "B",
+    "explanation": "A MAC (Media Access Control) address is a unique hardware identifier assigned to a network interface."
+  },
+  {
+    "id": 12,
+    "domain": "Networking",
+    "question": "How many layers are in the OSI Reference Model?",
+    "options": {
+      "A": "4",
+      "B": "5",
+      "C": "7",
+      "D": "9"
+    },
+    "answer": "C",
+    "explanation": "The OSI model consists of 7 distinct conceptual layers."
+  },
+  {
+    "id": 13,
+    "domain": "Networking",
+    "question": "Which protocol is connectionless and does not guarantee packet delivery order?",
+    "options": {
+      "A": "TCP",
+      "B": "UDP",
+      "C": "SSH",
+      "D": "HTTPS"
+    },
+    "answer": "B",
+    "explanation": "UDP (User Datagram Protocol) is connectionless and prioritizes speed over reliability."
+  },
+  {
+    "id": 14,
+    "domain": "Networking",
+    "question": "Which layer of the OSI model deals with physical cabling, network cards, and bit transmission?",
+    "options": {
+      "A": "Layer 1 - Physical",
+      "B": "Layer 3 - Network",
+      "C": "Layer 4 - Transport",
+      "D": "Layer 7 - Application"
+    },
+    "answer": "A",
+    "explanation": "Layer 1 (Physical) defines raw electrical, optical, or radio signal transmissions."
+  },
+  {
+    "id": 15,
+    "domain": "Networking",
+    "question": "Which standard loopback IP address refers back to the local host machine?",
+    "options": {
+      "A": "0.0.0.0",
+      "B": "127.0.0.1",
+      "C": "192.168.0.1",
+      "D": "255.255.255.255"
+    },
+    "answer": "B",
+    "explanation": "127.0.0.1 is the standard IPv4 loopback address representing 'localhost'."
+  },
+  {
+    "id": 16,
+    "domain": "Networking",
+    "question": "What is the primary function of a network router?",
+    "options": {
+      "A": "Connect multiple devices within the exact same LAN segment",
+      "B": "Route traffic between different IP subnetworks",
+      "C": "Supply electrical power to Ethernet cables",
+      "D": "Store local domain password hashes"
+    },
+    "answer": "B",
+    "explanation": "Routers operate at Layer 3 to forward data packets across distinct networks."
+  },
+  {
+    "id": 17,
+    "domain": "Networking",
+    "question": "Which port does FTP (File Transfer Protocol) control communication use by default?",
+    "options": {
+      "A": "21",
+      "B": "23",
+      "C": "25",
+      "D": "53"
+    },
+    "answer": "A",
+    "explanation": "FTP command and control signaling defaults to TCP port 21."
+  },
+  {
+    "id": 18,
+    "domain": "Networking",
+    "question": "Which connector type is standard for Ethernet network patch cables?",
+    "options": {
+      "A": "RJ-11",
+      "B": "RJ-45",
+      "C": "USB-C",
+      "D": "HDMI"
+    },
+    "answer": "B",
+    "explanation": "RJ-45 connectors are standard 8-pin connectors used for twisted-pair network Ethernet cabling."
+  },
+  {
+    "id": 19,
+    "domain": "Networking",
+    "question": "What does LAN stand for?",
+    "options": {
+      "A": "Large Area Network",
+      "B": "Local Area Network",
+      "C": "Logical Access Node",
+      "D": "Link Access Network"
+    },
+    "answer": "B",
+    "explanation": "LAN stands for Local Area Network, spanning a small geographically restricted area like an office or home."
+  },
+  {
+    "id": 20,
+    "domain": "Networking",
+    "question": "Which network protocol is used to transmit outgoing email messages between servers?",
+    "options": {
+      "A": "POP3",
+      "B": "IMAP",
+      "C": "SMTP",
+      "D": "SNMP"
+    },
+    "answer": "C",
+    "explanation": "SMTP (Simple Mail Transfer Protocol) manages outgoing email message delivery."
+  },
+  {
+    "id": 21,
+    "domain": "Networking",
+    "question": "What protocol is used by the 'ping' command to check reachability?",
+    "options": {
+      "A": "ICMP",
+      "B": "IGMP",
+      "C": "ARP",
+      "D": "TCP"
+    },
+    "answer": "A",
+    "explanation": "ICMP (Internet Control Message Protocol) handles error messaging and network status commands like ping."
+  },
+  {
+    "id": 22,
+    "domain": "Networking",
+    "question": "Which Wi-Fi security protocol is currently considered the most secure standard for home networks?",
+    "options": {
+      "A": "WEP",
+      "B": "WPA",
+      "C": "WPA2/WPA3",
+      "D": "HTTP"
+    },
+    "answer": "C",
+    "explanation": "WPA3 (and WPA2) offer strong modern encryption replacing insecure legacy standards like WEP."
+  },
+  {
+    "id": 23,
+    "domain": "Networking",
+    "question": "Which default port does DNS use for name resolution queries?",
+    "options": {
+      "A": "22",
+      "B": "53",
+      "C": "80",
+      "D": "110"
+    },
+    "answer": "B",
+    "explanation": "DNS queries operate primarily over UDP/TCP port 53."
+  },
+  {
+    "id": 24,
+    "domain": "Networking",
+    "question": "What type of network cable is immune to electrical and magnetic interference?",
+    "options": {
+      "A": "Coaxial Cable",
+      "B": "Unshielded Twisted Pair (UTP)",
+      "C": "Fiber Optic Cable",
+      "D": "Shielded Twisted Pair (STP)"
+    },
+    "answer": "C",
+    "explanation": "Fiber optic cables transmit light instead of electrical currents, making them completely immune to EMI."
+  },
+  {
+    "id": 25,
+    "domain": "Networking",
+    "question": "What is the private IP address range for Class A networks?",
+    "options": {
+      "A": "10.0.0.0 to 10.255.255.255",
+      "B": "172.16.0.0 to 172.31.255.255",
+      "C": "192.168.0.0 to 192.168.255.255",
+      "D": "127.0.0.0 to 127.0.0.255"
+    },
+    "answer": "A",
+    "explanation": "10.0.0.0/8 is designated by RFC 1918 as the private Class A address space."
+  },
+  {
+    "id": 26,
+    "domain": "Networking",
+    "question": "Which device directs network traffic using MAC addresses at OSI Layer 2?",
+    "options": {
+      "A": "Router",
+      "B": "Switch",
+      "C": "Repeater",
+      "D": "Modem"
+    },
+    "answer": "B",
+    "explanation": "Network switches operate at Layer 2 and maintain a MAC address table to forward frames efficiently."
+  },
+  {
+    "id": 27,
+    "domain": "Networking",
+    "question": "What command line tool displays network path hop-by-hop to a destination on Windows?",
+    "options": {
+      "A": "tracert",
+      "B": "traceroute",
+      "C": "ipconfig",
+      "D": "netstat"
+    },
+    "answer": "A",
+    "explanation": "'tracert' is the Windows utility used to trace the router path to a remote host (Linux uses traceroute)."
+  },
+  {
+    "id": 28,
+    "domain": "Networking",
+    "question": "What is the primary purpose of NAT (Network Address Translation)?",
+    "options": {
+      "A": "Convert private IP addresses to a public IP address for internet traffic",
+      "B": "Encrypt hard drive files",
+      "C": "Filter spam emails",
+      "D": "Assign MAC addresses to wireless access points"
+    },
+    "answer": "A",
+    "explanation": "NAT maps internal private IP addresses to a external public IP address to conserve IPv4 space."
+  },
+  {
+    "id": 29,
+    "domain": "Networking",
+    "question": "Which layer in the TCP/IP model corresponds to the OSI Transport layer?",
+    "options": {
+      "A": "Network Interface",
+      "B": "Internetwork",
+      "C": "Transport",
+      "D": "Application"
+    },
+    "answer": "C",
+    "explanation": "Both models include a Transport layer responsible for end-to-end data delivery (TCP/UDP)."
+  },
+  {
+    "id": 30,
+    "domain": "Networking",
+    "question": "What does WAN stand for?",
+    "options": {
+      "A": "Wireless Area Network",
+      "B": "Wide Area Network",
+      "C": "Web Access Node",
+      "D": "Wired Application Network"
+    },
+    "answer": "B",
+    "explanation": "WAN stands for Wide Area Network, which spans large geographical distances (e.g., the Internet)."
+  },
+  {
+    "id": 31,
+    "domain": "Networking",
+    "question": "Which wireless frequency band provides longer range but slower data speeds?",
+    "options": {
+      "A": "2.4 GHz",
+      "B": "5 GHz",
+      "C": "6 GHz",
+      "D": "60 GHz"
+    },
+    "answer": "A",
+    "explanation": "2.4 GHz signals travel farther and penetrate walls better than 5 GHz, though at reduced bandwidth."
+  },
+  {
+    "id": 32,
+    "domain": "Networking",
+    "question": "What protocol resolves IP addresses to physical MAC addresses on a local network?",
+    "options": {
+      "A": "DNS",
+      "B": "ARP",
+      "C": "DHCP",
+      "D": "RARP"
+    },
+    "answer": "B",
+    "explanation": "ARP (Address Resolution Protocol) resolves known Layer 3 IP addresses to Layer 2 MAC addresses."
+  },
+  {
+    "id": 33,
+    "domain": "Networking",
+    "question": "What is the default subnet mask for a Class C network?",
+    "options": {
+      "A": "255.0.0.0",
+      "B": "255.255.0.0",
+      "C": "255.255.255.0",
+      "D": "255.255.255.255"
+    },
+    "answer": "C",
+    "explanation": "Class C networks default to a /24 prefix, corresponding to 255.255.255.0."
+  },
+  {
+    "id": 34,
+    "domain": "Linux",
+    "question": "Which Linux command displays your current working directory path?",
+    "options": {
+      "A": "ls",
+      "B": "cd",
+      "C": "pwd",
+      "D": "whoami"
+    },
+    "answer": "C",
+    "explanation": "'pwd' stands for 'print working directory'."
+  },
+  {
+    "id": 35,
+    "domain": "Linux",
+    "question": "Which command lists files and directories in the current folder?",
+    "options": {
+      "A": "dir",
+      "B": "ls",
+      "C": "cat",
+      "D": "list"
+    },
+    "answer": "B",
+    "explanation": "'ls' lists folder contents in Linux."
+  },
+  {
+    "id": 36,
+    "domain": "Linux",
+    "question": "Which Linux command is used to change directories?",
+    "options": {
+      "A": "mov",
+      "B": "cd",
+      "C": "chdir",
+      "D": "goto"
+    },
+    "answer": "B",
+    "explanation": "'cd' stands for 'change directory'."
+  },
+  {
+    "id": 37,
+    "domain": "Linux",
+    "question": "Who is the administrative superuser account in Linux with full system privileges?",
+    "options": {
+      "A": "admin",
+      "B": "administrator",
+      "C": "root",
+      "D": "system"
+    },
+    "answer": "C",
+    "explanation": "'root' is the ultimate administrative user account on Unix/Linux systems."
+  },
+  {
+    "id": 38,
+    "domain": "Linux",
+    "question": "Which command prefix allows a standard permitted user to run commands with administrative privileges?",
+    "options": {
+      "A": "runas",
+      "B": "sudo",
+      "C": "su -",
+      "D": "admin"
+    },
+    "answer": "B",
+    "explanation": "'sudo' (superuser do) executes a command with root privileges."
+  },
+  {
+    "id": 39,
+    "domain": "Linux",
+    "question": "Which command creates a new empty directory in Linux?",
+    "options": {
+      "A": "newdir",
+      "B": "mkdir",
+      "C": "createdir",
+      "D": "md"
+    },
+    "answer": "B",
+    "explanation": "'mkdir' stands for 'make directory'."
+  },
+  {
+    "id": 40,
+    "domain": "Linux",
+    "question": "Which command is used to display the contents of a plain text file to the terminal screen?",
+    "options": {
+      "A": "type",
+      "B": "cat",
+      "C": "show",
+      "D": "read"
+    },
+    "answer": "B",
+    "explanation": "'cat' (short for concatenate) prints file contents directly to standard output."
+  },
+  {
+    "id": 41,
+    "domain": "Linux",
+    "question": "Which Linux command is used to remove or delete files?",
+    "options": {
+      "A": "del",
+      "B": "rm",
+      "C": "erase",
+      "D": "unlink"
+    },
+    "answer": "B",
+    "explanation": "'rm' is the remove command used to delete files and directories."
+  },
+  {
+    "id": 42,
+    "domain": "Linux",
+    "question": "Which option with 'ls' shows hidden files (files starting with a dot)?",
+    "options": {
+      "A": "ls -h",
+      "B": "ls -a",
+      "C": "ls -l",
+      "D": "ls -s"
+    },
+    "answer": "B",
+    "explanation": "'ls -a' lists all entries, including hidden dotfiles."
+  },
+  {
+    "id": 43,
+    "domain": "Linux",
+    "question": "Which Linux utility is used to modify file and directory permissions?",
+    "options": {
+      "A": "chown",
+      "B": "chmod",
+      "C": "chgrp",
+      "D": "perm"
+    },
+    "answer": "B",
+    "explanation": "'chmod' (change mode) modifies read, write, and execute permissions."
+  },
+  {
+    "id": 44,
+    "domain": "Linux",
+    "question": "Which command changes file ownership to a new user account?",
+    "options": {
+      "A": "chmod",
+      "B": "chown",
+      "C": "setUser",
+      "D": "chgrp"
+    },
+    "answer": "B",
+    "explanation": "'chown' stands for 'change owner'."
+  },
+  {
+    "id": 45,
+    "domain": "Linux",
+    "question": "Which directory in Linux stores configuration files for system services?",
+    "options": {
+      "A": "/bin",
+      "B": "/etc",
+      "C": "/var",
+      "D": "/tmp"
+    },
+    "answer": "B",
+    "explanation": "The '/etc' directory houses core system configuration files."
+  },
+  {
+    "id": 46,
+    "domain": "Linux",
+    "question": "Where are user home directories typically stored in Linux by default?",
+    "options": {
+      "A": "/users",
+      "B": "/home",
+      "C": "/root",
+      "D": "/var/users"
+    },
+    "answer": "B",
+    "explanation": "Standard non-root user personal profile folders are located under '/home'."
+  },
+  {
+    "id": 47,
+    "domain": "Linux",
+    "question": "Which command creates a blank file or updates the timestamp of an existing file?",
+    "options": {
+      "A": "create",
+      "B": "touch",
+      "C": "make",
+      "D": "new"
+    },
+    "answer": "B",
+    "explanation": "'touch' creates an empty file instantly if it does not already exist."
+  },
+  {
+    "id": 48,
+    "domain": "Linux",
+    "question": "Which Linux command searches for text patterns inside files using regular expressions?",
+    "options": {
+      "A": "find",
+      "B": "grep",
+      "C": "locate",
+      "D": "search"
+    },
+    "answer": "B",
+    "explanation": "'grep' searches named input files for lines containing a match to a given pattern."
+  },
+  {
+    "id": 49,
+    "domain": "Linux",
+    "question": "Which command copies files from one directory location to another?",
+    "options": {
+      "A": "mv",
+      "B": "cp",
+      "C": "copy",
+      "D": "clone"
+    },
+    "answer": "B",
+    "explanation": "'cp' is the file copy command in Linux."
+  },
+  {
+    "id": 50,
+    "domain": "Linux",
+    "question": "Which command is used to move or rename a file in Linux?",
+    "options": {
+      "A": "mv",
+      "B": "rn",
+      "C": "cp",
+      "D": "rename"
+    },
+    "answer": "A",
+    "explanation": "'mv' moves files between directories or renames them if destination is in the same folder."
+  },
+  {
+    "id": 51,
+    "domain": "Linux",
+    "question": "Which file stores user account information like usernames and user IDs (UIDs)?",
+    "options": {
+      "A": "/etc/shadow",
+      "B": "/etc/passwd",
+      "C": "/etc/users",
+      "D": "/etc/group"
+    },
+    "answer": "B",
+    "explanation": "'/etc/passwd' contains basic account information for all local system accounts."
+  },
+  {
+    "id": 52,
+    "domain": "Linux",
+    "question": "Which file securely stores encrypted password hashes on Linux systems?",
+    "options": {
+      "A": "/etc/passwd",
+      "B": "/etc/shadow",
+      "C": "/etc/security",
+      "D": "/etc/crypto"
+    },
+    "answer": "B",
+    "explanation": "'/etc/shadow' stores encrypted password hashes and is accessible only by root."
+  },
+  {
+    "id": 53,
+    "domain": "Linux",
+    "question": "What numeric value represents read (r), write (w), and execute (x) permissions in chmod (7)?",
+    "options": {
+      "A": "r=4, w=2, x=1",
+      "B": "r=1, w=2, x=3",
+      "C": "r=3, w=2, x=1",
+      "D": "r=4, w=1, x=2"
+    },
+    "answer": "A",
+    "explanation": "Octal permissions assign 4 for read, 2 for write, and 1 for execute (4+2+1=7)."
+  },
+  {
+    "id": 54,
+    "domain": "Linux",
+    "question": "Which command shows actively running system processes in real-time?",
+    "options": {
+      "A": "ps",
+      "B": "top",
+      "C": "proc",
+      "D": "taskmgr"
+    },
+    "answer": "B",
+    "explanation": "'top' (or htop) displays dynamic, real-time running process information."
+  },
+  {
+    "id": 55,
+    "domain": "Linux",
+    "question": "Which command displays your active username in the terminal?",
+    "options": {
+      "A": "whoami",
+      "B": "id",
+      "C": "logname",
+      "D": "user"
+    },
+    "answer": "A",
+    "explanation": "'whoami' prints the effective user name of the current user session."
+  },
+  {
+    "id": 56,
+    "domain": "Linux",
+    "question": "Which character symbol represents a user's home directory path shortcut in Linux?",
+    "options": {
+      "A": "#",
+      "B": "~",
+      "C": "$",
+      "D": "%"
+    },
+    "answer": "B",
+    "explanation": "The tilde symbol '~' expands automatically to the current user's home directory."
+  },
+  {
+    "id": 57,
+    "domain": "Linux",
+    "question": "Which command displays manual pages and usage documentation for terminal commands?",
+    "options": {
+      "A": "help",
+      "B": "man",
+      "C": "info",
+      "D": "doc"
+    },
+    "answer": "B",
+    "explanation": "'man' opens system reference manuals (e.g., 'man ls')."
+  },
+  {
+    "id": 58,
+    "domain": "Linux",
+    "question": "Which command terminates or stops a running process using its Process ID (PID)?",
+    "options": {
+      "A": "stop",
+      "B": "kill",
+      "C": "end",
+      "D": "terminate"
+    },
+    "answer": "B",
+    "explanation": "'kill' sends operating system signals (like SIGTERM or SIGKILL) to processes."
+  },
+  {
+    "id": 59,
+    "domain": "Linux",
+    "question": "Where are variable data files like system log files stored in Linux?",
+    "options": {
+      "A": "/bin",
+      "B": "/var/log",
+      "C": "/opt",
+      "D": "/usr"
+    },
+    "answer": "B",
+    "explanation": "Log files generated by system services are logged inside the '/var/log' directory."
+  },
+  {
+    "id": 60,
+    "domain": "Linux",
+    "question": "Which command is used on Debian/Ubuntu systems to install software packages?",
+    "options": {
+      "A": "yum install",
+      "B": "apt install",
+      "C": "pacman -S",
+      "D": "rpm -i"
+    },
+    "answer": "B",
+    "explanation": "'apt' (Advanced Package Tool) manages software package installation on Debian/Ubuntu."
+  },
+  {
+    "id": 61,
+    "domain": "Linux",
+    "question": "Which directory contains essential system binary commands required for basic user operations?",
+    "options": {
+      "A": "/bin",
+      "B": "/sbin",
+      "C": "/lib",
+      "D": "/dev"
+    },
+    "answer": "A",
+    "explanation": "'/bin' holds core user command executables such as ls, cp, and cat."
+  },
+  {
+    "id": 62,
+    "domain": "Linux",
+    "question": "Which character redirects command output into a file, replacing existing file content?",
+    "options": {
+      "A": ">",
+      "B": ">>",
+      "C": "<",
+      "D": "|"
+    },
+    "answer": "A",
+    "explanation": "A single '>' redirects standard output to a file, overwriting existing content."
+  },
+  {
+    "id": 63,
+    "domain": "Linux",
+    "question": "Which symbol pipes the output of one Linux command directly into the input of another?",
+    "options": {
+      "A": "&",
+      "B": "|",
+      "C": ">",
+      "D": ";"
+    },
+    "answer": "B",
+    "explanation": "The pipe character '|' chains commands by connecting standard output to standard input."
+  },
+  {
+    "id": 64,
+    "domain": "Linux",
+    "question": "Which simple command displays text lines passed to it in the terminal output?",
+    "options": {
+      "A": "print",
+      "B": "echo",
+      "C": "say",
+      "D": "write"
+    },
+    "answer": "B",
+    "explanation": "'echo' prints arguments passed to it back to the console."
+  },
+  {
+    "id": 65,
+    "domain": "Linux",
+    "question": "Which package format is natively used by Red Hat Enterprise Linux and Fedora?",
+    "options": {
+      "A": ".deb",
+      "B": ".rpm",
+      "C": ".apk",
+      "D": ".exe"
+    },
+    "answer": "B",
+    "explanation": "RHEL-based distributions use RPM package files managed by dnf/yum."
+  },
+  {
+    "id": 66,
+    "domain": "Linux",
+    "question": "Which text editor is built into most Linux command-line terminals by default?",
+    "options": {
+      "A": "Notepad++",
+      "B": "nano / vi",
+      "C": "Sublime",
+      "D": "VS Code"
+    },
+    "answer": "B",
+    "explanation": "Terminal editors 'nano' and 'vi/vim' are standard tools installed across Linux installations."
+  },
+  {
+    "id": 67,
+    "domain": "Security",
+    "question": "What three core principles form the fundamental CIA Triad model in security?",
+    "options": {
+      "A": "Control, Inspection, Audit",
+      "B": "Confidentiality, Integrity, Availability",
+      "C": "Cyber, Information, Assurance",
+      "D": "Crypto, Identity, Authentication"
+    },
+    "answer": "B",
+    "explanation": "The CIA Triad stands for Confidentiality, Integrity, and Availability."
+  },
+  {
+    "id": 68,
+    "domain": "Security",
+    "question": "Which principle of the CIA Triad guarantees data is protected from unauthorized access?",
+    "options": {
+      "A": "Confidentiality",
+      "B": "Integrity",
+      "C": "Availability",
+      "D": "Accountability"
+    },
+    "answer": "A",
+    "explanation": "Confidentiality prevents unauthorized disclosure of sensitive data."
+  },
+  {
+    "id": 69,
+    "domain": "Security",
+    "question": "Which principle of the CIA Triad ensures data remains accurate and unaltered by unauthorized parties?",
+    "options": {
+      "A": "Confidentiality",
+      "B": "Integrity",
+      "C": "Availability",
+      "D": "Non-repudiation"
+    },
+    "answer": "B",
+    "explanation": "Integrity ensures data remains accurate, complete, and untampered with."
+  },
+  {
+    "id": 70,
+    "domain": "Security",
+    "question": "What type of social engineering attack uses deceptive emails to trick victims into sharing passwords?",
+    "options": {
+      "A": "DDoS",
+      "B": "Phishing",
+      "C": "SQL Injection",
+      "D": "Buffer Overflow"
+    },
+    "answer": "B",
+    "explanation": "Phishing sends fraudulent communications disguised as legitimate sources to steal credentials."
+  },
+  {
+    "id": 71,
+    "domain": "Security",
+    "question": "Malware that locks user files using encryption and demands money for the key is called what?",
+    "options": {
+      "A": "Spyware",
+      "B": "Ransomware",
+      "C": "Adware",
+      "D": "Rootkit"
+    },
+    "answer": "B",
+    "explanation": "Ransomware encrypts target data and demands payment for decryption keys."
+  },
+  {
+    "id": 72,
+    "domain": "Security",
+    "question": "What security control requires users to provide two separate authentication methods to log in?",
+    "options": {
+      "A": "Single Sign-On (SSO)",
+      "B": "Multi-Factor Authentication (MFA)",
+      "C": "Password Rotation",
+      "D": "Biometrics"
+    },
+    "answer": "B",
+    "explanation": "MFA requires two or more distinct evidence factors (e.g., password + SMS token)."
+  },
+  {
+    "id": 73,
+    "domain": "Security",
+    "question": "Which authentication factor category does a hardware token or smartphone fall under?",
+    "options": {
+      "A": "Something you know",
+      "B": "Something you have",
+      "C": "Something you are",
+      "D": "Somewhere you are"
+    },
+    "answer": "B",
+    "explanation": "Physical tokens or smartphone apps represent physical items 'something you have'."
+  },
+  {
+    "id": 74,
+    "domain": "Security",
+    "question": "Which authentication factor category includes fingerprints and iris scans?",
+    "options": {
+      "A": "Something you know",
+      "B": "Something you have",
+      "C": "Something you are",
+      "D": "Something you do"
+    },
+    "answer": "C",
+    "explanation": "Biometric characteristics map to 'something you are'."
+  },
+  {
+    "id": 75,
+    "domain": "Security",
+    "question": "What malicious program self-replicates and spreads across networks WITHOUT needing a host program or human action?",
+    "options": {
+      "A": "Virus",
+      "B": "Worm",
+      "C": "Trojan",
+      "D": "Logic Bomb"
+    },
+    "answer": "B",
+    "explanation": "Worms spread autonomously across networks without user intervention, unlike viruses."
+  },
+  {
+    "id": 76,
+    "domain": "Security",
+    "question": "What software hides inside a seemingly legitimate program to trick users into installing it?",
+    "options": {
+      "A": "Worm",
+      "B": "Trojan",
+      "C": "Keylogger",
+      "D": "Spyware"
+    },
+    "answer": "B",
+    "explanation": "A Trojan masquerades as desirable or benign software while delivering a malicious payload."
+  },
+  {
+    "id": 77,
+    "domain": "Security",
+    "question": "Which security concept dictates giving users ONLY the minimum permissions needed to complete their job?",
+    "options": {
+      "A": "Separation of Duties",
+      "B": "Principle of Least Privilege",
+      "C": "Implicit Deny",
+      "D": "Defense in Depth"
+    },
+    "answer": "B",
+    "explanation": "Least Privilege restricts user access rights to the absolute minimum necessary for work tasks."
+  },
+  {
+    "id": 78,
+    "domain": "Security",
+    "question": "What type of attack attempts every possible combination of characters until the correct password is found?",
+    "options": {
+      "A": "Dictionary Attack",
+      "B": "Brute-Force Attack",
+      "C": "Rainbow Table Attack",
+      "D": "Social Engineering"
+    },
+    "answer": "B",
+    "explanation": "Brute-force attacks systematically try every theoretical combination until discovering the password."
+  },
+  {
+    "id": 79,
+    "domain": "Security",
+    "question": "What device or software acts as a barrier, filtering incoming and outgoing traffic based on defined security rules?",
+    "options": {
+      "A": "Switch",
+      "B": "Firewall",
+      "C": "Modem",
+      "D": "Repeater"
+    },
+    "answer": "B",
+    "explanation": "Firewalls inspect and restrict network traffic based on predefined rule sets."
+  },
+  {
+    "id": 80,
+    "domain": "Security",
+    "question": "What attack overwhelms a server or service with excessive traffic to render it unavailable to legitimate users?",
+    "options": {
+      "A": "Man-in-the-Middle",
+      "B": "Denial of Service (DoS)",
+      "C": "Cross-Site Scripting",
+      "D": "Phishing"
+    },
+    "answer": "B",
+    "explanation": "DoS attacks flood target systems with garbage requests to overwhelm processing resources."
+  },
+  {
+    "id": 81,
+    "domain": "Security",
+    "question": "What is the process of scrambling plain text into unreadable ciphertext called?",
+    "options": {
+      "A": "Decryption",
+      "B": "Encryption",
+      "C": "Hashing",
+      "D": "Encoding"
+    },
+    "answer": "B",
+    "explanation": "Encryption uses cryptographic algorithms to turn readable plaintext into unreadable ciphertext."
+  },
+  {
+    "id": 82,
+    "domain": "Security",
+    "question": "Unlike encryption, what mathematical process is one-way and cannot be mathematically reversed to recover original data?",
+    "options": {
+      "A": "Symmetric Cipher",
+      "B": "Hashing",
+      "C": "Asymmetric Cipher",
+      "D": "Steganography"
+    },
+    "answer": "B",
+    "explanation": "Cryptographic hash functions generate fixed-length values that are mathematically non-reversible."
+  },
+  {
+    "id": 83,
+    "domain": "Security",
+    "question": "Which attack involves intercepting communication between two parties without their knowledge?",
+    "options": {
+      "A": "Man-in-the-Middle (MitM)",
+      "B": "Phishing",
+      "C": "SQL Injection",
+      "D": "Brute Force"
+    },
+    "answer": "A",
+    "explanation": "In a MitM attack, an attacker silently relays and alters communications between two victim parties."
+  },
+  {
+    "id": 84,
+    "domain": "Security",
+    "question": "What social engineering tactic involves physically following an authorized employee into a secured building facility?",
+    "options": {
+      "A": "Shoulder Surfing",
+      "B": "Tailgating / Piggybacking",
+      "C": "Dumpster Diving",
+      "D": "Phishing"
+    },
+    "answer": "B",
+    "explanation": "Tailgating occurs when an unauthorized individual walks in closely behind a user with legitimate access."
+  },
+  {
+    "id": 85,
+    "domain": "Security",
+    "question": "What practice involves looking over someone's shoulder to steal sensitive information like PINs or passwords?",
+    "options": {
+      "A": "Dumpster Diving",
+      "B": "Shoulder Surfing",
+      "C": "Vishing",
+      "D": "Pretexting"
+    },
+    "answer": "B",
+    "explanation": "Shoulder surfing relies on direct physical observation to observe private typed inputs."
+  },
+  {
+    "id": 86,
+    "domain": "Security",
+    "question": "What type of attack searches through workplace paper trash bins for confidential documents?",
+    "options": {
+      "A": "Pretexting",
+      "B": "Dumpster Diving",
+      "C": "Smishing",
+      "D": "Baiting"
+    },
+    "answer": "B",
+    "explanation": "Dumpster diving searches discarded refuse for non-shredded paper sensitive records."
+  },
+  {
+    "id": 87,
+    "domain": "Security",
+    "question": "What security tactic uses multiple layers of defense controls to protect assets across a system?",
+    "options": {
+      "A": "Defense in Depth",
+      "B": "Single Point of Failure",
+      "C": "Least Privilege",
+      "D": "Implicit Deny"
+    },
+    "answer": "A",
+    "explanation": "Defense in Depth implements redundant security mechanisms to ensure protection if one layer fails."
+  },
+  {
+    "id": 88,
+    "domain": "Security",
+    "question": "What security software monitors user inputs and records every keystroke pressed on a keyboard?",
+    "options": {
+      "A": "Rootkit",
+      "B": "Keylogger",
+      "C": "Ransomware",
+      "D": "Adware"
+    },
+    "answer": "B",
+    "explanation": "Keyloggers capture hardware keystrokes to harvest typed user accounts and passwords."
+  },
+  {
+    "id": 89,
+    "domain": "Security",
+    "question": "What type of phishing attack specifically targets high-profile individuals like corporate executives?",
+    "options": {
+      "A": "Spear Phishing",
+      "B": "Whaling",
+      "C": "Vishing",
+      "D": "Smishing"
+    },
+    "answer": "B",
+    "explanation": "Whaling is a targeted phishing campaign directed specifically at high-level executives."
+  },
+  {
+    "id": 90,
+    "domain": "Security",
+    "question": "What is phishing conducted over SMS text messages called?",
+    "options": {
+      "A": "Vishing",
+      "B": "Smishing",
+      "C": "Spam",
+      "D": "Baiting"
+    },
+    "answer": "B",
+    "explanation": "Smishing combines 'SMS' text messaging with phishing techniques."
+  },
+  {
+    "id": 91,
+    "domain": "Security",
+    "question": "What is phishing conducted over phone calls called?",
+    "options": {
+      "A": "Vishing",
+      "B": "Smishing",
+      "C": "Pretexting",
+      "D": "Spoofing"
+    },
+    "answer": "A",
+    "explanation": "Vishing combines 'Voice' calls with phishing deception."
+  },
+  {
+    "id": 92,
+    "domain": "Security",
+    "question": "What type of malware gives an attacker stealthy, deep administrative root access to an OS while hiding its presence?",
+    "options": {
+      "A": "Rootkit",
+      "B": "Adware",
+      "C": "Worm",
+      "D": "Macro Virus"
+    },
+    "answer": "A",
+    "explanation": "Rootkits modify system kernels or drivers to grant persistent hidden administrator control."
+  },
+  {
+    "id": 93,
+    "domain": "Security",
+    "question": "What type of data backup method makes an exact copy of ALL selected files every time it runs?",
+    "options": {
+      "A": "Incremental Backup",
+      "B": "Differential Backup",
+      "C": "Full Backup",
+      "D": "Synthetic Backup"
+    },
+    "answer": "C",
+    "explanation": "Full backups capture every chosen file regardless of when it was last modified."
+  },
+  {
+    "id": 94,
+    "domain": "Security",
+    "question": "Which cryptographic method uses ONE identical secret key to both encrypt and decrypt data?",
+    "options": {
+      "A": "Symmetric Encryption",
+      "B": "Asymmetric Encryption",
+      "C": "Public Key Cryptography",
+      "D": "Elliptic Curve Encryption"
+    },
+    "answer": "A",
+    "explanation": "Symmetric encryption uses the exact same shared key for both encryption and decryption operations."
+  },
+  {
+    "id": 95,
+    "domain": "Security",
+    "question": "Which cryptographic scheme uses a Public Key to encrypt and a Private Key to decrypt?",
+    "options": {
+      "A": "Symmetric Encryption",
+      "B": "Asymmetric Encryption",
+      "C": "Hashing",
+      "D": "Steganography"
+    },
+    "answer": "B",
+    "explanation": "Asymmetric (Public Key) cryptography relies on mathematically paired public/private key pairs."
+  },
+  {
+    "id": 96,
+    "domain": "Security",
+    "question": "What practice involves hiding secret text messages or files INSIDE standard image files?",
+    "options": {
+      "A": "Hashing",
+      "B": "Steganography",
+      "C": "Symmetric Ciphers",
+      "D": "Obfuscation"
+    },
+    "answer": "B",
+    "explanation": "Steganography conceals secret data inside ordinary non-secret media files to avoid detection."
+  },
+  {
+    "id": 97,
+    "domain": "Security",
+    "question": "What is an unpatched software vulnerability that is actively exploited by attackers BEFORE the vendor becomes aware of it?",
+    "options": {
+      "A": "Zero-Day Vulnerability",
+      "B": "Known Vulnerability",
+      "C": "Buffer Overflow",
+      "D": "Default Credential"
+    },
+    "answer": "A",
+    "explanation": "A Zero-Day refers to a flaw exploited in the wild before the software developer has released a patch."
+  },
+  {
+    "id": 98,
+    "domain": "Security",
+    "question": "What type of firewall inspects traffic based solely on packet source/destination IP and port numbers without context?",
+    "options": {
+      "A": "Stateless Packet Filter",
+      "B": "Stateful Inspection Firewall",
+      "C": "Next-Gen Firewall",
+      "D": "Web Application Firewall"
+    },
+    "answer": "A",
+    "explanation": "Stateless packet filtering examines individual packets in isolation based on header parameters."
+  },
+  {
+    "id": 99,
+    "domain": "Security",
+    "question": "What physical or logical network segment isolates public-facing servers (like web servers) from the internal private LAN?",
+    "options": {
+      "A": "VPN",
+      "B": "DMZ (Demilitarized Zone)",
+      "C": "VLAN",
+      "D": "Subnet Mask"
+    },
+    "answer": "B",
+    "explanation": "A DMZ isolates public services so an external breach doesn't immediately compromise internal servers."
+  },
+  {
+    "id": 100,
+    "domain": "Security",
+    "question": "What network security tool encrypts traffic passing between a user device and a remote network over the public internet?",
+    "options": {
+      "A": "VPN (Virtual Private Network)",
+      "B": "VLAN",
+      "C": "NAT",
+      "D": "Proxy Switch"
+    },
+    "answer": "A",
+    "explanation": "A VPN builds an encrypted tunnel over untrusted networks to secure data transmission."
+  }
+]

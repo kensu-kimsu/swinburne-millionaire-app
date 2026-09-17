@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWINBURNE MILLIONAIRE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <canvas id="glitterCanvas"></canvas>
+
+    <!-- Audio Elements -->
+    <audio id="snd-intro" src="{{ url_for('static', filename='intro.mp3') }}" loop></audio>
+    <audio id="snd-play" src="{{ url_for('static', filename='lets_play.mp3') }}"></audio>
+    <audio id="snd-ticking" src="{{ url_for('static', filename='ticking.mp3') }}" loop></audio>
+    <audio id="snd-final" src="{{ url_for('static', filename='final_answer.mp3') }}"></audio>
+    <audio id="snd-correct" src="{{ url_for('static', filename='correct.mp3') }}"></audio>
+    <audio id="snd-wrong" src="{{ url_for('static', filename='wrong.mp3') }}"></audio>
+    <audio id="snd-gameover" src="{{ url_for('static', filename='gameover.mp3') }}"></audio>
+    <audio id="snd-victory" src="{{ url_for('static', filename='victory.mp3') }}"></audio>
+    <audio id="snd-lifeline" src="{{ url_for('static', filename='lifeline.mp3') }}"></audio>
+
+    <div id="intro-spotlights" class="spotlight-container">
+        <div class="spotlight spotlight-1"></div>
+        <div class="spotlight spotlight-2"></div>
+        <div class="spotlight spotlight-3"></div>
+        <div class="spotlight spotlight-4"></div>
+        <div class="spotlight spotlight-5"></div>
+        <div class="spotlight spotlight-6"></div>
+        <div class="spotlight spotlight-7"></div>
+        <div class="spotlight spotlight-8"></div>
+    </div>
+
+    <!-- Title Screen -->
+    <div id="title-overlay" onclick="enableAudioAndPlayIntro()">
+        <h1>SWINBURNE MILLIONAIRE</h1>
+        <h2>Are you smart enough to win $1,000,000?</h2>
+        <div class="click-prompt">Click anywhere on screen to enable sound</div>
+        <button class="btn-play" onclick="startGame(event)">CLICK TO PLAY</button>
+    </div>
+
+    <!-- Walk Away Practice Guess Modal -->
+    <div id="walkaway-modal" class="modal-overlay">
+        <div class="modal-content-safe">
+            <h1 class="win-title modal-walkaway-title">YOU DECIDED TO WALK AWAY!</h1>
+            <p class="modal-walkaway-text">
+                Before taking your prize money, select an option to see if your guess would have been right!
+            </p>
+            <button class="btn-continue-checkpoint" onclick="closeWalkawayModal()">TEST MY GUESS</button>
+        </div>
+    </div>
+
+    <div id="checkpoint-modal" class="modal-overlay">
+        <div class="modal-content-safe">
+            <h1 class="win-title">SAFE CHECKPOINT!</h1>
+            <p class="checkpoint-subtext">
+                You have reached a safe milestone! You have secured <strong id="checkpoint-guaranteed-text" class="checkpoint-amount">$1,000</strong>.
+            </p>
+            <p class="checkpoint-desc">
+                Would you like to <strong>walk away now</strong> with your guaranteed prize, or <strong>risk it all</strong> and advance to the next tier?
+            </p>
+            <div class="checkpoint-btn-group">
+                <button class="btn-cashout-checkpoint" onclick="processCheckpointChoice('cashout')">WALK AWAY</button>
+                <button class="btn-continue-checkpoint" onclick="processCheckpointChoice('continue')">RISK & CONTINUE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="win-modal" class="modal-overlay">
+        <h1 class="win-title">CONGRATULATIONS!</h1>
+        <div class="win-prize" id="win-prize-text">YOU WON $1,000,000!</div>
+        <button class="btn-play btn-play-gameover" onclick="restartGame()">PLAY AGAIN</button>
+    </div>
+
+    <div id="gameover-modal" class="modal-overlay">
+        <div class="modal-content-safe">
+            <h1 class="gameover-title">GAME OVER</h1>
+            <div class="gameover-prize" id="gameover-prize-text">Guaranteed Prize: $0</div>
+            <div class="insult-quote" id="gameover-insult-text"></div>
+            <button class="btn-play btn-play-gameover" onclick="restartGame()">TRY AGAIN</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="main-panel">
+            <div class="top-bar">
+                <div>
+                    <span class="domain-badge" id="domain-display">Domain: ---</span>
+                    <span class="tier-badge tier-easy" id="tier-display">EASY</span>
+                </div>
+                <div class="timer-box" id="timer">30</div>
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+
+            <div class="question-box" id="question-text"></div>
+
+            <div class="options-grid" id="options-container">
+                <button class="opt-btn" disabled><span class="prefix">A:</span> ---</button>
+                <button class="opt-btn" disabled><span class="prefix">B:</span> ---</button>
+                <button class="opt-btn" disabled><span class="prefix">C:</span> ---</button>
+                <button class="opt-btn" disabled><span class="prefix">D:</span> ---</button>
+            </div>
+
+            <div class="explanation-box" id="explanation-display">
+                <span id="explanation-text"></span>
+                <button class="btn-next-question" id="btn-skip-next" onclick="forceNextQuestion()">Next Question &rarr;</button>
+            </div>
+
+            <div class="controls">
+                <button class="action-btn" id="btn-5050" onclick="useLifeline5050()" disabled>50:50 Lifeline</button>
+                <button class="action-btn btn-final-answer" id="btn-final" onclick="lockInFinalAnswer()" disabled>FINAL ANSWER</button>
+                <button class="action-btn" id="btn-cashout" onclick="cashout()" disabled>Walk Away</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h3 class="sidebar-title">Prize Ladder</h3>
+            <ul class="ladder" id="prize-ladder"></ul>
+        </div>
+    </div>
+
+    <script>
+        const PRIZES = [
+            "$100", "$200", "$300", "$500", "$1,000",
+            "$2,000", "$4,000", "$8,000", "$16,000", "$32,000",
+            "$64,000", "$125,000", "$250,000", "$500,000", "$1,000,000"
+        ];
+
+        let timerInterval = null;
+        let nextQuestionTimeout = null;
+        let pendingCheckpointModal = false;
+        let currentGuaranteedPrize = "$0";
+        let audioUnlocked = false;
+        let selectedOptionKey = null;
+
+        // Sound trigger for button interaction (Excludes 'btn-skip-next')
+        document.addEventListener('click', function(e) {
+            if ((e.target.tagName === 'BUTTON' || e.target.classList.contains('opt-btn') || e.target.classList.contains('btn-play')) 
+                && e.target.id !== 'btn-skip-next') {
+                
+                let el = document.getElementById('snd-final');
+                if (el) {
+                    el.currentTime = 0;
+                    el.play().catch(() => {});
+                }
+            }
+        });
+
+        function stopAllAudio() {
+            ['snd-intro', 'snd-play', 'snd-ticking', 'snd-final', 'snd-correct', 'snd-wrong', 'snd-gameover', 'snd-victory', 'snd-lifeline'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) {
+                    el.pause();
+                    el.currentTime = 0;
+                }
+            });
+        }
+
+        function playSound(soundId, loop = false) {
+            let el = document.getElementById(soundId);
+            if (el) {
+                el.loop = loop;
+                let promise = el.play();
+                if (promise !== undefined) {
+                    promise.catch(err => console.warn(`Audio warning for #${soundId}:`, err));
+                }
+            }
+        }
+
+        function playAudioAndAutoReset(soundId) {
+            stopAllAudio();
+            const soundEl = document.getElementById(soundId);
+            if (soundEl) {
+                soundEl.loop = false;
+                soundEl.onended = () => {
+                    setTimeout(() => restartGame(), 5000);
+                };
+                soundEl.play().catch(err => console.warn(`Audio warning for #${soundId}:`, err));
+            } else {
+                setTimeout(() => restartGame(), 5000);
+            }
+        }
+
+        function enableAudioAndPlayIntro() {
+            if (!audioUnlocked) {
+                audioUnlocked = true;
+                document.querySelector('.click-prompt').style.display = 'none';
+                playSound('snd-intro', true);
+            }
+        }
+
+        function renderLadder(currentStep = -1) {
+            const ladderEl = document.getElementById('prize-ladder');
+            ladderEl.innerHTML = '';
+            PRIZES.forEach((prize, idx) => {
+                const li = document.createElement('li');
+                li.className = 'ladder-item';
+                if (idx === 4 || idx === 9 || idx === 14) li.classList.add('safe');
+                if (idx === currentStep) li.classList.add('active');
+                li.innerHTML = `<span>Q${idx + 1}</span> <span>${prize}</span>`;
+                ladderEl.appendChild(li);
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            let timeLeft = 30;
+
+            const timerBox = document.getElementById('timer');
+            const timerBar = document.getElementById('timer-bar');
+
+            timerBox.innerText = timeLeft;
+            timerBox.classList.remove('timer-urgent');
+            timerBar.classList.remove('pulse-bar');
+            timerBar.style.width = '100%';
+
+            let introEl = document.getElementById('snd-intro');
+            let playEl = document.getElementById('snd-play');
+            if (introEl) introEl.pause();
+            if (playEl) playEl.pause();
+
+            playSound('snd-ticking', true);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerBox.innerText = timeLeft;
+                timerBar.style.width = `${(timeLeft / 30) * 100}%`;
+
+                if (timeLeft <= 10) {
+                    timerBox.classList.add('timer-urgent');
+                    timerBar.classList.add('pulse-bar');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            const timerBox = document.getElementById('timer');
+            const timerBar = document.getElementById('timer-bar');
+            if (timerBox) timerBox.classList.remove('timer-urgent');
+            if (timerBar) timerBar.classList.remove('pulse-bar');
+        }
+
+        async function startGame(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('title-overlay').style.display = 'none';
+            stopAllAudio();
+
+            document.getElementById('question-text').innerText = "";
+            document.getElementById('domain-display').innerText = "Domain: ---";
+            
+            const introSpotlights = document.getElementById('intro-spotlights');
+            introSpotlights.style.display = 'block';
+            playSound('snd-play');
+
+            try {
+                const res = await fetch('/api/start', { method: 'POST' });
+                if (!res.ok) throw new Error(`Server status ${res.status}`);
+
+                setTimeout(() => {
+                    introSpotlights.style.display = 'none';
+                    fetchNextQuestion();
+                }, 3000);
+            } catch (err) {
+                console.error("Game Start Error:", err);
+                introSpotlights.style.display = 'none';
+                document.getElementById('question-text').innerText = "Error starting game. Ensure server is running.";
+            }
+        }
+
+        async function fetchNextQuestion() {
+            try {
+                const res = await fetch('/api/question');
+                const data = await res.json();
+                
+                if (data.status === 'completed') {
+                    playAudioAndAutoReset('snd-victory');
+                    triggerWinOverlay("$1,000,000");
+                    return;
+                }
+                
+                renderQuestion(data);
+                document.getElementById('btn-cashout').disabled = false;
+            } catch (err) {
+                console.error("Fetch Question Error:", err);
+            }
+        }
+
+        function renderQuestion(data) {
+            selectedOptionKey = null;
+            document.getElementById('btn-final').disabled = true;
+
+            document.getElementById('domain-display').innerText = `Domain: ${data.domain}`;
+            
+            const tierEl = document.getElementById('tier-display');
+            tierEl.innerText = data.tier;
+            tierEl.className = `tier-badge tier-${data.tier.toLowerCase()}`;
+
+            document.getElementById('question-text').innerText = data.question;
+            document.getElementById('explanation-display').style.display = 'none';
+
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+
+            for (const [key, val] of Object.entries(data.options)) {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.id = `opt-${key}`;
+                btn.innerHTML = `<span class="prefix">${key}:</span> ${val}`;
+                btn.onclick = () => selectOption(key);
+                optsContainer.appendChild(btn);
+            }
+
+            document.getElementById('btn-5050').disabled = !data.lifeline_5050_available;
+            renderLadder(data.step);
+            startTimer();
+        }
+
+        function selectOption(key) {
+            selectedOptionKey = key;
+            document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+            const selectedBtn = document.getElementById(`opt-${key}`);
+            if (selectedBtn) selectedBtn.classList.add('selected');
+
+            document.getElementById('btn-final').disabled = false;
+        }
+
+        async function lockInFinalAnswer() {
+            if (!selectedOptionKey) return;
+
+            stopTimer();
+            stopAllAudio();
+            playSound('snd-final');
+
+            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+            document.getElementById('btn-final').disabled = true;
+            document.getElementById('btn-5050').disabled = true;
+            document.getElementById('btn-cashout').disabled = true;
+
+            submitAnswer(selectedOptionKey);
+        }
+
+        async function submitAnswer(selectedKey) {
+            try {
+                const res = await fetch('/api/answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answer: selectedKey })
+                });
+                const data = await res.json();
+
+                const selectedBtn = document.getElementById(`opt-${selectedKey}`);
+
+                if (data.status === 'walked_away_revealed') {
+                    const correctBtn = document.getElementById(`opt-${data.correct_answer}`);
+                    if (selectedKey === data.correct_answer) {
+                        if (selectedBtn) {
+                            selectedBtn.classList.remove('selected');
+                            selectedBtn.classList.add('correct');
+                        }
+                    } else {
+                        if (selectedBtn) {
+                            selectedBtn.classList.remove('selected');
+                            selectedBtn.classList.add('wrong');
+                        }
+                        if (correctBtn) correctBtn.classList.add('correct');
+                    }
+
+                    showExplanation(data.explanation);
+                    document.getElementById('btn-skip-next').style.display = 'none';
+
+                    setTimeout(() => {
+                        playAudioAndAutoReset('snd-victory');
+                        triggerWinOverlay(data.prize_won);
+                    }, 2000);
+                    return;
+                }
+
+                if (data.status === 'correct' || data.status === 'won') {
+                    if (selectedBtn) {
+                        selectedBtn.classList.remove('selected');
+                        selectedBtn.classList.add('correct');
+                    }
+                    
+                    showExplanation(data.explanation);
+
+                    if (data.status === 'won') {
+                        playAudioAndAutoReset('snd-victory');
+                        triggerWinOverlay("$1,000,000");
+                    } else {
+                        stopAllAudio();
+                        playSound('snd-correct');
+                        
+                        pendingCheckpointModal = data.checkpoint_reached;
+                        currentGuaranteedPrize = data.guaranteed_prize;
+
+                        nextQuestionTimeout = setTimeout(() => {
+                            forceNextQuestion();
+                        }, 6000);
+                    }
+                } else {
+                    if (selectedBtn) {
+                        selectedBtn.classList.remove('selected');
+                        selectedBtn.classList.add('wrong');
+                    }
+                    const correctBtn = document.getElementById(`opt-${data.correct_answer}`);
+                    if (correctBtn) correctBtn.classList.add('correct');
+
+                    stopAllAudio();
+                    playSound('snd-wrong');
+                    setTimeout(() => playAudioAndAutoReset('snd-gameover'), 1200);
+
+                    showExplanation(data.explanation);
+                    document.getElementById('btn-skip-next').style.display = 'none';
+                    
+                    setTimeout(() => {
+                        triggerGameOverOverlay(data.prize_won, data.insult);
+                    }, 3500);
+                }
+            } catch (err) {
+                console.error("Submit Answer Error:", err);
+            }
+        }
+
+        function forceNextQuestion() {
+            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+
+            if (pendingCheckpointModal) {
+                pendingCheckpointModal = false;
+                showCheckpointModal(currentGuaranteedPrize);
+            } else {
+                fetchNextQuestion();
+            }
+        }
+
+        function showCheckpointModal(amount) {
+            document.getElementById('checkpoint-guaranteed-text').innerText = amount;
+            document.getElementById('checkpoint-modal').style.display = 'flex';
+        }
+
+        async function processCheckpointChoice(userChoice) {
+            document.getElementById('checkpoint-modal').style.display = 'none';
+            try {
+                const res = await fetch('/api/checkpoint_choice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ choice: userChoice })
+                });
+                const data = await res.json();
+
+                if (data.status === 'cashed_out') {
+                    playAudioAndAutoReset('snd-victory');
+                    triggerWinOverlay(data.prize_won);
+                } else {
+                    fetchNextQuestion();
+                }
+            } catch (err) {
+                console.error("Checkpoint Choice Error:", err);
+            }
+        }
+
+        async function handleTimeout() {
+            stopTimer();
+            stopAllAudio();
+            playSound('snd-wrong');
+            setTimeout(() => playAudioAndAutoReset('snd-gameover'), 1200);
+
+            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+            document.getElementById('btn-final').disabled = true;
+            document.getElementById('btn-5050').disabled = true;
+            document.getElementById('btn-cashout').disabled = true;
+
+            try {
+                const res = await fetch('/api/answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ timeout: true })
+                });
+                const data = await res.json();
+
+                const correctBtn = document.getElementById(`opt-${data.correct_answer}`);
+                if (correctBtn) correctBtn.classList.add('correct');
+
+                showExplanation(data.explanation);
+                document.getElementById('btn-skip-next').style.display = 'none';
+                document.getElementById('question-text').innerText = "TIME EXPIRED!";
+
+                setTimeout(() => {
+                    triggerGameOverOverlay(data.prize_won, data.insult);
+                }, 3500);
+            } catch (err) {
+                console.error("Timeout Error:", err);
+            }
+        }
+
+        async function cashout() {
+            stopTimer();
+            stopAllAudio();
+
+            document.getElementById('btn-5050').disabled = true;
+            document.getElementById('btn-cashout').disabled = true;
+
+            try {
+                await fetch('/api/cashout', { method: 'POST' });
+                document.getElementById('walkaway-modal').style.display = 'flex';
+            } catch (err) {
+                console.error("Cashout Error:", err);
+            }
+        }
+
+        function closeWalkawayModal() {
+            document.getElementById('walkaway-modal').style.display = 'none';
+            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
+        }
+
+        async function useLifeline5050() {
+            stopAllAudio();
+            playSound('snd-lifeline');
+            try {
+                const res = await fetch('/api/lifeline/5050', { method: 'POST' });
+                const data = await res.json();
+
+                if (data.removed) {
+                    data.removed.forEach(key => {
+                        const btn = document.getElementById(`opt-${key}`);
+                        if (btn) {
+                            btn.disabled = true;
+                            if (selectedOptionKey === key) {
+                                selectedOptionKey = null;
+                                btn.classList.remove('selected');
+                                document.getElementById('btn-final').disabled = true;
+                            }
+                        }
+                    });
+                    document.getElementById('btn-5050').disabled = true;
+                }
+            } catch (err) {
+                console.error("Lifeline Error:", err);
+            }
+        }
+
+        function showExplanation(text) {
+            if (!text) return;
+            const expBox = document.getElementById('explanation-display');
+            document.getElementById('explanation-text').innerText = `Explanation: ${text}`;
+            document.getElementById('btn-skip-next').style.display = 'inline-block';
+            expBox.style.display = 'block';
+        }
+
+        function triggerWinOverlay(prizeAmount) {
+            const winModal = document.getElementById('win-modal');
+            document.getElementById('win-prize-text').innerText = `YOU WALK AWAY WITH ${prizeAmount}!`;
+            winModal.style.display = 'flex';
+            triggerGlitters();
+        }
+
+        function triggerGameOverOverlay(prizeWon, insult = '') {
+            const goModal = document.getElementById('gameover-modal');
+            document.getElementById('gameover-prize-text').innerText = `Guaranteed Prize: ${prizeWon}`;
+            document.getElementById('gameover-insult-text').innerText = insult ? `"${insult}"` : '';
+            goModal.style.display = 'flex';
+
+            const emojis = ['🤡', '💀', '💩', '☠️'];
+            for (let i = 0; i < 60; i++) {
+                const emoji = document.createElement('div');
+                emoji.className = 'falling-emoji';
+                emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                emoji.style.left = (Math.random() * 95) + 'vw';
+                emoji.style.animationDelay = (Math.random() * 2.5) + 's';
+                emoji.style.animationDuration = (2 + Math.random() * 2) + 's';
+                goModal.appendChild(emoji);
+            }
+        }
+
+        function triggerGlitters() {
+            const canvas = document.getElementById('glitterCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 5 + 2,
+                    color: ['#FFD700', '#FFF', '#FFA500'][Math.floor(Math.random() * 3)],
+                    velocityY: Math.random() * 3 + 1,
+                    velocityX: Math.random() * 2 - 1
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    p.y += p.velocityY;
+                    p.x += p.velocityX;
+                    if (p.y > canvas.height) p.y = 0;
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function restartGame() {
+            window.location.reload();
+        }
+
+        renderLadder();
+    </script>
+</body>
+</html>
