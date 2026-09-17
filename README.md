@@ -1,5 +1,10 @@
 # 🏆 Swinburne Millionaire
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live_App-brightgreen?style=for-the-badge&logo=azure)](https://swinburne-millionaire-app-abbma8f2gph2cge8.australiaeast-01.azurewebsites.net)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/kensu-kimsu/swinburne-millionaire-app)
+
+> 🚀 **Play the Live App:** [https://swinburne-millionaire-app-abbma8f2gph2cge8.australiaeast-01.azurewebsites.net](https://swinburne-millionaire-app-abbma8f2gph2cge8.australiaeast-01.azurewebsites.net)
+
 **Swinburne Millionaire** is an interactive, web-based cybersecurity and IT trivia game modeled after the classic *"Who Wants to Be a Millionaire?"* show format. Built with **Python (Flask)** and vanilla **JavaScript/CSS3**, it tests technical cybersecurity knowledge across 15 dynamic difficulty tiers.
 
 ---
