@@ -151,6 +151,44 @@ class RoguelikeGameTests(unittest.TestCase):
         )
         self.assertEqual(selected.status_code, 200)
 
+    def test_room_four_reward_transitions_into_boss_question(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["current_room"] = 4
+            state["enemy"] = create_enemy(4)
+            state["enemy"]["hp"] = 1
+            flask_session["game_state"] = state
+
+        defeated = self.client.post(
+            "/api/answer",
+            json={"answer": self.answer_for_current_question()},
+        ).get_json()
+        reward = next(
+            entry for entry in defeated["reward_options"]
+            if entry["type"] == "credits"
+        )
+        boss_state = self.client.post(
+            "/api/reward/choose",
+            json={"reward_id": reward["id"]},
+        ).get_json()
+
+        self.assertEqual(boss_state["room"], 5)
+        self.assertIsNone(boss_state["pending"])
+        self.assertEqual(boss_state["enemy"]["id"], "phishing_king")
+        self.assertEqual(self.client.get("/api/question").status_code, 200)
+
+    def test_boss_timeout_returns_to_a_valid_question(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["current_room"] = 5
+            state["enemy"] = create_enemy(5)
+            flask_session["game_state"] = state
+
+        timed_out = self.client.post("/api/answer", json={"timeout": True})
+        self.assertEqual(timed_out.status_code, 200)
+        self.assertEqual(timed_out.get_json()["status"], "player_hit")
+        self.assertEqual(self.client.get("/api/question").status_code, 200)
+
     def test_firewall_blocks_the_next_wrong_answer(self):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
