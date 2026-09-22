@@ -106,6 +106,10 @@
                     <span class="stat-label">FOCUS</span>
                     <strong id="focus">◇◇</strong>
                 </div>
+                <div class="mobile-stage">
+                    <span>STAGE</span>
+                    <strong><b id="mobile-current-room">1</b>/15</strong>
+                </div>
                 <button class="icon-button" onclick="openEncyclopedia()" title="Encyclopedia" aria-label="Encyclopedia"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-encyclopedia"></use></svg></button>
                 <div class="timer" id="timer">30</div>
             </header>
@@ -298,6 +302,7 @@
 
         function updatePath(room) {
             document.getElementById('current-room').textContent = room;
+            document.getElementById('mobile-current-room').textContent = room;
             document.querySelectorAll('.room-node').forEach(node => {
                 const number = Number(node.dataset.room);
                 node.classList.toggle('cleared', number < room);
@@ -445,6 +450,7 @@
 
         async function fetchQuestion() {
             closeDecision();
+            document.querySelector('.main-panel').classList.remove('turn-resolved');
             document.getElementById('feedback').classList.add('hidden');
             document.getElementById('attack-button').disabled = true;
             selectedAnswer = null;
@@ -549,6 +555,7 @@
         }
 
         function showAnswerResult(data, answer) {
+            document.querySelector('.main-panel').classList.add('turn-resolved');
             const correct = document.getElementById(`option-${data.correct_answer}`);
             const selected = answer ? document.getElementById(`option-${answer}`) : null;
             if (correct) correct.classList.add('correct');
@@ -840,6 +847,7 @@
             if (data.status === 'enemy_defeated' || data.status === 'won') {
                 acceptingAnswers = false;
                 questionLoaded = false;
+                document.querySelector('.main-panel').classList.add('turn-resolved');
                 stopTimer();
                 disableCombatButtons();
                 const feedback = document.getElementById('feedback');

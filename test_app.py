@@ -454,6 +454,9 @@ class RoguelikeGameTests(unittest.TestCase):
                 path = project_root / "static" / asset
             self.assertTrue(path.is_file(), asset)
             self.assertGreater(path.stat().st_size, 100, asset)
+        stylesheet = (project_root / "static/style.css").read_text()
+        self.assertIn("height: 100dvh", stylesheet)
+        self.assertIn('id="mobile-current-room"', page)
 
 
 if __name__ == "__main__":

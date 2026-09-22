@@ -45,6 +45,12 @@ turns have distinct particles, flashes, motion, and sound cues. Sound playback
 is centrally controlled, so warnings pause the dungeon pulse and starting a new
 run immediately stops victory or defeat audio from the previous run.
 
+On phones, combat uses a dedicated single-screen layout sized with the dynamic
+mobile viewport. The stage map becomes a compact HUD counter, answers remain in
+a two-by-two grid, items use a horizontal quick-access bar, and resolved turns
+collapse unused controls. Gameplay therefore stays visible without scrolling;
+long-form encyclopedia and decision overlays scroll independently.
+
 Every defeated enemy activates Combat Recovery and restores 1 HP. Additional
 healing remains available from Health Patches, Repair Stations, Backup, and the
 Incident Response Plan relic.
