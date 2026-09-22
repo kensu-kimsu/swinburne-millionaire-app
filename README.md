@@ -39,6 +39,12 @@ revealing the exact move. A separate lethal warning appears when the incoming
 attack could reduce the player to 0 HP. This gives Defend a clear tactical use
 while keeping ordinary enemy turns unpredictable.
 
+Combat now has a complete audiovisual feedback layer: animated enemy portraits
+idle, lunge, recoil, and dissolve; Attack, Defend, Exploit, healing, and enemy
+turns have distinct particles, flashes, motion, and sound cues. Sound playback
+is centrally controlled, so warnings pause the dungeon pulse and starting a new
+run immediately stops victory or defeat audio from the previous run.
+
 Every defeated enemy activates Combat Recovery and restores 1 HP. Additional
 healing remains available from Health Patches, Repair Stations, Backup, and the
 Incident Response Plan relic.
@@ -202,12 +208,13 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The 28-test automated suite checks Focus requirements, hidden intentions,
+The 29-test automated suite checks Focus requirements, hidden intentions,
 danger and lethal warnings, post-fight healing, support-room stage rules,
 question-length limits, all three combat actions, simultaneous damage, Zero
 Trust, boss phases, combos, question difficulty,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
-timers, encyclopedia detail data, progress reset, and browser session size.
+timers, encyclopedia detail data, progress reset, browser session size, and the
+custom audiovisual asset bundle.
 
 ## Project structure
 
@@ -218,9 +225,31 @@ questions_medium.json     100 Medium questions
 questions_hard.json       100 Hard questions
 templates/index.html      Game interface and browser logic
 static/style.css          Responsive roguelite design
-static/*.mp3              Game audio
+static/assets/audio/      Original generated adventure sound set
+static/assets/backgrounds/ Illustrated cyber-dungeon menu backdrop
+static/assets/enemies/    Animated enemy portrait artwork
+static/assets/ui/         Custom enemy, item, relic, room, and menu symbols
+scripts/generate_soundscape.py  Rebuild the original WAV sound set
 test_app.py               Automated game-system tests
 ```
+
+## Art and audio
+
+The interface uses a custom cyber-fantasy visual language rather than emoji
+placeholders. The generated Spam Bot portrait is paired with an original SVG
+atlas containing the remaining enemies, every consumable and relic, room
+symbols, combat actions, menu marks, and encyclopedia artwork. CSS motion keeps
+these lightweight assets animated without requiring video downloads.
+
+All music cues and sound effects are original, dependency-free synthesized
+audio generated specifically for the game. To rebuild them:
+
+```powershell
+python scripts/generate_soundscape.py
+```
+
+This recreates the dungeon pulse, warnings, attacks, defend and exploit cues,
+healing, loot, UI confirmation, victory, defeat, and answer feedback sounds.
 
 ## Technology
 

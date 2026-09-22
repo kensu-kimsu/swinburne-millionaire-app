@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gCyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#73e8ff"/><stop offset="1" stop-color="#087ea4"/></linearGradient>
+    <linearGradient id="gRed" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff746d"/><stop offset="1" stop-color="#9d151d"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe19a"/><stop offset="1" stop-color="#a86d16"/></linearGradient>
+    <linearGradient id="gVoid" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#253249"/><stop offset="1" stop-color="#080b12"/></linearGradient>
+    <radialGradient id="gCore"><stop stop-color="#d9fbff"/><stop offset=".3" stop-color="#24c9f2"/><stop offset="1" stop-color="#03475f"/></radialGradient>
+  </defs>
+
+  <!-- Enemies -->
+  <symbol id="enemy-phishing_email" viewBox="0 0 64 64">
+    <path d="M7 20 32 8l25 12-25 19Z" fill="url(#gVoid)" stroke="#55dfff" stroke-width="2"/>
+    <path d="m7 20 25 19 25-19v26H7Z" fill="#111827" stroke="#309fbd" stroke-width="2"/>
+    <path d="M45 39c10 1 12 8 7 12-4 4-10 0-7-4 1-2 4-2 5 0" fill="none" stroke="url(#gRed)" stroke-width="4" stroke-linecap="round"/>
+    <path d="m14 15-7-7m43 7 7-7" stroke="#d9fbff" stroke-width="2"/>
+    <circle cx="32" cy="28" r="4" fill="url(#gCore)"/>
+  </symbol>
+  <symbol id="enemy-adware_bug" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="36" rx="18" ry="22" fill="url(#gVoid)" stroke="#ff534d" stroke-width="2"/>
+    <path d="M32 15v42M16 34h32" stroke="#db2f38" stroke-width="2"/>
+    <path d="M17 27 6 21m10 18L4 42m43-15 11-6M48 39l12 3M23 16l-5-9m23 9 5-9" stroke="#39d7f2" stroke-width="3" stroke-linecap="round"/>
+    <rect x="23" y="27" width="18" height="13" rx="2" fill="#0b111d" stroke="#ffd36a"/>
+    <path d="M27 31h10m-10 4h7" stroke="#ff5e57" stroke-width="2"/>
+  </symbol>
+  <symbol id="enemy-botnet_node" viewBox="0 0 64 64">
+    <path d="M19 13h26l8 12-4 27H15l-4-27Z" fill="url(#gVoid)" stroke="#4edcf4" stroke-width="2"/>
+    <path d="M19 13 32 4l13 9-4 8H23Z" fill="#18243a" stroke="#d1a64e" stroke-width="2"/>
+    <circle cx="25" cy="31" r="4" fill="#ff4d4d"/><circle cx="39" cy="31" r="4" fill="#ff4d4d"/>
+    <path d="M23 43h18M8 18l8 6m40-6-8 6M12 55l8-6m32 6-8-6" stroke="#55e6ff" stroke-width="3"/>
+  </symbol>
+  <symbol id="enemy-credential_thief" viewBox="0 0 64 64">
+    <path d="M15 52c2-21 8-35 17-43 9 8 15 22 17 43Z" fill="url(#gVoid)" stroke="#9b63ff" stroke-width="2"/>
+    <path d="M22 25c6-8 14-8 20 0l-3 16H25Z" fill="#080b12" stroke="#39dff4"/>
+    <path d="M27 31h10" stroke="#ff4c58" stroke-width="3"/>
+    <path d="M14 44 5 53m45-9 9 9" stroke="#d5b15c" stroke-width="4"/>
+    <circle cx="7" cy="55" r="4" fill="none" stroke="#ffe08a" stroke-width="2"/>
+  </symbol>
+  <symbol id="enemy-malware_loader" viewBox="0 0 64 64">
+    <path d="M12 17h40v34H12Z" fill="url(#gVoid)" stroke="#5de5ff" stroke-width="2"/>
+    <path d="M18 23h28v19H18Z" fill="#071018" stroke="#a552ff"/>
+    <path d="m27 28 11 5-11 5Z" fill="url(#gRed)"/>
+    <path d="M21 51v7m22-7v7M6 26h6m40 0h6M6 41h6m40 0h6" stroke="#d6a84d" stroke-width="3"/>
+    <circle cx="18" cy="12" r="4" fill="url(#gCore)"/><circle cx="32" cy="12" r="4" fill="#ff4a52"/><circle cx="46" cy="12" r="4" fill="#ffd164"/>
+  </symbol>
+  <symbol id="enemy-ransomware" viewBox="0 0 64 64">
+    <path d="M16 27V17c0-12 32-12 32 0v10" fill="none" stroke="#d9b85d" stroke-width="5"/>
+    <path d="M9 25h46v32H9Z" fill="url(#gVoid)" stroke="#ff4f52" stroke-width="2"/>
+    <path d="M24 37c0-10 16-10 16 0 0 5-3 6-3 10H27c0-4-3-5-3-10Z" fill="#0a0e16" stroke="#4de5ff" stroke-width="2"/>
+    <path d="M32 45v7" stroke="#ffcf62" stroke-width="3"/>
+  </symbol>
+  <symbol id="enemy-insider_threat" viewBox="0 0 64 64">
+    <path d="M13 56c2-19 8-29 19-29s17 10 19 29Z" fill="url(#gVoid)" stroke="#ff4e55" stroke-width="2"/>
+    <circle cx="32" cy="18" r="11" fill="#162035" stroke="#d9ae57" stroke-width="2"/>
+    <path d="M23 17h18M27 22h10" stroke="#53e4ff" stroke-width="3"/>
+    <path d="m43 37 12-9 4 5-12 11" fill="url(#gRed)"/>
+    <path d="M19 42h19" stroke="#8056df" stroke-width="3" stroke-dasharray="3 2"/>
+  </symbol>
+  <symbol id="enemy-zero_day_exploit" viewBox="0 0 64 64">
+    <path d="M8 49c6-22 17-36 28-38 11-2 19 8 18 18-1 14-13 24-29 27Z" fill="url(#gVoid)" stroke="#a15bff" stroke-width="2"/>
+    <path d="m19 29-12-9 17 2m23 4 11-8-5 16" fill="#18233a" stroke="#4de5ff" stroke-width="2"/>
+    <path d="M37 20c6 3 8 8 5 13-4 6-11 5-15 1" fill="none" stroke="#ff5158" stroke-width="3"/>
+    <circle cx="39" cy="24" r="2" fill="#ffe06c"/>
+    <path d="M14 48 5 58m30-6 4 8" stroke="#62e7ff" stroke-width="3"/>
+  </symbol>
+  <symbol id="enemy-phishing_king" viewBox="0 0 64 64">
+    <path d="M16 56c1-25 6-38 16-42 10 4 15 17 16 42Z" fill="url(#gVoid)" stroke="#efbd58" stroke-width="2"/>
+    <path d="m20 15 3-10 9 7 9-7 3 10" fill="url(#gGold)" stroke="#ffe5a1"/>
+    <circle cx="32" cy="27" r="8" fill="#071018" stroke="#43ddf4" stroke-width="2"/>
+    <path d="M39 31c15 2 19 13 12 20-4 4-10 1-8-3 1-3 5-3 6 0" fill="none" stroke="#ff4d50" stroke-width="4"/>
+    <path d="M24 41h16" stroke="#c852ff" stroke-width="3"/>
+  </symbol>
+  <symbol id="enemy-ransomware_overlord" viewBox="0 0 64 64">
+    <path d="M10 19 32 5l22 14-4 38H14Z" fill="url(#gVoid)" stroke="#ff4b4f" stroke-width="3"/>
+    <path d="M19 27h26v23H19Z" fill="#0a0e16" stroke="#d8ac4e" stroke-width="2"/>
+    <path d="M24 27v-6c0-10 16-10 16 0v6" fill="none" stroke="#56e3f5" stroke-width="4"/>
+    <circle cx="32" cy="37" r="5" fill="url(#gRed)"/><path d="M32 41v6" stroke="#ffda70" stroke-width="3"/>
+    <path d="M10 25 3 18m51 7 7-7" stroke="#9655e9" stroke-width="4"/>
+  </symbol>
+  <symbol id="enemy-root_admin" viewBox="0 0 64 64">
+    <path d="M12 57c1-27 8-42 20-46 12 4 19 19 20 46Z" fill="#080b11" stroke="#e3b55a" stroke-width="2"/>
+    <path d="m18 15 4-12 10 9 10-9 4 12-5 7H23Z" fill="url(#gGold)" stroke="#fff0b5" stroke-width="2"/>
+    <path d="M21 27h22v19H21Z" fill="url(#gVoid)" stroke="#48e6ff" stroke-width="2"/>
+    <path d="M27 35h10m-5-5v10" stroke="#ff4a50" stroke-width="3"/>
+    <path d="M16 45 5 55m43-10 11 10" stroke="#be5cff" stroke-width="5"/>
+    <circle cx="32" cy="36" r="16" fill="none" stroke="#39d8f1" stroke-dasharray="2 4"/>
+  </symbol>
+
+  <!-- Consumables -->
+  <symbol id="item-packet_sniffer" viewBox="0 0 64 64"><circle cx="27" cy="27" r="17" fill="url(#gVoid)" stroke="#57e7ff" stroke-width="4"/><path d="m39 39 17 17" stroke="#d7ae55" stroke-width="7" stroke-linecap="round"/><path d="M17 29c6-9 15-9 21 0-6 9-15 9-21 0Z" fill="none" stroke="#ff5558" stroke-width="2"/><circle cx="27" cy="29" r="4" fill="url(#gCore)"/></symbol>
+  <symbol id="item-firewall" viewBox="0 0 64 64"><path d="M8 11h48v42H8Z" fill="url(#gVoid)" stroke="#ff5652" stroke-width="2"/><path d="M8 25h48M8 39h48M20 11v14m24 0v14M20 39v14m24-14v14" stroke="#d9a84b" stroke-width="3"/><path d="M25 48c-5-8 6-10 1-20 13 7 16 13 10 21" fill="url(#gRed)" stroke="#ffbd60"/></symbol>
+  <symbol id="item-health_patch" viewBox="0 0 64 64"><path d="M13 13h38v38H13Z" rx="8" fill="url(#gVoid)" stroke="#55e3d3" stroke-width="3"/><path d="M27 20h10v7h7v10h-7v7H27v-7h-7V27h7Z" fill="#ff565b"/><path d="m13 13 38 38M51 13 13 51" stroke="#62e7ff" opacity=".35"/></symbol>
+  <symbol id="item-overclock" viewBox="0 0 64 64"><circle cx="32" cy="35" r="22" fill="url(#gVoid)" stroke="#b45cff" stroke-width="3"/><path d="M32 35 45 23M24 7h16M32 7v6" stroke="#5ee8ff" stroke-width="4" stroke-linecap="round"/><path d="M11 35h6m30 0h6M32 14v6" stroke="#efbd5e" stroke-width="2"/><circle cx="32" cy="35" r="4" fill="#ff4d55"/></symbol>
+  <symbol id="item-sandbox" viewBox="0 0 64 64"><path d="m8 22 24-12 24 12-24 12Z" fill="#26354d" stroke="#58e6ff" stroke-width="2"/><path d="M8 22v26l24 10 24-10V22L32 34Z" fill="url(#gVoid)" stroke="#cb9444" stroke-width="2"/><path d="m23 43 9-5 9 5-9 5Z" fill="#ff5358"/></symbol>
+  <symbol id="item-zero_day" viewBox="0 0 64 64"><path d="M20 49 43 8l10 6-23 41Z" fill="url(#gCyan)" stroke="#d7faff" stroke-width="2"/><path d="m17 46 14 8-6 7-13-8Z" fill="url(#gRed)"/><path d="M41 20 27 44" stroke="#fff" stroke-width="2"/><circle cx="48" cy="11" r="7" fill="#b35aff" opacity=".65"/></symbol>
+  <symbol id="item-backup" viewBox="0 0 64 64"><path d="M10 7h39l5 5v45H10Z" fill="url(#gVoid)" stroke="#dbae51" stroke-width="3"/><path d="M18 10h25v17H18Z" fill="#152944" stroke="#53e7ff"/><path d="M18 37h28v16H18Z" fill="#080b12" stroke="#ff5558"/><circle cx="38" cy="45" r="5" fill="url(#gCore)"/></symbol>
+
+  <!-- Relics -->
+  <symbol id="relic-exploit_chain" viewBox="0 0 64 64"><path d="M12 42c-8-10 4-22 14-14l5 5-7 7-5-5c-4-3-7 2-4 5l5 5-7 7Zm40-20c8 10-4 22-14 14l-5-5 7-7 5 5c4 3 7-2 4-5l-5-5 7-7Z" fill="url(#gRed)" stroke="#ffca62" stroke-width="2"/><path d="m24 40 16-16" stroke="#5ee8ff" stroke-width="6"/></symbol>
+  <symbol id="relic-tux_kernel" viewBox="0 0 64 64"><path d="M18 52c-2-21 3-40 14-40s16 19 14 40Z" fill="#0b0e14" stroke="#55e7ff" stroke-width="2"/><ellipse cx="27" cy="27" rx="4" ry="7" fill="#fff"/><ellipse cx="37" cy="27" rx="4" ry="7" fill="#fff"/><circle cx="28" cy="28" r="2"/><circle cx="36" cy="28" r="2"/><path d="m25 36 7-5 7 5-7 5Z" fill="#e6b44d"/><path d="M18 49 7 57m39-8 11 8" stroke="#ff5757" stroke-width="5"/></symbol>
+  <symbol id="relic-wireshark" viewBox="0 0 64 64"><path d="M6 43c10-20 25-29 49-25-8 4-12 10-13 17 7-1 12 1 16 6-19 15-37 14-52 2Z" fill="url(#gCyan)" stroke="#d8faff" stroke-width="2"/><path d="M26 26 17 9c11 3 18 8 21 14" fill="#183850" stroke="#b15cff" stroke-width="2"/><circle cx="45" cy="26" r="2" fill="#ff5358"/></symbol>
+  <symbol id="relic-web_proxy" viewBox="0 0 64 64"><circle cx="32" cy="32" r="25" fill="url(#gVoid)" stroke="#54e7ff" stroke-width="3"/><path d="M7 32h50M32 7c10 12 10 38 0 50M32 7c-10 12-10 38 0 50" fill="none" stroke="#a85cff" stroke-width="2"/><path d="m18 20 8 5-8 5m28 4-8 5 8 5" fill="none" stroke="#ffce61" stroke-width="3"/></symbol>
+  <symbol id="relic-zero_trust" viewBox="0 0 64 64"><path d="M32 5 54 14v17c0 15-9 24-22 29C19 55 10 46 10 31V14Z" fill="url(#gVoid)" stroke="#55e5ff" stroke-width="3"/><path d="M22 32 29 39 43 23" fill="none" stroke="#ffcc64" stroke-width="5"/><circle cx="32" cy="32" r="20" fill="none" stroke="#ff5158" stroke-dasharray="3 4"/></symbol>
+  <symbol id="relic-root_access" viewBox="0 0 64 64"><circle cx="23" cy="23" r="14" fill="none" stroke="#e8bd61" stroke-width="6"/><path d="m33 33 22 22m-9-9 7-7m-14 0 7-7" stroke="#e8bd61" stroke-width="7" stroke-linecap="square"/><path d="M17 23h12" stroke="#5de9ff" stroke-width="3"/></symbol>
+  <symbol id="relic-incident_response" viewBox="0 0 64 64"><path d="M8 17h48v34H8Z" fill="url(#gVoid)" stroke="#5ae7ff" stroke-width="3"/><path d="M22 17V9h20v8" fill="none" stroke="#dab15a" stroke-width="4"/><path d="M27 25h10v7h7v10h-7v7H27v-7h-7V32h7Z" fill="#ff5259"/></symbol>
+  <symbol id="relic-credit_miner" viewBox="0 0 64 64"><path d="m32 5 23 13v28L32 59 9 46V18Z" fill="url(#gVoid)" stroke="#dbac4c" stroke-width="3"/><circle cx="32" cy="32" r="15" fill="url(#gGold)"/><path d="M37 23c-12-4-15 3-7 7 13 2 11 11-3 9m5-20v26" fill="none" stroke="#59370d" stroke-width="3"/><path d="M9 18 32 32l23-14M32 32v27" fill="none" stroke="#5be8ff" stroke-width="2" opacity=".7"/></symbol>
+
+  <!-- UI -->
+  <symbol id="ui-encyclopedia" viewBox="0 0 64 64"><path d="M7 10c12-4 20-1 25 6v41c-6-6-14-8-25-4Zm50 0c-12-4-20-1-25 6v41c6-6 14-8 25-4Z" fill="url(#gVoid)" stroke="#54e6ff" stroke-width="2"/><path d="M14 20h11m-11 8h11m14-8h11m-11 8h11" stroke="#deb457" stroke-width="2"/></symbol>
+  <symbol id="ui-combat" viewBox="0 0 64 64"><path d="m12 8 38 38-7 7L5 15Zm40 0L32 28l7 7 20-20Z" fill="url(#gCyan)" stroke="#e5fbff" stroke-width="2"/><path d="m7 49 8 8m34-8-8 8" stroke="#d9ac50" stroke-width="7"/></symbol>
+  <symbol id="ui-elite" viewBox="0 0 64 64"><path d="M11 12h42v30L32 58 11 42Z" fill="url(#gVoid)" stroke="#ff4e55" stroke-width="3"/><path d="m19 15 5-10 8 8 8-8 5 10" fill="url(#gGold)"/><path d="M21 29h22m-17 9h12" stroke="#b65bff" stroke-width="4"/></symbol>
+  <symbol id="ui-loot" viewBox="0 0 64 64"><path d="M7 24h50v33H7Z" fill="url(#gVoid)" stroke="#dbae50" stroke-width="3"/><path d="M5 16h54v12H5Z" fill="url(#gRed)" stroke="#ffd66d" stroke-width="2"/><path d="M28 16h8v41h-8Z" fill="#56e7ff"/><path d="M32 16C18 12 18 3 25 5c5 1 7 6 7 11Zm0 0c14-4 14-13 7-11-5 1-7 6-7 11Z" fill="url(#gGold)"/></symbol>
+  <symbol id="ui-heal" viewBox="0 0 64 64"><path d="M32 56C8 42 7 26 15 18c6-6 14-3 17 3 3-6 11-9 17-3 8 8 7 24-17 38Z" fill="url(#gRed)" stroke="#ffc0bd" stroke-width="2"/><path d="M27 25h10v7h7v9h-7v7H27v-7h-7v-9h7Z" fill="#eaffff"/></symbol>
+  <symbol id="ui-shop" viewBox="0 0 64 64"><path d="M7 17h8l6 27h28l7-20H19" fill="none" stroke="#55e8ff" stroke-width="4"/><circle cx="25" cy="53" r="5" fill="url(#gGold)"/><circle cx="46" cy="53" r="5" fill="url(#gGold)"/><path d="M28 15c0-12 17-12 17 0" fill="none" stroke="#ff5058" stroke-width="4"/></symbol>
+  <symbol id="ui-event" viewBox="0 0 64 64"><path d="M32 5 58 32 32 59 6 32Z" fill="url(#gVoid)" stroke="#a85cff" stroke-width="3"/><path d="M24 23c1-12 18-12 18-1 0 8-10 8-10 15" fill="none" stroke="#59e7ff" stroke-width="5"/><circle cx="32" cy="47" r="3" fill="#ffcf61"/></symbol>
+  <symbol id="ui-boss" viewBox="0 0 64 64"><path d="m7 20 8-15 17 14L49 5l8 15-6 36H13Z" fill="url(#gGold)" stroke="#fff0b0" stroke-width="2"/><path d="M18 32h28M22 42h20" stroke="#a11d28" stroke-width="5"/><circle cx="32" cy="24" r="5" fill="url(#gCore)"/></symbol>
+</svg>

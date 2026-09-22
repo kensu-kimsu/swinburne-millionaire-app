@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from app import app, create_enemy, load_questions
@@ -432,6 +433,27 @@ class RoguelikeGameTests(unittest.TestCase):
         encyclopedia = self.client.get("/api/encyclopedia").get_json()
         self.assertEqual(encyclopedia["progress"]["runs_started"], 0)
         self.assertEqual(encyclopedia["progress"]["best_room"], 0)
+
+    def test_custom_art_and_sound_assets_are_available(self):
+        project_root = Path(__file__).parent
+        page = self.client.get("/").get_data(as_text=True)
+        expected_assets = [
+            "assets/backgrounds/cyber-dungeon.webp",
+            "assets/enemies/spam_bot.webp",
+            "assets/ui/game-icons.svg",
+            "assets/audio/dungeon_pulse.wav",
+            "assets/audio/player_attack.wav",
+            "assets/audio/enemy_attack.wav",
+            "assets/audio/victory.wav",
+            "assets/audio/defeat.wav",
+        ]
+        for asset in expected_assets:
+            self.assertIn(asset, page if asset != "assets/backgrounds/cyber-dungeon.webp" else (project_root / "static/style.css").read_text())
+            path = project_root / "static" / asset.removeprefix("assets/")
+            if asset.startswith("assets/"):
+                path = project_root / "static" / asset
+            self.assertTrue(path.is_file(), asset)
+            self.assertGreater(path.stat().st_size, 100, asset)
 
 
 if __name__ == "__main__":

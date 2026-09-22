@@ -7,14 +7,25 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <audio id="snd-ticking" src="{{ url_for('static', filename='ticking.mp3') }}" loop></audio>
-    <audio id="snd-final" src="{{ url_for('static', filename='final_answer.mp3') }}"></audio>
-    <audio id="snd-correct" src="{{ url_for('static', filename='correct.mp3') }}"></audio>
-    <audio id="snd-wrong" src="{{ url_for('static', filename='wrong.mp3') }}"></audio>
-    <audio id="snd-victory" src="{{ url_for('static', filename='victory.mp3') }}"></audio>
-    <audio id="snd-lifeline" src="{{ url_for('static', filename='lifeline.mp3') }}"></audio>
+    <audio id="snd-ticking" src="{{ url_for('static', filename='assets/audio/dungeon_pulse.wav') }}" loop></audio>
+    <audio id="snd-final" class="sfx" src="{{ url_for('static', filename='assets/audio/lock_in.wav') }}"></audio>
+    <audio id="snd-correct" class="sfx" src="{{ url_for('static', filename='assets/audio/correct.wav') }}"></audio>
+    <audio id="snd-wrong" class="sfx" src="{{ url_for('static', filename='assets/audio/wrong.wav') }}"></audio>
+    <audio id="snd-victory" class="sfx" src="{{ url_for('static', filename='assets/audio/victory.wav') }}"></audio>
+    <audio id="snd-defeat" class="sfx" src="{{ url_for('static', filename='assets/audio/defeat.wav') }}"></audio>
+    <audio id="snd-lifeline" class="sfx" src="{{ url_for('static', filename='assets/audio/item.wav') }}"></audio>
+    <audio id="snd-attack" class="sfx" src="{{ url_for('static', filename='assets/audio/player_attack.wav') }}"></audio>
+    <audio id="snd-enemy" class="sfx" src="{{ url_for('static', filename='assets/audio/enemy_attack.wav') }}"></audio>
+    <audio id="snd-defend" class="sfx" src="{{ url_for('static', filename='assets/audio/defend.wav') }}"></audio>
+    <audio id="snd-exploit" class="sfx" src="{{ url_for('static', filename='assets/audio/exploit.wav') }}"></audio>
+    <audio id="snd-warning" class="sfx" src="{{ url_for('static', filename='assets/audio/warning.wav') }}"></audio>
+    <audio id="snd-fatal" class="sfx" src="{{ url_for('static', filename='assets/audio/fatal.wav') }}"></audio>
+    <audio id="snd-heal" class="sfx" src="{{ url_for('static', filename='assets/audio/heal.wav') }}"></audio>
+    <audio id="snd-loot" class="sfx" src="{{ url_for('static', filename='assets/audio/loot.wav') }}"></audio>
+    <audio id="snd-confirm" class="sfx" src="{{ url_for('static', filename='assets/audio/ui_confirm.wav') }}"></audio>
 
     <section id="title-screen" class="screen-overlay">
+        <div class="menu-sigil" aria-hidden="true"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#enemy-root_admin"></use></svg></div>
         <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELITE</p>
         <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
         <p class="intro-copy">
@@ -22,8 +33,10 @@
             The Root Admin across a different 15-room run every time.
         </p>
         <div class="rules">
-            <span>❤️ Survive</span><span>⚔️ Build combos</span>
-            <span>🎁 Choose loot</span><span>🗺️ Shape your route</span>
+            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-heal"></use></svg>Survive</span>
+            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-combat"></use></svg>Build combos</span>
+            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-loot"></use></svg>Choose loot</span>
+            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-event"></use></svg>Shape your route</span>
         </div>
         <div class="title-actions">
             <button class="primary-button" onclick="startGame()">START RUN</button>
@@ -93,7 +106,7 @@
                     <span class="stat-label">FOCUS</span>
                     <strong id="focus">◇◇</strong>
                 </div>
-                <button class="icon-button" onclick="openEncyclopedia()" title="Encyclopedia">📖</button>
+                <button class="icon-button" onclick="openEncyclopedia()" title="Encyclopedia" aria-label="Encyclopedia"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-encyclopedia"></use></svg></button>
                 <div class="timer" id="timer">30</div>
             </header>
             <div class="timer-track"><div id="timer-bar"></div></div>
@@ -124,9 +137,9 @@
                     <span id="tier" class="tier easy">EASY</span>
                 </div>
                 <div class="combat-actions" id="combat-actions">
-                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong>⚔️ ATTACK</strong><span>2 damage and +1 Focus; surviving enemies hit back</span></button>
-                    <button data-action="defend" onclick="selectCombatAction('defend')"><strong>🛡️ DEFEND</strong><span>Safely interrupt the enemy; does not build Focus</span></button>
-                    <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong>💻 EXPLOIT <em>2◇</em></strong><span>4 damage + interrupt; wrong answers are punished</span></button>
+                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-combat"></use></svg> ATTACK</strong><span>2 damage and +1 Focus; surviving enemies hit back</span></button>
+                    <button data-action="defend" onclick="selectCombatAction('defend')"><strong><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#relic-zero_trust"></use></svg> DEFEND</strong><span>Safely interrupt the enemy; does not build Focus</span></button>
+                    <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#item-zero_day"></use></svg> EXPLOIT <em>2◇</em></strong><span>4 damage + interrupt; wrong answers are punished</span></button>
                 </div>
                 <h3 id="question">Start a run to enter the dungeon.</h3>
                 <div class="options" id="options">
@@ -186,10 +199,15 @@
         let acceptingAnswers = false;
         let questionLoaded = false;
         let currentState = null;
+        let soundTimeouts = [];
+        const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
+        const SPAM_BOT_ART = "{{ url_for('static', filename='assets/enemies/spam_bot.webp') }}";
 
         const audio = id => document.getElementById(id);
 
         function stopAllSounds() {
+            soundTimeouts.forEach(clearTimeout);
+            soundTimeouts = [];
             document.querySelectorAll('audio').forEach(sound => {
                 sound.pause();
                 sound.currentTime = 0;
@@ -205,6 +223,27 @@
             sound.play().catch(() => {});
         }
 
+        function playEffect(id) {
+            const sound = audio(id);
+            if (!sound) return;
+            sound.pause();
+            sound.currentTime = 0;
+            sound.onended = null;
+            sound.play().catch(() => {});
+        }
+
+        function scheduleEffect(id, delay = 0, exclusive = false) {
+            const timeout = setTimeout(() => exclusive ? playSound(id) : playEffect(id), delay);
+            soundTimeouts.push(timeout);
+        }
+
+        function gameAsset(kind, id, className = '') {
+            if (kind === 'enemy' && id === 'spam_bot') {
+                return `<img class="game-asset ${className}" src="${SPAM_BOT_ART}" alt="">`;
+            }
+            return `<svg class="game-asset ${className}" aria-hidden="true"><use href="${ICON_SPRITE}#${kind}-${id}"></use></svg>`;
+        }
+
         function stopTimer() {
             clearInterval(timerInterval);
             const ticking = audio('snd-ticking');
@@ -215,13 +254,13 @@
             document.getElementById('timer').classList.remove('urgent');
         }
 
-        function startTimer(seconds) {
+        function startTimer(seconds, threatLevel = 'hidden') {
             clearInterval(timerInterval);
             timeLeft = seconds;
             totalQuestionTime = seconds;
             acceptingAnswers = true;
             updateTimerDisplay();
-            resumeTimer();
+            if (!playThreatWarning(threatLevel)) resumeTimer();
         }
 
         function resumeTimer() {
@@ -248,11 +287,11 @@
             const path = document.getElementById('room-path');
             path.innerHTML = '';
             for (let room = 1; room <= 15; room++) {
-                const icon = room === 5 ? '🎣' : room === 10 ? '🦠' : room === 15 ? '👑' : '◆';
+                const bossId = room === 5 ? 'phishing_king' : room === 10 ? 'ransomware_overlord' : room === 15 ? 'root_admin' : null;
                 const node = document.createElement('div');
                 node.className = 'room-node';
                 node.dataset.room = room;
-                node.innerHTML = `<span>${room}</span><b>${icon}</b>`;
+                node.innerHTML = `<span>${room}</span><b>${bossId ? gameAsset('enemy', bossId, 'path-icon') : '<i class="path-rune"></i>'}</b>`;
                 path.appendChild(node);
             }
         }
@@ -284,7 +323,7 @@
         function renderEnemy(enemy) {
             const card = document.getElementById('enemy-card');
             if (!enemy) {
-                document.getElementById('enemy-icon').textContent = '🗺️';
+                document.getElementById('enemy-icon').innerHTML = gameAsset('ui', 'event', 'enemy-portrait');
                 document.getElementById('enemy-kind').textContent = 'EXPLORING';
                 document.getElementById('enemy-name').textContent = 'Choose your next encounter';
                 document.getElementById('enemy-hp-text').textContent = '';
@@ -295,15 +334,15 @@
                 card.classList.remove('boss');
                 return;
             }
-            document.getElementById('enemy-icon').textContent = enemy.icon;
+            document.getElementById('enemy-icon').innerHTML = gameAsset('enemy', enemy.id, 'enemy-portrait');
             document.getElementById('enemy-kind').textContent = enemy.kind;
             document.getElementById('enemy-name').textContent = enemy.name;
             document.getElementById('enemy-hp-text').textContent = `${enemy.hp} / ${enemy.max_hp} HP`;
             document.getElementById('enemy-hp-bar').style.width = `${(enemy.hp / enemy.max_hp) * 100}%`;
             document.getElementById('enemy-abilities').innerHTML = enemy.ability_details.map(ability =>
-                `<span title="${escapeHtml(ability.description)}">${ability.icon} ${escapeHtml(ability.name)}</span>`
+                `<span title="${escapeHtml(ability.description)}"><i class="ability-rune">${escapeHtml(ability.name.charAt(0))}</i>${escapeHtml(ability.name)}</span>`
             ).join('');
-            document.getElementById('enemy-intent').textContent = '❓ Hidden';
+            document.getElementById('enemy-intent').textContent = 'ACTION HIDDEN';
             document.getElementById('enemy-intent-description').textContent = 'Commit your action to reveal the enemy turn.';
             card.classList.toggle('boss', enemy.kind !== 'ENEMY');
         }
@@ -312,33 +351,17 @@
             const panel = document.getElementById('intent-panel');
             panel.classList.remove('danger', 'fatal');
             if (!warning) return;
-            const icon = warning.level === 'fatal' ? '☠️' : warning.level === 'danger' ? '⚠️' : '❓';
-            document.getElementById('enemy-intent').textContent = `${icon} ${warning.label}`;
+            document.getElementById('enemy-intent').textContent = warning.label;
             document.getElementById('enemy-intent-description').textContent = warning.description;
             if (warning.level === 'danger' || warning.level === 'fatal') panel.classList.add(warning.level);
         }
 
         function playThreatWarning(level) {
-            if (!['danger', 'fatal'].includes(level)) return;
-            try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                const context = new AudioContextClass();
-                const tones = level === 'fatal' ? [180, 140, 100] : [240, 180];
-                tones.forEach((frequency, index) => {
-                    const oscillator = context.createOscillator();
-                    const gain = context.createGain();
-                    const start = context.currentTime + index * .16;
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(frequency, start);
-                    gain.gain.setValueAtTime(.0001, start);
-                    gain.gain.exponentialRampToValueAtTime(.09, start + .02);
-                    gain.gain.exponentialRampToValueAtTime(.0001, start + .13);
-                    oscillator.connect(gain).connect(context.destination);
-                    oscillator.start(start);
-                    oscillator.stop(start + .14);
-                });
-                setTimeout(() => context.close(), 900);
-            } catch (_) {}
+            if (!['danger', 'fatal'].includes(level)) return false;
+            const sound = audio(level === 'fatal' ? 'snd-fatal' : 'snd-warning');
+            playSound(sound.id);
+            sound.onended = () => acceptingAnswers && resumeTimer();
+            return true;
         }
 
         function renderInventory(items, limit) {
@@ -353,7 +376,7 @@
                 const combatOnly = ['packet_sniffer', 'overclock', 'zero_day'].includes(item.id);
                 const disabled = combatOnly && !questionLoaded ? 'disabled' : '';
                 holder.innerHTML = `
-                    <button ${disabled} onclick="useItem('${item.id}')"><span>${item.icon}</span>${escapeHtml(item.name)}</button>
+                    <button ${disabled} onclick="useItem('${item.id}')"><span>${gameAsset('item', item.id, 'build-icon')}</span>${escapeHtml(item.name)}</button>
                     <button class="discard-button" onclick="discardItem('${item.id}')" title="Discard">×</button>
                 `;
                 area.appendChild(holder);
@@ -367,7 +390,7 @@
                 const entry = document.createElement('span');
                 entry.className = 'relic-chip';
                 entry.title = relic.description;
-                entry.textContent = `${relic.icon} ${relic.name}`;
+                entry.innerHTML = `${gameAsset('relic', relic.id, 'build-icon')}<span>${escapeHtml(relic.name)}</span>`;
                 area.appendChild(entry);
             });
         }
@@ -454,8 +477,7 @@
                 button.onclick = () => selectAnswer(key);
                 area.appendChild(button);
             });
-            playThreatWarning(data.threat_warning?.level);
-            startTimer(data.time_limit);
+            startTimer(data.time_limit, data.threat_warning?.level);
         }
 
         function selectAnswer(key) {
@@ -538,30 +560,41 @@
             feedback.classList.remove('hidden', 'good', 'bad');
 
             flashCombat(data);
+            playCombatAudio(data);
             if (data.status === 'game_over') {
-                playSound('snd-wrong');
-                title.textContent = '💥 SYSTEM FAILURE';
+                title.textContent = 'SYSTEM FAILURE';
                 text.textContent = buildTurnMessage(data);
                 feedback.classList.add('bad');
             } else if (!data.is_correct) {
-                playSound('snd-wrong');
-                title.textContent = data.was_timeout ? '⏱️ TIME EXPIRED' : '❌ INCORRECT';
+                title.textContent = data.was_timeout ? 'TIME EXPIRED' : 'INCORRECT';
                 text.textContent = buildTurnMessage(data);
                 feedback.classList.add('bad');
             } else if (data.status === 'won') {
-                playSound('snd-victory');
-                title.textContent = '👑 ROOT ADMIN DEFEATED';
+                title.textContent = 'ROOT ADMIN DEFEATED';
                 text.textContent = data.explanation;
                 feedback.classList.add('good');
             } else {
-                playSound('snd-correct');
                 title.textContent = data.status === 'enemy_defeated'
-                    ? `⚔️ ${data.defeated_enemy} DEFEATED`
-                    : data.combat_action === 'defend' ? '🛡️ INTENT BLOCKED'
-                    : `💥 ${data.damage_dealt} DAMAGE DEALT`;
+                    ? `${data.defeated_enemy} DEFEATED`
+                    : data.combat_action === 'defend' ? 'INTENT BLOCKED'
+                    : `${data.damage_dealt} DAMAGE DEALT`;
                 text.textContent = buildTurnMessage(data);
                 feedback.classList.add('good');
             }
+        }
+
+        function playCombatAudio(data) {
+            const actionSound = {
+                attack: 'snd-attack',
+                defend: 'snd-defend',
+                exploit: 'snd-exploit'
+            }[data.combat_action] || 'snd-attack';
+            playEffect(actionSound);
+            if (data.enemy_action && !data.enemy_action.canceled) scheduleEffect('snd-enemy', 210);
+            scheduleEffect(data.is_correct ? 'snd-correct' : 'snd-wrong', 360);
+            if (data.recovered_hp) scheduleEffect('snd-heal', 540);
+            if (data.status === 'won') scheduleEffect('snd-victory', 700, true);
+            if (data.status === 'game_over') scheduleEffect('snd-defeat', 650, true);
         }
 
         function buildTurnMessage(data) {
@@ -583,35 +616,45 @@
             const enemyCard = document.getElementById('enemy-card');
             const playerHud = document.querySelector('.player-hud');
             const shell = document.querySelector('.main-panel');
+            const action = data.combat_action;
+            if (data.enemy_action && !data.enemy_action.canceled) {
+                enemyCard.classList.remove('enemy-attacking');
+                void enemyCard.offsetWidth;
+                enemyCard.classList.add('enemy-attacking');
+            }
+            shell.classList.toggle('exploit-flash', action === 'exploit' && data.is_correct);
+            shell.classList.toggle('defend-flash', action === 'defend' && data.is_correct);
             if (data.damage_dealt) {
                 enemyCard.classList.remove('enemy-hit');
                 void enemyCard.offsetWidth;
                 enemyCard.classList.add('enemy-hit');
-                spawnCombatFx(`-${data.damage_dealt}`, 'enemy-damage', data.combat_action === 'exploit' ? '💻' : '⚔️');
+                spawnCombatFx(`-${data.damage_dealt}`, 'enemy-damage', action === 'exploit' ? 'item' : 'ui', action === 'exploit' ? 'zero_day' : 'combat');
             }
             if (data.damage_taken) {
                 playerHud.classList.remove('player-hit');
                 void playerHud.offsetWidth;
                 playerHud.classList.add('player-hit');
                 shell.classList.add('screen-shake');
-                spawnCombatFx(`-${data.damage_taken} HP`, 'player-damage', data.enemy_action?.icon || '💥');
+                spawnCombatFx(`-${data.damage_taken} HP`, 'player-damage', 'ui', 'boss');
             } else if (data.enemy_action?.canceled) {
-                spawnCombatFx('INTERRUPTED', 'interrupt-fx', '🛡️');
+                spawnCombatFx('INTERRUPTED', 'interrupt-fx', 'relic', 'zero_trust');
             } else if (data.enemy_action && !data.damage_dealt) {
-                spawnCombatFx(data.enemy_action.name, 'enemy-action-fx', data.enemy_action.icon);
+                spawnCombatFx(data.enemy_action.name, 'enemy-action-fx', 'ui', 'event');
             }
+            if (data.recovered_hp) spawnCombatFx(`+${data.recovered_hp} HP`, 'heal-fx', 'ui', 'heal');
+            if (data.status === 'enemy_defeated' || data.status === 'won') enemyCard.classList.add('enemy-defeated');
             setTimeout(() => {
-                enemyCard.classList.remove('enemy-hit');
+                enemyCard.classList.remove('enemy-hit', 'enemy-attacking', 'enemy-defeated');
                 playerHud.classList.remove('player-hit');
-                shell.classList.remove('screen-shake');
-            }, 500);
+                shell.classList.remove('screen-shake', 'exploit-flash', 'defend-flash');
+            }, 850);
         }
 
-        function spawnCombatFx(label, className, icon) {
+        function spawnCombatFx(label, className, kind, id) {
             const layer = document.getElementById('combat-fx-layer');
             const effect = document.createElement('div');
             effect.className = `combat-fx ${className}`;
-            effect.innerHTML = `<span>${icon}</span><strong>${escapeHtml(label)}</strong>`;
+            effect.innerHTML = `<span>${gameAsset(kind, id, 'fx-icon')}</span><strong>${escapeHtml(label)}</strong>`;
             layer.appendChild(effect);
             for (let i = 0; i < 7; i++) {
                 const particle = document.createElement('i');
@@ -646,11 +689,11 @@
             document.getElementById('decision-overlay').classList.add('hidden');
         }
 
-        function choiceButton(entry, callback, extra = '') {
+        function choiceButton(entry, callback, extra = '', assetKind = 'ui', assetId = null) {
             const button = document.createElement('button');
             button.className = 'choice-card';
             button.innerHTML = `
-                <span class="choice-icon">${entry.icon || ''}</span>
+                <span class="choice-icon">${gameAsset(assetKind, assetId || entry.id, 'choice-asset')}</span>
                 <strong>${escapeHtml(entry.name)}</strong>
                 ${extra}
                 <p>${escapeHtml(entry.description || '')}</p>
@@ -663,7 +706,7 @@
             stopAllSounds();
             openDecision('ROUTE SELECTION', `Prepare for Stage ${data.room}`, 'Support rooms happen between fights and do not advance the 15-stage run.');
             const area = document.getElementById('decision-options');
-            data.room_options.forEach(room => area.appendChild(choiceButton(room, () => chooseRoute(room.id))));
+            data.room_options.forEach(room => area.appendChild(choiceButton(room, () => chooseRoute(room.id), '', 'ui')));
         }
 
         async function chooseRoute(roomType) {
@@ -681,9 +724,12 @@
                     : 'Consumables occupy one inventory slot and disappear after use.'
             );
             const area = document.getElementById('decision-options');
+            playEffect('snd-loot');
             data.reward_options.forEach(reward => {
                 const rarity = reward.rarity ? `<span class="rarity-label">${reward.rarity}</span>` : '';
-                area.appendChild(choiceButton(reward, () => chooseReward(reward.id), rarity));
+                const kind = reward.id === 'credits' ? 'relic' : data.reward_kind === 'relic' ? 'relic' : 'item';
+                const id = reward.id === 'credits' ? 'credit_miner' : reward.id;
+                area.appendChild(choiceButton(reward, () => chooseReward(reward.id), rarity, kind, id));
             });
             if (data.inventory.length >= data.inventory_limit && data.reward_kind !== 'relic') {
                 const warning = document.createElement('div');
@@ -691,7 +737,7 @@
                 warning.innerHTML = '<strong>Inventory full</strong><p>Choose credits or discard an item:</p>';
                 data.inventory.forEach(item => {
                     const button = document.createElement('button');
-                    button.textContent = `Discard ${item.icon} ${item.name}`;
+                    button.textContent = `Discard ${item.name}`;
                     button.onclick = async () => {
                         await discardItem(item.id, false);
                         continueRun();
@@ -712,11 +758,11 @@
         function showHealChoice(data) {
             openDecision('REPAIR STATION', 'Choose a repair', 'Both options are free, but you may choose only one.');
             const choices = [
-                {id: 'repair', icon: '❤️‍🩹', name: 'Full Repair', description: 'Restore 3 HP.'},
-                {id: 'upgrade', icon: '⬆️', name: 'System Upgrade', description: 'Increase maximum HP by 1 and restore 1 HP.'}
+                {id: 'repair', name: 'Full Repair', description: 'Restore 3 HP.'},
+                {id: 'upgrade', name: 'System Upgrade', description: 'Increase maximum HP by 1 and restore 1 HP.'}
             ];
             choices.forEach(choice => document.getElementById('decision-options').appendChild(
-                choiceButton(choice, () => chooseHeal(choice.id))
+                choiceButton(choice, () => chooseHeal(choice.id), '', choice.id === 'repair' ? 'ui' : 'relic', choice.id === 'repair' ? 'heal' : 'root_access')
             ));
         }
 
@@ -731,7 +777,7 @@
             const area = document.getElementById('decision-options');
             data.shop_items.forEach(item => {
                 const price = `<span class="price-label">${item.price} credits</span>`;
-                area.appendChild(choiceButton(item, () => buyItem(item.id), price));
+                area.appendChild(choiceButton(item, () => buyItem(item.id), price, 'item'));
             });
             const leave = document.createElement('button');
             leave.className = 'secondary-button leave-button';
@@ -756,11 +802,11 @@
 
         function showEvent(data) {
             const event = data.event;
-            openDecision('RANDOM EVENT', `${event.icon} ${event.name}`, event.text);
+            openDecision('RANDOM EVENT', event.name, event.text);
             event.choices.forEach(choice => {
-                const entry = {icon: '◆', name: choice.label, description: choice.description};
+                const entry = {id: 'event', name: choice.label, description: choice.description};
                 document.getElementById('decision-options').appendChild(
-                    choiceButton(entry, () => chooseEvent(choice.id))
+                    choiceButton(entry, () => chooseEvent(choice.id), '', 'ui', 'event')
                 );
             });
         }
@@ -799,7 +845,7 @@
                 const feedback = document.getElementById('feedback');
                 feedback.classList.remove('hidden', 'bad');
                 feedback.classList.add('good');
-                document.getElementById('feedback-title').textContent = '💉 ZERO-DAY FINISHED THE ENEMY';
+                document.getElementById('feedback-title').textContent = 'ZERO-DAY FINISHED THE ENEMY';
                 document.getElementById('feedback-text').textContent = 'The item dealt 2 direct damage.';
             } else {
                 showToast('Item activated');
@@ -831,14 +877,14 @@
             const area = document.getElementById('encyclopedia-content');
             area.innerHTML = '';
             const sections = [
-                ['Mechanics', data.mechanics, data.locked_counts.mechanics],
-                ['Room Types', data.rooms, data.locked_counts.rooms],
-                ['Consumables', data.items, data.locked_counts.items],
-                ['Relics', data.relics, data.locked_counts.relics],
-                ['Enemies', data.enemies, data.locked_counts.enemies],
-                ['Enemy Abilities', data.abilities, data.locked_counts.abilities]
+                ['Mechanics', data.mechanics, data.locked_counts.mechanics, 'ui'],
+                ['Room Types', data.rooms, data.locked_counts.rooms, 'ui'],
+                ['Consumables', data.items, data.locked_counts.items, 'item'],
+                ['Relics', data.relics, data.locked_counts.relics, 'relic'],
+                ['Enemies', data.enemies, data.locked_counts.enemies, 'enemy'],
+                ['Enemy Abilities', data.abilities, data.locked_counts.abilities, 'ui']
             ];
-            sections.forEach(([title, entries, locked]) => {
+            sections.forEach(([title, entries, locked, assetKind]) => {
                 const section = document.createElement('section');
                 section.className = 'encyclopedia-section';
                 section.innerHTML = `<h3>${title} <small>${locked} locked</small></h3>`;
@@ -848,8 +894,8 @@
                     const card = document.createElement('button');
                     card.type = 'button';
                     card.className = 'encyclopedia-entry';
-                    card.innerHTML = `<span>${entry.icon || '📘'}</span><strong>${escapeHtml(entry.name)}</strong><p>${escapeHtml(entry.description || entry.kind || 'Discovered enemy')}</p><small>VIEW DETAILS →</small>`;
-                    card.onclick = () => showEncyclopediaDetail(title, entry);
+                    card.innerHTML = `<span>${encyclopediaAsset(assetKind, entry)}</span><strong>${escapeHtml(entry.name)}</strong><p>${escapeHtml(entry.description || entry.kind || 'Discovered enemy')}</p><small>VIEW DETAILS →</small>`;
+                    card.onclick = () => showEncyclopediaDetail(title, entry, assetKind);
                     grid.appendChild(card);
                 });
                 if (!entries.length) grid.innerHTML = '<p class="locked-message">Continue playing to discover this section.</p>';
@@ -858,11 +904,17 @@
             });
         }
 
-        function showEncyclopediaDetail(category, entry) {
+        function encyclopediaAsset(kind, entry) {
+            const rooms = ['combat', 'elite', 'loot', 'heal', 'shop', 'event', 'boss'];
+            if (kind === 'ui') return gameAsset('ui', rooms.includes(entry.id) ? entry.id : 'encyclopedia', 'encyclopedia-asset');
+            return gameAsset(kind, entry.id, 'encyclopedia-asset');
+        }
+
+        function showEncyclopediaDetail(category, entry, assetKind) {
             document.getElementById('encyclopedia-content').classList.add('hidden');
             const detail = document.getElementById('encyclopedia-detail');
             detail.classList.remove('hidden');
-            document.getElementById('detail-icon').textContent = entry.icon || '📘';
+            document.getElementById('detail-icon').innerHTML = encyclopediaAsset(assetKind, entry);
             document.getElementById('detail-category').textContent = category.toUpperCase();
             document.getElementById('detail-name').textContent = entry.name;
             document.getElementById('detail-description').textContent = entry.description || 'Discovered during your run.';
@@ -873,9 +925,9 @@
             if (entry.max_hp) facts.push(['Base HP', entry.max_hp]);
             if (entry.attack) facts.push(['Attack', entry.attack]);
             if (entry.strategy) facts.push(['Strategy', entry.strategy]);
-            if (entry.abilities?.length) facts.push(['Abilities', entry.abilities.map(item => `${item.icon} ${item.name}: ${item.description}`).join(' • ')]);
+            if (entry.abilities?.length) facts.push(['Abilities', entry.abilities.map(item => `${item.name}: ${item.description}`).join(' • ')]);
             if (entry.patterns?.length) entry.patterns.forEach((pattern, index) =>
-                facts.push([entry.patterns.length > 1 ? `Phase ${index + 1} pattern` : 'Turn pattern', pattern.map(intent => `${intent.icon} ${intent.name}`).join(' → ')])
+                facts.push([entry.patterns.length > 1 ? `Phase ${index + 1} pattern` : 'Turn pattern', pattern.map(intent => intent.name).join(' → ')])
             );
             document.getElementById('detail-facts').innerHTML = facts.length
                 ? facts.map(([label, value]) => `<div><strong>${escapeHtml(label)}</strong><p>${escapeHtml(value)}</p></div>`).join('')
@@ -906,7 +958,7 @@
             acceptingAnswers = false;
             questionLoaded = false;
             stopAllSounds();
-            if (won) playSound('snd-victory');
+            playSound(won ? 'snd-victory' : 'snd-defeat');
             const screen = document.getElementById('end-screen');
             document.getElementById('end-eyebrow').textContent = won ? 'RUN COMPLETE' : 'RUN OVER';
             document.getElementById('end-title').textContent = won ? 'ACCESS GRANTED' : 'SYSTEM FAILURE';

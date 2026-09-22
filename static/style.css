@@ -27,6 +27,9 @@ body {
     font-family: "Segoe UI", system-ui, sans-serif;
 }
 
+.game-asset { display: block; width: 100%; height: 100%; object-fit: contain; }
+.icon-button svg { width: 23px; height: 23px; }
+
 button { font: inherit; }
 .hidden { display: none !important; }
 
@@ -50,11 +53,39 @@ button { font: inherit; }
 }
 
 .screen-overlay {
+    isolation: isolate;
     flex-direction: column;
     text-align: center;
     background:
         radial-gradient(circle, rgba(48, 18, 23, .97), rgba(8, 10, 15, .99) 65%);
 }
+
+#title-screen {
+    background:
+        linear-gradient(180deg, rgba(5, 7, 13, .35), rgba(5, 7, 13, .88) 76%),
+        url("assets/backgrounds/cyber-dungeon.webp") center / cover no-repeat;
+}
+
+#title-screen::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, transparent 0 18%, rgba(5, 7, 13, .52) 62%, #05070d 100%);
+    animation: menu-breathe 5s ease-in-out infinite alternate;
+}
+
+@keyframes menu-breathe { to { opacity: .72; } }
+
+.menu-sigil {
+    width: clamp(100px, 16vw, 160px);
+    height: clamp(100px, 16vw, 160px);
+    margin-bottom: -10px;
+    filter: drop-shadow(0 0 20px rgba(255, 54, 43, .65));
+    animation: sigil-hover 3.2s ease-in-out infinite;
+}
+.menu-sigil svg { width: 100%; height: 100%; }
+@keyframes sigil-hover { 50% { transform: translateY(-8px) scale(1.025); filter: drop-shadow(0 0 34px rgba(255, 54, 43, .9)); } }
 
 .screen-overlay h1 {
     max-width: 850px;
@@ -84,11 +115,15 @@ button { font: inherit; }
 .rules { margin: 24px 0; }
 
 .rules span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     padding: 8px 12px;
     border: 1px solid var(--line);
     border-radius: 99px;
     background: var(--card);
 }
+.rules svg { width: 22px; height: 22px; }
 
 .primary-button,
 .secondary-button,
@@ -212,6 +247,8 @@ button { font: inherit; }
 }
 
 .enemy-card {
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -223,6 +260,16 @@ button { font: inherit; }
     background: linear-gradient(110deg, #20293a, #171c26);
 }
 
+.enemy-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .2;
+    background: repeating-linear-gradient(0deg, transparent 0 4px, rgba(100, 190, 255, .08) 5px);
+    mix-blend-mode: screen;
+}
+
 .enemy-card.boss {
     border-color: var(--red);
     background: linear-gradient(110deg, #381a1d, #17171e);
@@ -230,10 +277,45 @@ button { font: inherit; }
 }
 
 .enemy-icon {
-    width: 68px;
-    flex: 0 0 68px;
-    font-size: 3.2rem;
+    width: 122px;
+    height: 122px;
+    flex: 0 0 122px;
     text-align: center;
+    filter: drop-shadow(0 14px 16px rgba(0, 0, 0, .5));
+}
+
+.enemy-portrait { animation: enemy-idle 2.7s ease-in-out infinite; transform-origin: 50% 85%; }
+.enemy-card.boss .enemy-portrait { animation-name: boss-idle; animation-duration: 2.1s; }
+@keyframes enemy-idle {
+    0%, 100% { transform: translateY(2px) rotate(-1deg); }
+    50% { transform: translateY(-6px) rotate(1deg); }
+}
+@keyframes boss-idle {
+    0%, 100% { transform: translateY(2px) scale(1); filter: brightness(1); }
+    50% { transform: translateY(-7px) scale(1.04); filter: brightness(1.22); }
+}
+@keyframes enemy-lunge {
+    0% { transform: translateX(0) scale(1); }
+    40% { transform: translateX(62px) scale(1.14) rotate(5deg); filter: brightness(1.7); }
+    100% { transform: translateX(0) scale(1); }
+}
+@keyframes enemy-defeat {
+    25% { transform: scale(1.16); filter: brightness(2) saturate(0); opacity: 1; }
+    100% { transform: scale(.35) rotate(16deg); filter: blur(8px); opacity: 0; }
+}
+.enemy-card.enemy-attacking .enemy-portrait { animation: enemy-lunge .48s cubic-bezier(.2,.8,.3,1); }
+.enemy-card.enemy-defeated .enemy-portrait { animation: enemy-defeat .8s ease-in forwards; }
+
+.ability-rune {
+    display: inline-grid;
+    place-items: center;
+    width: 17px;
+    height: 17px;
+    margin-right: 5px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: .56rem;
+    font-style: normal;
 }
 
 .enemy-info { width: 100%; }
@@ -335,6 +417,8 @@ button { font: inherit; }
     cursor: pointer;
     text-align: left;
 }
+.combat-actions strong { display: flex; align-items: center; gap: 6px; }
+.combat-actions strong svg { width: 25px; height: 25px; flex: 0 0 25px; }
 
 .combat-actions button span { color: var(--muted); font-size: .62rem; line-height: 1.3; }
 .combat-actions button em { color: var(--gold); font-size: .68rem; font-style: normal; }
@@ -367,6 +451,18 @@ button { font: inherit; }
 }
 
 .main-panel.screen-shake { animation: screen-shake .36s ease; }
+.main-panel.exploit-flash::after,
+.main-panel.defend-flash::after {
+    content: "";
+    position: absolute;
+    z-index: 19;
+    inset: 0;
+    pointer-events: none;
+    animation: full-screen-flash .55s ease-out forwards;
+}
+.main-panel.exploit-flash::after { background: radial-gradient(circle, rgba(183, 140, 255, .7), transparent 68%); }
+.main-panel.defend-flash::after { background: radial-gradient(circle, rgba(76, 166, 255, .5), transparent 68%); }
+@keyframes full-screen-flash { from { opacity: 1; } to { opacity: 0; } }
 #combat-fx-layer { position: absolute; z-index: 20; inset: 0; pointer-events: none; }
 .combat-fx {
     position: absolute;
@@ -381,12 +477,14 @@ button { font: inherit; }
     box-shadow: 0 8px 30px rgba(0, 0, 0, .55);
     animation: combat-pop .85s ease-out forwards;
 }
-.combat-fx span { font-size: 1.55rem; }
+.combat-fx span { width: 34px; height: 34px; }
+.combat-fx .fx-icon { filter: drop-shadow(0 0 8px currentColor); }
 .combat-fx strong { font-size: 1rem; letter-spacing: .08em; }
 .combat-fx i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; background: currentColor; animation: particle-burst .65s ease-out forwards; }
 .enemy-damage, .interrupt-fx { top: 22%; color: #71b0ff; }
 .player-damage { top: 7%; color: #ff6259; }
 .enemy-action-fx { top: 22%; color: var(--gold); }
+.heal-fx { top: 8%; color: var(--green); }
 
 .question-card {
     margin: 0 16px;
@@ -490,6 +588,7 @@ button { font: inherit; }
 }
 
 .inventory-item > button:first-child span { margin-right: 4px; }
+.inventory-item .build-icon { display: inline-block; width: 20px; height: 20px; vertical-align: middle; }
 
 .discard-button {
     width: 24px;
@@ -504,6 +603,9 @@ button { font: inherit; }
 .rarity-rare { border-color: rgba(183, 140, 255, .7); }
 
 .relic-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     padding: 6px 8px;
     border: 1px solid rgba(255, 209, 102, .35);
     border-radius: 6px;
@@ -511,6 +613,7 @@ button { font: inherit; }
     color: var(--gold);
     font-size: .68rem;
 }
+.relic-chip .build-icon { width: 20px; height: 20px; }
 
 .actions { padding: 12px 16px 16px; }
 .attack-button { width: 100%; }
@@ -539,6 +642,8 @@ button { font: inherit; }
 
 .room-node span { font-size: .72rem; font-weight: 900; }
 .room-node b { opacity: .35; }
+.path-icon { width: 27px; height: 27px; }
+.path-rune { display: block; width: 10px; height: 10px; border: 1px solid currentColor; transform: rotate(45deg); }
 .room-node.cleared { border-color: rgba(38, 210, 148, .38); color: var(--green); }
 .room-node.cleared b { opacity: .75; }
 .room-node.active {
@@ -615,7 +720,9 @@ button { font: inherit; }
 }
 
 .choice-card:hover { border-color: var(--red); transform: translateY(-2px); background: var(--card-light); }
-.choice-icon { display: block; margin-bottom: 9px; font-size: 2.1rem; }
+.choice-icon { display: block; width: 66px; height: 66px; margin-bottom: 9px; }
+.choice-card:hover .choice-asset { animation: choice-pulse .7s ease; filter: drop-shadow(0 0 12px rgba(76, 166, 255, .45)); }
+@keyframes choice-pulse { 50% { transform: scale(1.12) rotate(-3deg); } }
 .choice-card strong { display: block; font-size: 1rem; }
 .choice-card p { margin-top: 8px; color: var(--muted); font-size: .78rem; line-height: 1.45; }
 .rarity-label, .price-label { display: inline-block; margin-top: 5px; color: var(--gold); font-size: .68rem; }
@@ -696,7 +803,9 @@ button { font: inherit; }
 }
 
 .encyclopedia-entry:hover { border-color: var(--blue); transform: translateY(-2px); }
-.encyclopedia-entry > span { display: block; margin-bottom: 5px; font-size: 1.5rem; }
+.encyclopedia-entry > span { display: block; width: 54px; height: 54px; margin-bottom: 7px; }
+.encyclopedia-entry:hover .encyclopedia-asset { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(76, 166, 255, .45)); }
+.encyclopedia-asset { transition: .18s ease; }
 .encyclopedia-entry strong { font-size: .84rem; }
 .encyclopedia-entry p { margin-top: 5px; color: var(--muted); font-size: .72rem; line-height: 1.4; }
 .encyclopedia-entry small { display: block; margin-top: 9px; color: #77b1ff; font-size: .58rem; font-weight: 900; }
@@ -704,7 +813,7 @@ button { font: inherit; }
 .encyclopedia-detail { margin-top: 18px; }
 .detail-back { margin-bottom: 14px; }
 .detail-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
-.detail-heading > span { font-size: 3rem; }
+.detail-heading > span { width: 88px; height: 88px; flex: 0 0 88px; }
 .detail-heading h3 { font-size: 1.5rem; }
 .encyclopedia-detail > p { color: #cbd2dd; line-height: 1.6; }
 .detail-facts { display: grid; gap: 8px; margin-top: 16px; }
@@ -742,7 +851,7 @@ button { font: inherit; }
     .player-hud { grid-template-columns: 2fr 1fr 1fr auto auto; }
     .player-hud .stat:nth-child(3) { display: none; }
     .enemy-card { margin: 9px; padding: 11px; }
-    .enemy-icon { width: 45px; flex-basis: 45px; font-size: 2.2rem; }
+    .enemy-icon { width: 76px; height: 76px; flex-basis: 76px; }
     .question-card { margin: 0 9px; padding: 12px; }
     .options, .build-panel, .choice-grid, .encyclopedia-grid { grid-template-columns: 1fr; }
     .combat-actions { grid-template-columns: 1fr; }
