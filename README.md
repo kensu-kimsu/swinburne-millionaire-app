@@ -1,61 +1,100 @@
-# 🏆 Swinburne Millionaire
+# Swinburne Cyber Dungeon
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live_App-brightgreen?style=for-the-badge&logo=azure)](https://swinburne-millionaire-app-abbma8f2gph2cge8.australiaeast-01.azurewebsites.net)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/kensu-kimsu/swinburne-millionaire-app)
+A cybersecurity quiz roguelike made with Python, Flask, HTML, CSS and vanilla
+JavaScript.
 
-> 🚀 **Play the Live App:** [https://swinburne-millionaire-app-abbma8f2gph2cge8.australiaeast-01.azurewebsites.net](https://swinburne-millionaire-app-abbma8f2gph2cge8.australiaeast-01.azurewebsites.net)
+This branch changes the original *Swinburne Millionaire* school project into a
+combat-based quiz game. The original version remains safe on the `main` branch.
 
-**Swinburne Millionaire** is an interactive, web-based cybersecurity and IT trivia game modeled after the classic *"Who Wants to Be a Millionaire?"* show format. Built with **Python (Flask)** and vanilla **JavaScript/CSS3**, it tests technical cybersecurity knowledge across 15 dynamic difficulty tiers.
+## Version 1 features
 
----
+- A 15-room run with easy, medium and hard areas
+- Five player health points
+- Correct answers damage enemies
+- Wrong answers and timeouts damage the player
+- A combo system that deals two damage on every third correct answer
+- Credits earned from correct answers
+- A reusable room-path interface
+- The Packet Sniffer power-up, which removes two wrong answers
+- A miniboss in room 5
+- A major boss in room 10
+- A final boss in room 15
 
-## 📸 Application Screenshots
+## Bosses
 
-| Title Screen | Active Gameplay |
-| :---: | :---: |
-| ![Title Screen](screenshots/title-screen.png) | ![Gameplay Screen](screenshots/gameplay.png) |
+| Room | Boss | Health | Damage |
+|---|---|---:|---:|
+| 5 | Phishing King | 3 | 1 |
+| 10 | Ransomware Overlord | 4 | 1 |
+| 15 | The Root Admin | 5 | 2 |
 
-| Checkpoint | Game Over Screen |
-| :---: | :---: |
-| ![Checkpoint Modal](screenshots/checkpoint-modal.png) | ![Game Over Screen](screenshots/gameover-screen.png) |
+## Run the game on Windows
 
----
+Open the project folder in VS Code. Then open **Terminal > New Terminal** and
+enter these commands one at a time:
 
-## 🎮 How the Game Works
+```powershell
+py -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
 
-The objective of the game is simple: answer 15 consecutive cybersecurity questions correctly to win the top prize of **$1,000,000**.
+Open <http://127.0.0.1:5000> in your browser.
 
-### 1. Game Flow & Rule Mechanics
-* **15 Question Tiers:** Questions increase in difficulty as you advance through three main tiers: **EASY** (Q1–Q5), **MEDIUM** (Q6–Q10), and **HARD** (Q11–Q15).
-* **30-Second Countdown Timer:** Every question gives you 30 seconds to lock in an answer. If the timer reaches zero before you choose, the game ends immediately.
-* **Lock-In Mechanism:** Clicking an option highlights your choice. You must click **FINAL ANSWER** to submit your option.
-* **Instant Feedback & Explanations:** After submitting an answer, the game highlights whether you were correct (green) or wrong (red) and displays a detailed technical explanation for why that option was right or wrong.
+To stop the server, return to the terminal and press `Ctrl+C`.
 
----
+## Run the automated checks
 
-## 🛡️ Lifelines & Safety Checkpoints
+With the virtual environment activated, run:
 
-### 💡 50:50 Lifeline
-* Accessible once per game session.
-* Uses the server API to randomly eliminate **two incorrect choices**, leaving only the correct answer and one wrong distraction.
+```powershell
+python -m unittest -v
+```
 
-### 💰 Safe Checkpoints ($1,000 & $32,000)
-When you successfully answer Question 5 ($1,000) or Question 10 ($32,000), you unlock a **Safe Milestone**:
-* **Risk & Continue:** Proceed to harder questions while guaranteeing you won't leave empty-handed if you miss a future question.
-* **Walk Away / Cash Out:** Choose to leave the game at any point before answering a question to lock in your current earnings.
+The five tests check the starting health, damage from a wrong answer, normal
+room progression, combo damage and final-boss victory.
 
----
+## Beginner Git workflow
 
-## 🎭 Interactive Audio & Dynamic Events
+See which branch you are using and which files changed:
 
-* **Spotlights & Particle Animations:** Custom HTML5 canvas routines trigger background glitter effects upon winning and red spotlights when starting games.
-* **Dynamic Audio Engine:** Contextual audio plays during ticks, lock-ins, safe choices, lifelines, game-over moments, and full victories.
-* **Roast & Insult System:** If you run out of time or select a wrong option, the app dynamically assigns humorous cybersecurity-themed insults alongside custom falling emoji animations.
+```powershell
+git status
+```
 
----
+Move to the roguelike branch:
 
-## ⚡ Tech Stack Summary
+```powershell
+git switch roguelike-v1
+```
 
-* **Backend Engine:** Python 3.11+, Flask Web Framework (Session-based state management)
-* **Frontend Design:** HTML5, CSS3, Vanilla ES6 JavaScript
-* **Media Handling:** HTML5 Audio API & HTML5 Canvas Rendering
+Upload the branch to GitHub for the first time:
+
+```powershell
+git push -u origin roguelike-v1
+```
+
+After the first upload, future saved commits only need:
+
+```powershell
+git push
+```
+
+## Project files
+
+```text
+app.py               Flask routes and game rules
+questions.json        Cybersecurity question bank
+templates/index.html  Page structure and browser game logic
+static/style.css      Roguelike visual design
+test_app.py           Automated game-rule checks
+```
+
+## Planned versions
+
+1. **Version 1 — Combat foundation:** HP, enemies, combos and bosses
+2. **Version 2 — Loot:** choose one of three rewards after boss fights
+3. **Version 3 — Inventory:** Firewall, Health Patch and Overclock
+4. **Version 4 — Relics and shops:** passive builds and credit spending
+5. **Version 5 — Random events and branching paths**

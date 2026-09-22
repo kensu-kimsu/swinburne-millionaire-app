@@ -3,623 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWINBURNE MILLIONAIRE</title>
+    <title>Swinburne Cyber Dungeon</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
-    <canvas id="glitterCanvas"></canvas>
-
-    <!-- Audio Elements -->
-    <audio id="snd-intro" src="{{ url_for('static', filename='intro.mp3') }}" loop></audio>
-    <audio id="snd-play" src="{{ url_for('static', filename='lets_play.mp3') }}"></audio>
     <audio id="snd-ticking" src="{{ url_for('static', filename='ticking.mp3') }}" loop></audio>
     <audio id="snd-final" src="{{ url_for('static', filename='final_answer.mp3') }}"></audio>
     <audio id="snd-correct" src="{{ url_for('static', filename='correct.mp3') }}"></audio>
     <audio id="snd-wrong" src="{{ url_for('static', filename='wrong.mp3') }}"></audio>
-    <audio id="snd-gameover" src="{{ url_for('static', filename='gameover.mp3') }}"></audio>
     <audio id="snd-victory" src="{{ url_for('static', filename='victory.mp3') }}"></audio>
     <audio id="snd-lifeline" src="{{ url_for('static', filename='lifeline.mp3') }}"></audio>
 
-    <div id="intro-spotlights" class="spotlight-container">
-        <div class="spotlight spotlight-1"></div>
-        <div class="spotlight spotlight-2"></div>
-        <div class="spotlight spotlight-3"></div>
-        <div class="spotlight spotlight-4"></div>
-        <div class="spotlight spotlight-5"></div>
-        <div class="spotlight spotlight-6"></div>
-        <div class="spotlight spotlight-7"></div>
-        <div class="spotlight spotlight-8"></div>
-    </div>
-
-    <!-- Title Screen -->
-    <div id="title-overlay" onclick="enableAudioAndPlayIntro()">
-        <h1>SWINBURNE MILLIONAIRE</h1>
-        <h2>Are you smart enough to win $1,000,000?</h2>
-        <div class="click-prompt">Click anywhere on screen to enable sound</div>
-        <button class="btn-play" onclick="startGame(event)">CLICK TO PLAY</button>
-    </div>
-
-    <!-- Walk Away Practice Guess Modal -->
-    <div id="walkaway-modal" class="modal-overlay">
-        <div class="modal-content-safe">
-            <h1 class="win-title modal-walkaway-title">YOU DECIDED TO WALK AWAY!</h1>
-            <p class="modal-walkaway-text">
-                Before taking your prize money, select an option to see if your guess would have been right!
-            </p>
-            <button class="btn-continue-checkpoint" onclick="closeWalkawayModal()">TEST MY GUESS</button>
+    <section id="title-screen" class="screen-overlay">
+        <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELIKE</p>
+        <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
+        <p class="intro-copy">
+            Fight through 15 rooms. Correct answers damage enemies.
+            Wrong answers damage you. Defeat The Root Admin to escape.
+        </p>
+        <div class="rules">
+            <span>❤️ 5 HP</span>
+            <span>⚔️ Combo attacks</span>
+            <span>👑 3 bosses</span>
         </div>
-    </div>
+        <button class="primary-button" onclick="startGame()">START RUN</button>
+    </section>
 
-    <div id="checkpoint-modal" class="modal-overlay">
-        <div class="modal-content-safe">
-            <h1 class="win-title">SAFE CHECKPOINT!</h1>
-            <p class="checkpoint-subtext">
-                You have reached a safe milestone! You have secured <strong id="checkpoint-guaranteed-text" class="checkpoint-amount">$1,000</strong>.
-            </p>
-            <p class="checkpoint-desc">
-                Would you like to <strong>walk away now</strong> with your guaranteed prize, or <strong>risk it all</strong> and advance to the next tier?
-            </p>
-            <div class="checkpoint-btn-group">
-                <button class="btn-cashout-checkpoint" onclick="processCheckpointChoice('cashout')">WALK AWAY</button>
-                <button class="btn-continue-checkpoint" onclick="processCheckpointChoice('continue')">RISK & CONTINUE</button>
-            </div>
-        </div>
-    </div>
+    <section id="end-screen" class="screen-overlay hidden">
+        <p class="eyebrow" id="end-eyebrow">RUN OVER</p>
+        <h1 id="end-title">SYSTEM FAILURE</h1>
+        <p class="intro-copy" id="end-message"></p>
+        <button class="primary-button" onclick="restartGame()">START NEW RUN</button>
+    </section>
 
-    <div id="win-modal" class="modal-overlay">
-        <h1 class="win-title">CONGRATULATIONS!</h1>
-        <div class="win-prize" id="win-prize-text">YOU WON $1,000,000!</div>
-        <button class="btn-play btn-play-gameover" onclick="restartGame()">PLAY AGAIN</button>
-    </div>
-
-    <div id="gameover-modal" class="modal-overlay">
-        <div class="modal-content-safe">
-            <h1 class="gameover-title">GAME OVER</h1>
-            <div class="gameover-prize" id="gameover-prize-text">Guaranteed Prize: $0</div>
-            <div class="insult-quote" id="gameover-insult-text"></div>
-            <button class="btn-play btn-play-gameover" onclick="restartGame()">TRY AGAIN</button>
-        </div>
-    </div>
-
-    <div class="game-container">
-        <div class="main-panel">
-            <div class="top-bar">
-                <div>
-                    <span class="domain-badge" id="domain-display">Domain: ---</span>
-                    <span class="tier-badge tier-easy" id="tier-display">EASY</span>
+    <main class="game-shell">
+        <section class="main-panel">
+            <header class="player-hud">
+                <div class="stat">
+                    <span class="stat-label">PLAYER HP</span>
+                    <strong id="player-hp">❤️❤️❤️❤️❤️</strong>
                 </div>
-                <div class="timer-box" id="timer">30</div>
-            </div>
-            
-            <div class="timer-container">
-                <div class="timer-bar" id="timer-bar"></div>
-            </div>
+                <div class="stat">
+                    <span class="stat-label">CREDITS</span>
+                    <strong id="credits">0</strong>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">COMBO</span>
+                    <strong id="combo">x0</strong>
+                </div>
+                <div class="timer" id="timer">30</div>
+            </header>
+            <div class="timer-track"><div id="timer-bar"></div></div>
 
-            <div class="question-box" id="question-text"></div>
+            <section class="enemy-card" id="enemy-card">
+                <div class="enemy-icon" id="enemy-icon">?</div>
+                <div class="enemy-info">
+                    <div class="enemy-heading">
+                        <div>
+                            <span class="enemy-kind" id="enemy-kind">ENEMY</span>
+                            <h2 id="enemy-name">Waiting for enemy...</h2>
+                        </div>
+                        <strong id="enemy-hp-text">0 / 0 HP</strong>
+                    </div>
+                    <div class="hp-track"><div id="enemy-hp-bar"></div></div>
+                </div>
+            </section>
 
-            <div class="options-grid" id="options-container">
-                <button class="opt-btn" disabled><span class="prefix">A:</span> ---</button>
-                <button class="opt-btn" disabled><span class="prefix">B:</span> ---</button>
-                <button class="opt-btn" disabled><span class="prefix">C:</span> ---</button>
-                <button class="opt-btn" disabled><span class="prefix">D:</span> ---</button>
+            <section class="question-card">
+                <div class="question-meta">
+                    <span id="domain">DOMAIN: ---</span>
+                    <span id="tier" class="tier easy">EASY</span>
+                </div>
+                <h3 id="question">Start a run to receive your first question.</h3>
+                <div class="options" id="options">
+                    <button class="option" disabled>A: ---</button>
+                    <button class="option" disabled>B: ---</button>
+                    <button class="option" disabled>C: ---</button>
+                    <button class="option" disabled>D: ---</button>
+                </div>
+            </section>
+
+            <section class="feedback hidden" id="feedback">
+                <strong id="feedback-title"></strong>
+                <p id="feedback-text"></p>
+                <button class="next-button" id="next-button" onclick="fetchQuestion()">NEXT ENCOUNTER →</button>
+            </section>
+
+            <div class="actions">
+                <button id="packet-sniffer" onclick="usePacketSniffer()" disabled>
+                    🔍 PACKET SNIFFER <small>Remove 2 wrong choices</small>
+                </button>
+                <button class="attack-button" id="attack-button" onclick="submitSelectedAnswer()" disabled>
+                    LOCK IN ATTACK
+                </button>
             </div>
+        </section>
 
-            <div class="explanation-box" id="explanation-display">
-                <span id="explanation-text"></span>
-                <button class="btn-next-question" id="btn-skip-next" onclick="forceNextQuestion()">Next Question &rarr;</button>
+        <aside class="run-panel">
+            <p class="eyebrow">CURRENT RUN</p>
+            <h2>ROOM <span id="current-room">1</span> / 15</h2>
+            <div class="path" id="room-path"></div>
+            <div class="legend">
+                <span>⚔ Enemy</span>
+                <span>🎣 Miniboss</span>
+                <span>🦠 Major</span>
+                <span>👑 Final</span>
             </div>
-
-            <div class="controls">
-                <button class="action-btn" id="btn-5050" onclick="useLifeline5050()" disabled>50:50 Lifeline</button>
-                <button class="action-btn btn-final-answer" id="btn-final" onclick="lockInFinalAnswer()" disabled>FINAL ANSWER</button>
-                <button class="action-btn" id="btn-cashout" onclick="cashout()" disabled>Walk Away</button>
+            <div class="tip">
+                <strong>COMBO BONUS</strong>
+                <p>Every third correct answer deals 2 damage instead of 1.</p>
             </div>
-        </div>
-
-        <div class="sidebar">
-            <h3 class="sidebar-title">Prize Ladder</h3>
-            <ul class="ladder" id="prize-ladder"></ul>
-        </div>
-    </div>
+        </aside>
+    </main>
 
     <script>
-        const PRIZES = [
-            "$100", "$200", "$300", "$500", "$1,000",
-            "$2,000", "$4,000", "$8,000", "$16,000", "$32,000",
-            "$64,000", "$125,000", "$250,000", "$500,000", "$1,000,000"
-        ];
-
+        let selectedAnswer = null;
         let timerInterval = null;
-        let nextQuestionTimeout = null;
-        let pendingCheckpointModal = false;
-        let currentGuaranteedPrize = "$0";
-        let audioUnlocked = false;
-        let selectedOptionKey = null;
+        let acceptingAnswers = false;
 
-        // Sound trigger for button interaction (Excludes 'btn-skip-next')
-        document.addEventListener('click', function(e) {
-            if ((e.target.tagName === 'BUTTON' || e.target.classList.contains('opt-btn') || e.target.classList.contains('btn-play')) 
-                && e.target.id !== 'btn-skip-next') {
-                
-                let el = document.getElementById('snd-final');
-                if (el) {
-                    el.currentTime = 0;
-                    el.play().catch(() => {});
-                }
+        const audio = id => document.getElementById(id);
+
+        function playSound(id, loop = false) {
+            const sound = audio(id);
+            if (!sound) return;
+            sound.pause();
+            sound.currentTime = 0;
+            sound.loop = loop;
+            sound.play().catch(() => {});
+        }
+
+        function stopSound(id) {
+            const sound = audio(id);
+            if (sound) {
+                sound.pause();
+                sound.currentTime = 0;
             }
-        });
+        }
 
-        function stopAllAudio() {
-            ['snd-intro', 'snd-play', 'snd-ticking', 'snd-final', 'snd-correct', 'snd-wrong', 'snd-gameover', 'snd-victory', 'snd-lifeline'].forEach(id => {
-                let el = document.getElementById(id);
-                if (el) {
-                    el.pause();
-                    el.currentTime = 0;
-                }
+        function buildPath() {
+            const path = document.getElementById('room-path');
+            path.innerHTML = '';
+            for (let room = 1; room <= 15; room++) {
+                const node = document.createElement('div');
+                node.className = 'room-node';
+                node.dataset.room = room;
+                node.innerHTML = `<span>${room}</span><b>${room === 5 ? '🎣' : room === 10 ? '🦠' : room === 15 ? '👑' : '⚔'}</b>`;
+                path.appendChild(node);
+            }
+        }
+
+        function updatePath(currentRoom) {
+            document.getElementById('current-room').textContent = currentRoom;
+            document.querySelectorAll('.room-node').forEach(node => {
+                const room = Number(node.dataset.room);
+                node.classList.toggle('cleared', room < currentRoom);
+                node.classList.toggle('active', room === currentRoom);
             });
         }
 
-        function playSound(soundId, loop = false) {
-            let el = document.getElementById(soundId);
-            if (el) {
-                el.loop = loop;
-                let promise = el.play();
-                if (promise !== undefined) {
-                    promise.catch(err => console.warn(`Audio warning for #${soundId}:`, err));
-                }
-            }
-        }
+        function updateHud(data) {
+            const fullHearts = '❤️'.repeat(data.hp);
+            const emptyHearts = '🖤'.repeat(data.max_hp - data.hp);
+            document.getElementById('player-hp').textContent = fullHearts + emptyHearts;
+            document.getElementById('credits').textContent = data.credits;
+            document.getElementById('combo').textContent = `x${data.combo}`;
+            updatePath(data.room);
 
-        function playAudioAndAutoReset(soundId) {
-            stopAllAudio();
-            const soundEl = document.getElementById(soundId);
-            if (soundEl) {
-                soundEl.loop = false;
-                soundEl.onended = () => {
-                    setTimeout(() => restartGame(), 5000);
-                };
-                soundEl.play().catch(err => console.warn(`Audio warning for #${soundId}:`, err));
-            } else {
-                setTimeout(() => restartGame(), 5000);
-            }
-        }
-
-        function enableAudioAndPlayIntro() {
-            if (!audioUnlocked) {
-                audioUnlocked = true;
-                document.querySelector('.click-prompt').style.display = 'none';
-                playSound('snd-intro', true);
-            }
-        }
-
-        function renderLadder(currentStep = -1) {
-            const ladderEl = document.getElementById('prize-ladder');
-            ladderEl.innerHTML = '';
-            PRIZES.forEach((prize, idx) => {
-                const li = document.createElement('li');
-                li.className = 'ladder-item';
-                if (idx === 4 || idx === 9 || idx === 14) li.classList.add('safe');
-                if (idx === currentStep) li.classList.add('active');
-                li.innerHTML = `<span>Q${idx + 1}</span> <span>${prize}</span>`;
-                ladderEl.appendChild(li);
-            });
+            const enemy = data.enemy;
+            if (!enemy) return;
+            document.getElementById('enemy-icon').textContent = enemy.icon;
+            document.getElementById('enemy-kind').textContent = enemy.kind;
+            document.getElementById('enemy-name').textContent = enemy.name;
+            document.getElementById('enemy-hp-text').textContent = `${enemy.hp} / ${enemy.max_hp} HP`;
+            document.getElementById('enemy-hp-bar').style.width = `${(enemy.hp / enemy.max_hp) * 100}%`;
+            document.getElementById('enemy-card').classList.toggle('boss', enemy.kind !== 'ENEMY');
         }
 
         function startTimer() {
             clearInterval(timerInterval);
-            let timeLeft = 30;
-
-            const timerBox = document.getElementById('timer');
-            const timerBar = document.getElementById('timer-bar');
-
-            timerBox.innerText = timeLeft;
-            timerBox.classList.remove('timer-urgent');
-            timerBar.classList.remove('pulse-bar');
-            timerBar.style.width = '100%';
-
-            let introEl = document.getElementById('snd-intro');
-            let playEl = document.getElementById('snd-play');
-            if (introEl) introEl.pause();
-            if (playEl) playEl.pause();
-
+            let seconds = 30;
+            acceptingAnswers = true;
+            document.getElementById('timer').textContent = seconds;
+            document.getElementById('timer-bar').style.width = '100%';
             playSound('snd-ticking', true);
 
             timerInterval = setInterval(() => {
-                timeLeft--;
-                timerBox.innerText = timeLeft;
-                timerBar.style.width = `${(timeLeft / 30) * 100}%`;
-
-                if (timeLeft <= 10) {
-                    timerBox.classList.add('timer-urgent');
-                    timerBar.classList.add('pulse-bar');
-                }
-
-                if (timeLeft <= 0) {
+                seconds -= 1;
+                document.getElementById('timer').textContent = seconds;
+                document.getElementById('timer-bar').style.width = `${(seconds / 30) * 100}%`;
+                document.getElementById('timer').classList.toggle('urgent', seconds <= 10);
+                if (seconds <= 0) {
                     clearInterval(timerInterval);
-                    handleTimeout();
+                    submitAnswer(null, true);
                 }
             }, 1000);
         }
 
         function stopTimer() {
             clearInterval(timerInterval);
-            const timerBox = document.getElementById('timer');
-            const timerBar = document.getElementById('timer-bar');
-            if (timerBox) timerBox.classList.remove('timer-urgent');
-            if (timerBar) timerBar.classList.remove('pulse-bar');
+            stopSound('snd-ticking');
+            document.getElementById('timer').classList.remove('urgent');
         }
 
-        async function startGame(event) {
-            if (event) event.stopPropagation();
-            document.getElementById('title-overlay').style.display = 'none';
-            stopAllAudio();
-
-            document.getElementById('question-text').innerText = "";
-            document.getElementById('domain-display').innerText = "Domain: ---";
-            
-            const introSpotlights = document.getElementById('intro-spotlights');
-            introSpotlights.style.display = 'block';
-            playSound('snd-play');
-
-            try {
-                const res = await fetch('/api/start', { method: 'POST' });
-                if (!res.ok) throw new Error(`Server status ${res.status}`);
-
-                setTimeout(() => {
-                    introSpotlights.style.display = 'none';
-                    fetchNextQuestion();
-                }, 3000);
-            } catch (err) {
-                console.error("Game Start Error:", err);
-                introSpotlights.style.display = 'none';
-                document.getElementById('question-text').innerText = "Error starting game. Ensure server is running.";
-            }
+        async function startGame() {
+            document.getElementById('title-screen').classList.add('hidden');
+            const response = await fetch('/api/start', { method: 'POST' });
+            if (!response.ok) return showFatalError('The run could not be started.');
+            const data = await response.json();
+            updateHud(data);
+            await fetchQuestion();
         }
 
-        async function fetchNextQuestion() {
-            try {
-                const res = await fetch('/api/question');
-                const data = await res.json();
-                
-                if (data.status === 'completed') {
-                    playAudioAndAutoReset('snd-victory');
-                    triggerWinOverlay("$1,000,000");
-                    return;
-                }
-                
-                renderQuestion(data);
-                document.getElementById('btn-cashout').disabled = false;
-            } catch (err) {
-                console.error("Fetch Question Error:", err);
-            }
+        async function fetchQuestion() {
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('attack-button').disabled = true;
+            selectedAnswer = null;
+
+            const response = await fetch('/api/question');
+            if (!response.ok) return showFatalError('The next question could not be loaded.');
+            const data = await response.json();
+            renderQuestion(data);
         }
 
         function renderQuestion(data) {
-            selectedOptionKey = null;
-            document.getElementById('btn-final').disabled = true;
+            updateHud(data);
+            document.getElementById('domain').textContent = `DOMAIN: ${data.domain}`;
+            const tier = document.getElementById('tier');
+            tier.textContent = data.tier;
+            tier.className = `tier ${data.tier.toLowerCase()}`;
+            document.getElementById('question').textContent = data.question;
 
-            document.getElementById('domain-display').innerText = `Domain: ${data.domain}`;
-            
-            const tierEl = document.getElementById('tier-display');
-            tierEl.innerText = data.tier;
-            tierEl.className = `tier-badge tier-${data.tier.toLowerCase()}`;
+            const options = document.getElementById('options');
+            options.innerHTML = '';
+            Object.entries(data.options).forEach(([key, value]) => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.id = `option-${key}`;
+                button.innerHTML = `<span>${key}:</span> ${value}`;
+                button.onclick = () => selectAnswer(key);
+                options.appendChild(button);
+            });
 
-            document.getElementById('question-text').innerText = data.question;
-            document.getElementById('explanation-display').style.display = 'none';
-
-            const optsContainer = document.getElementById('options-container');
-            optsContainer.innerHTML = '';
-
-            for (const [key, val] of Object.entries(data.options)) {
-                const btn = document.createElement('button');
-                btn.className = 'opt-btn';
-                btn.id = `opt-${key}`;
-                btn.innerHTML = `<span class="prefix">${key}:</span> ${val}`;
-                btn.onclick = () => selectOption(key);
-                optsContainer.appendChild(btn);
-            }
-
-            document.getElementById('btn-5050').disabled = !data.lifeline_5050_available;
-            renderLadder(data.step);
+            document.getElementById('packet-sniffer').disabled = !data.packet_sniffer_available;
             startTimer();
         }
 
-        function selectOption(key) {
-            selectedOptionKey = key;
-            document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
-            const selectedBtn = document.getElementById(`opt-${key}`);
-            if (selectedBtn) selectedBtn.classList.add('selected');
-
-            document.getElementById('btn-final').disabled = false;
+        function selectAnswer(key) {
+            if (!acceptingAnswers) return;
+            selectedAnswer = key;
+            document.querySelectorAll('.option').forEach(button => button.classList.remove('selected'));
+            document.getElementById(`option-${key}`).classList.add('selected');
+            document.getElementById('attack-button').disabled = false;
         }
 
-        async function lockInFinalAnswer() {
-            if (!selectedOptionKey) return;
+        function submitSelectedAnswer() {
+            if (selectedAnswer) submitAnswer(selectedAnswer, false);
+        }
 
+        async function submitAnswer(answer, timeout) {
+            if (!acceptingAnswers) return;
+            acceptingAnswers = false;
             stopTimer();
-            stopAllAudio();
             playSound('snd-final');
+            document.querySelectorAll('.option').forEach(button => button.disabled = true);
+            document.getElementById('attack-button').disabled = true;
+            document.getElementById('packet-sniffer').disabled = true;
 
-            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-            document.getElementById('btn-final').disabled = true;
-            document.getElementById('btn-5050').disabled = true;
-            document.getElementById('btn-cashout').disabled = true;
+            const response = await fetch('/api/answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer, timeout })
+            });
+            const data = await response.json();
+            if (!response.ok) return showFatalError(data.error || 'The answer could not be submitted.');
 
-            submitAnswer(selectedOptionKey);
+            showAnswerResult(data, answer);
         }
 
-        async function submitAnswer(selectedKey) {
-            try {
-                const res = await fetch('/api/answer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answer: selectedKey })
-                });
-                const data = await res.json();
+        function showAnswerResult(data, answer) {
+            const correctButton = document.getElementById(`option-${data.correct_answer}`);
+            const selectedButton = answer ? document.getElementById(`option-${answer}`) : null;
+            if (correctButton) correctButton.classList.add('correct');
+            if (selectedButton && answer !== data.correct_answer) selectedButton.classList.add('wrong');
+            updateHud(data);
 
-                const selectedBtn = document.getElementById(`opt-${selectedKey}`);
+            const feedback = document.getElementById('feedback');
+            const title = document.getElementById('feedback-title');
+            const text = document.getElementById('feedback-text');
+            feedback.classList.remove('hidden', 'good', 'bad');
 
-                if (data.status === 'walked_away_revealed') {
-                    const correctBtn = document.getElementById(`opt-${data.correct_answer}`);
-                    if (selectedKey === data.correct_answer) {
-                        if (selectedBtn) {
-                            selectedBtn.classList.remove('selected');
-                            selectedBtn.classList.add('correct');
-                        }
-                    } else {
-                        if (selectedBtn) {
-                            selectedBtn.classList.remove('selected');
-                            selectedBtn.classList.add('wrong');
-                        }
-                        if (correctBtn) correctBtn.classList.add('correct');
-                    }
-
-                    showExplanation(data.explanation);
-                    document.getElementById('btn-skip-next').style.display = 'none';
-
-                    setTimeout(() => {
-                        playAudioAndAutoReset('snd-victory');
-                        triggerWinOverlay(data.prize_won);
-                    }, 2000);
-                    return;
-                }
-
-                if (data.status === 'correct' || data.status === 'won') {
-                    if (selectedBtn) {
-                        selectedBtn.classList.remove('selected');
-                        selectedBtn.classList.add('correct');
-                    }
-                    
-                    showExplanation(data.explanation);
-
-                    if (data.status === 'won') {
-                        playAudioAndAutoReset('snd-victory');
-                        triggerWinOverlay("$1,000,000");
-                    } else {
-                        stopAllAudio();
-                        playSound('snd-correct');
-                        
-                        pendingCheckpointModal = data.checkpoint_reached;
-                        currentGuaranteedPrize = data.guaranteed_prize;
-
-                        nextQuestionTimeout = setTimeout(() => {
-                            forceNextQuestion();
-                        }, 6000);
-                    }
-                } else {
-                    if (selectedBtn) {
-                        selectedBtn.classList.remove('selected');
-                        selectedBtn.classList.add('wrong');
-                    }
-                    const correctBtn = document.getElementById(`opt-${data.correct_answer}`);
-                    if (correctBtn) correctBtn.classList.add('correct');
-
-                    stopAllAudio();
-                    playSound('snd-wrong');
-                    setTimeout(() => playAudioAndAutoReset('snd-gameover'), 1200);
-
-                    showExplanation(data.explanation);
-                    document.getElementById('btn-skip-next').style.display = 'none';
-                    
-                    setTimeout(() => {
-                        triggerGameOverOverlay(data.prize_won, data.insult);
-                    }, 3500);
-                }
-            } catch (err) {
-                console.error("Submit Answer Error:", err);
+            if (data.status === 'game_over') {
+                playSound('snd-wrong');
+                title.textContent = `💥 YOU TOOK ${data.damage_taken} DAMAGE`;
+                text.textContent = `Correct answer: ${data.correct_answer}. ${data.explanation}`;
+                feedback.classList.add('bad');
+                document.getElementById('next-button').classList.add('hidden');
+                setTimeout(() => showEndScreen(false, data), 1800);
+                return;
             }
-        }
 
-        function forceNextQuestion() {
-            if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-
-            if (pendingCheckpointModal) {
-                pendingCheckpointModal = false;
-                showCheckpointModal(currentGuaranteedPrize);
+            if (data.status === 'player_hit') {
+                playSound('snd-wrong');
+                title.textContent = data.was_timeout
+                    ? `⏱ TIMEOUT — ${data.damage_taken} DAMAGE`
+                    : `🛡 ATTACK BLOCKED — ${data.damage_taken} DAMAGE`;
+                text.textContent = `Correct answer: ${data.correct_answer}. ${data.explanation}`;
+                feedback.classList.add('bad');
+            } else if (data.status === 'won') {
+                playSound('snd-victory');
+                title.textContent = '👑 ROOT ADMIN DEFEATED';
+                text.textContent = data.explanation;
+                feedback.classList.add('good');
+                document.getElementById('next-button').classList.add('hidden');
+                setTimeout(() => showEndScreen(true, data), 1800);
+                return;
             } else {
-                fetchNextQuestion();
+                playSound('snd-correct');
+                const combatMessage = data.status === 'room_cleared'
+                    ? `⚔ ${data.defeated_enemy} DEFEATED`
+                    : `💥 ${data.damage_dealt} DAMAGE DEALT`;
+                title.textContent = combatMessage;
+                text.textContent = `+${data.credits_earned} credits. ${data.explanation}`;
+                feedback.classList.add('good');
             }
+
+            const nextButton = document.getElementById('next-button');
+            nextButton.classList.remove('hidden');
+            nextButton.textContent = data.status === 'room_cleared'
+                ? 'ENTER NEXT ROOM →'
+                : 'NEXT QUESTION →';
         }
 
-        function showCheckpointModal(amount) {
-            document.getElementById('checkpoint-guaranteed-text').innerText = amount;
-            document.getElementById('checkpoint-modal').style.display = 'flex';
-        }
-
-        async function processCheckpointChoice(userChoice) {
-            document.getElementById('checkpoint-modal').style.display = 'none';
-            try {
-                const res = await fetch('/api/checkpoint_choice', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ choice: userChoice })
-                });
-                const data = await res.json();
-
-                if (data.status === 'cashed_out') {
-                    playAudioAndAutoReset('snd-victory');
-                    triggerWinOverlay(data.prize_won);
-                } else {
-                    fetchNextQuestion();
-                }
-            } catch (err) {
-                console.error("Checkpoint Choice Error:", err);
-            }
-        }
-
-        async function handleTimeout() {
-            stopTimer();
-            stopAllAudio();
-            playSound('snd-wrong');
-            setTimeout(() => playAudioAndAutoReset('snd-gameover'), 1200);
-
-            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
-            document.getElementById('btn-final').disabled = true;
-            document.getElementById('btn-5050').disabled = true;
-            document.getElementById('btn-cashout').disabled = true;
-
-            try {
-                const res = await fetch('/api/answer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ timeout: true })
-                });
-                const data = await res.json();
-
-                const correctBtn = document.getElementById(`opt-${data.correct_answer}`);
-                if (correctBtn) correctBtn.classList.add('correct');
-
-                showExplanation(data.explanation);
-                document.getElementById('btn-skip-next').style.display = 'none';
-                document.getElementById('question-text').innerText = "TIME EXPIRED!";
-
-                setTimeout(() => {
-                    triggerGameOverOverlay(data.prize_won, data.insult);
-                }, 3500);
-            } catch (err) {
-                console.error("Timeout Error:", err);
-            }
-        }
-
-        async function cashout() {
-            stopTimer();
-            stopAllAudio();
-
-            document.getElementById('btn-5050').disabled = true;
-            document.getElementById('btn-cashout').disabled = true;
-
-            try {
-                await fetch('/api/cashout', { method: 'POST' });
-                document.getElementById('walkaway-modal').style.display = 'flex';
-            } catch (err) {
-                console.error("Cashout Error:", err);
-            }
-        }
-
-        function closeWalkawayModal() {
-            document.getElementById('walkaway-modal').style.display = 'none';
-            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = false);
-        }
-
-        async function useLifeline5050() {
-            stopAllAudio();
+        async function usePacketSniffer() {
             playSound('snd-lifeline');
-            try {
-                const res = await fetch('/api/lifeline/5050', { method: 'POST' });
-                const data = await res.json();
-
-                if (data.removed) {
-                    data.removed.forEach(key => {
-                        const btn = document.getElementById(`opt-${key}`);
-                        if (btn) {
-                            btn.disabled = true;
-                            if (selectedOptionKey === key) {
-                                selectedOptionKey = null;
-                                btn.classList.remove('selected');
-                                document.getElementById('btn-final').disabled = true;
-                            }
-                        }
-                    });
-                    document.getElementById('btn-5050').disabled = true;
+            const response = await fetch('/api/powerup/packet-sniffer', { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok) return;
+            data.removed.forEach(key => {
+                const button = document.getElementById(`option-${key}`);
+                if (button) {
+                    button.disabled = true;
+                    button.classList.add('removed');
+                    if (selectedAnswer === key) {
+                        selectedAnswer = null;
+                        document.getElementById('attack-button').disabled = true;
+                    }
                 }
-            } catch (err) {
-                console.error("Lifeline Error:", err);
-            }
+            });
+            document.getElementById('packet-sniffer').disabled = true;
         }
 
-        function showExplanation(text) {
-            if (!text) return;
-            const expBox = document.getElementById('explanation-display');
-            document.getElementById('explanation-text').innerText = `Explanation: ${text}`;
-            document.getElementById('btn-skip-next').style.display = 'inline-block';
-            expBox.style.display = 'block';
+        function showEndScreen(won, data) {
+            const screen = document.getElementById('end-screen');
+            document.getElementById('end-eyebrow').textContent = won ? 'RUN COMPLETE' : 'RUN OVER';
+            document.getElementById('end-title').textContent = won ? 'ACCESS GRANTED' : 'SYSTEM FAILURE';
+            document.getElementById('end-message').textContent = won
+                ? `You cleared all 15 rooms and escaped with ${data.credits} credits.`
+                : `You reached room ${data.room} and collected ${data.credits} credits.`;
+            screen.classList.remove('hidden');
         }
 
-        function triggerWinOverlay(prizeAmount) {
-            const winModal = document.getElementById('win-modal');
-            document.getElementById('win-prize-text').innerText = `YOU WALK AWAY WITH ${prizeAmount}!`;
-            winModal.style.display = 'flex';
-            triggerGlitters();
-        }
-
-        function triggerGameOverOverlay(prizeWon, insult = '') {
-            const goModal = document.getElementById('gameover-modal');
-            document.getElementById('gameover-prize-text').innerText = `Guaranteed Prize: ${prizeWon}`;
-            document.getElementById('gameover-insult-text').innerText = insult ? `"${insult}"` : '';
-            goModal.style.display = 'flex';
-
-            const emojis = ['🤡', '💀', '💩', '☠️'];
-            for (let i = 0; i < 60; i++) {
-                const emoji = document.createElement('div');
-                emoji.className = 'falling-emoji';
-                emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-                emoji.style.left = (Math.random() * 95) + 'vw';
-                emoji.style.animationDelay = (Math.random() * 2.5) + 's';
-                emoji.style.animationDuration = (2 + Math.random() * 2) + 's';
-                goModal.appendChild(emoji);
-            }
-        }
-
-        function triggerGlitters() {
-            const canvas = document.getElementById('glitterCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const particles = [];
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 5 + 2,
-                    color: ['#FFD700', '#FFF', '#FFA500'][Math.floor(Math.random() * 3)],
-                    velocityY: Math.random() * 3 + 1,
-                    velocityX: Math.random() * 2 - 1
-                });
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach(p => {
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    p.y += p.velocityY;
-                    p.x += p.velocityX;
-                    if (p.y > canvas.height) p.y = 0;
-                });
-                requestAnimationFrame(animate);
-            }
-            animate();
+        function showFatalError(message) {
+            stopTimer();
+            document.getElementById('question').textContent = message;
         }
 
         function restartGame() {
-            window.location.reload();
+            document.getElementById('end-screen').classList.add('hidden');
+            startGame();
         }
 
-        renderLadder();
+        buildPath();
+        updatePath(1);
     </script>
 </body>
 </html>

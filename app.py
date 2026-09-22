@@ -1,237 +1,247 @@
 import json
+import os
 import random
+
 from flask import Flask, jsonify, render_template, request, session
 
+
 app = Flask(__name__)
-app.secret_key = "swinburne_millionaire_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 
-PRIZES = [
-    "$100", "$200", "$300", "$500", "$1,000",
-    "$2,000", "$4,000", "$8,000", "$16,000", "$32,000",
-    "$64,000", "$125,000", "$250,000", "$500,000", "$1,000,000"
-]
+TOTAL_ROOMS = 15
+PLAYER_MAX_HP = 5
 
-WRONG_ANSWER_INSULTS = [
-    "Even a random guesser had a 25% chance, yet here we are.",
-    "Is that your final answer, or just your final mistake?",
-    "That answer was so wrong, your degree just un-enrolled itself.",
-    "Congratulations! You've successfully managed to walk away with nothing.",
-    "Don't worry, poverty builds character!",
-    "Errors like that are why firewalls were invented in the first place."
-]
+NORMAL_ENEMIES = {
+    "EASY": [
+        {"name": "Spam Bot", "icon": "🤖"},
+        {"name": "Phishing Email", "icon": "📧"},
+        {"name": "Adware Bug", "icon": "🐛"},
+    ],
+    "MEDIUM": [
+        {"name": "Botnet Node", "icon": "🧟"},
+        {"name": "Credential Thief", "icon": "🔓"},
+        {"name": "Malware Loader", "icon": "👾"},
+    ],
+    "HARD": [
+        {"name": "Ransomware", "icon": "💀"},
+        {"name": "Insider Threat", "icon": "🕵️"},
+        {"name": "Zero-Day Exploit", "icon": "🐉"},
+    ],
+}
 
-TIMEOUT_INSULTS = [
-    "Did you fall asleep at the keyboard?",
-    "30 seconds wasn't enough? Were you reading with your fingers?",
-    "Time flies when you're staring blankly at the screen!",
-    "The timer reached zero faster than your brain cells could connect.",
-    "You hesitated so long even the server almost went to sleep.",
-    "Clocked out early? Next time, try answering before retirement!"
-]
+BOSSES = {
+    5: {
+        "name": "Phishing King",
+        "icon": "🎣",
+        "kind": "MINIBOSS",
+        "max_hp": 3,
+        "attack": 1,
+    },
+    10: {
+        "name": "Ransomware Overlord",
+        "icon": "🦠",
+        "kind": "MAJOR BOSS",
+        "max_hp": 4,
+        "attack": 1,
+    },
+    15: {
+        "name": "The Root Admin",
+        "icon": "👑",
+        "kind": "FINAL BOSS",
+        "max_hp": 5,
+        "attack": 2,
+    },
+}
+
 
 def load_questions():
+    """Load the question bank, including the optional local question file."""
     try:
-        with open("questions_2.json", "r", encoding="utf-8") as f:
-            return json.load(f)
+        with open("questions_2.json", "r", encoding="utf-8") as file:
+            return json.load(file)
     except FileNotFoundError:
-        with open("questions.json", "r", encoding="utf-8") as f:
-            return json.load(f)
+        with open("questions.json", "r", encoding="utf-8") as file:
+            return json.load(file)
 
-def get_tier(step):
-    if step < 5:
+
+def get_tier(room):
+    if room <= 5:
         return "EASY"
-    elif step < 10:
+    if room <= 10:
         return "MEDIUM"
     return "HARD"
 
-def get_guaranteed_prize(step):
-    if step > 9:
-        return "$32,000"
-    elif step > 4:
-        return "$1,000"
-    return "$0"
+
+def create_enemy(room):
+    """Create the enemy for a room. Rooms 5, 10 and 15 are boss rooms."""
+    if room in BOSSES:
+        enemy = BOSSES[room].copy()
+    else:
+        template = random.choice(NORMAL_ENEMIES[get_tier(room)])
+        enemy = {
+            **template,
+            "kind": "ENEMY",
+            "max_hp": 1,
+            "attack": 1,
+        }
+
+    enemy["hp"] = enemy["max_hp"]
+    return enemy
+
+
+def public_stats(state):
+    """Return only the game information that is safe for the browser to see."""
+    return {
+        "room": state["current_room"],
+        "total_rooms": TOTAL_ROOMS,
+        "hp": state["hp"],
+        "max_hp": state["max_hp"],
+        "credits": state["credits"],
+        "combo": state["combo"],
+        "enemy": state.get("enemy"),
+    }
+
+
+def current_question(state):
+    questions = load_questions()
+    order = state["question_order"]
+    question_number = state["question_number"]
+
+    if question_number >= len(order):
+        # This is rare, but reshuffling prevents a long run from crashing.
+        order.extend(random.sample(range(len(questions)), len(questions)))
+
+    return questions[order[question_number]]
+
 
 @app.route("/")
 def index():
-    return render_template(
-        "index.html",
-        title="Swinburne Millionaire",
-        subtitle="Are you smart enough to win $1,000,000?",
-    )
+    return render_template("index.html")
+
 
 @app.route("/api/start", methods=["POST"])
 def start_game():
     questions = load_questions()
-
-    if len(questions) < 15:
-        selected_questions = random.choices(questions, k=15)
-    else:
-        selected_questions = random.sample(questions, 15)
+    question_order = list(range(len(questions)))
+    random.shuffle(question_order)
 
     session["game_state"] = {
-        "questions": selected_questions,
-        "current_step": 0,
-        "lifeline_5050_used": False,
+        "question_order": question_order,
+        "question_number": 0,
+        "current_room": 1,
+        "hp": PLAYER_MAX_HP,
+        "max_hp": PLAYER_MAX_HP,
+        "credits": 0,
+        "combo": 0,
+        "packet_sniffer_used": False,
+        "enemy": create_enemy(1),
         "game_over": False,
-        "walked_away": False,
     }
 
-    return jsonify({"status": "started", "total_questions": 15})
+    return jsonify({"status": "started", **public_stats(session["game_state"])})
+
 
 @app.route("/api/question", methods=["GET"])
 def get_question():
     state = session.get("game_state")
     if not state or state.get("game_over"):
-        return jsonify({"error": "No active game"}), 400
+        return jsonify({"error": "No active run"}), 400
 
-    step = state["current_step"]
-    if step >= len(state["questions"]):
-        return jsonify({"status": "completed"})
-
-    q = state["questions"][step]
-
+    question = current_question(state)
     return jsonify({
-        "step": step,
-        "prize": PRIZES[step],
-        "tier": get_tier(step),
-        "domain": q.get("domain", "General Security"),
-        "question": q["question"],
-        "options": q["options"],
-        "lifeline_5050_available": not state["lifeline_5050_used"],
-        "walked_away": state.get("walked_away", False),
+        "tier": get_tier(state["current_room"]),
+        "domain": question.get("domain", "General Security"),
+        "question": question["question"],
+        "options": question["options"],
+        "packet_sniffer_available": not state["packet_sniffer_used"],
+        **public_stats(state),
     })
+
 
 @app.route("/api/answer", methods=["POST"])
 def submit_answer():
     state = session.get("game_state")
     if not state or state.get("game_over"):
-        return jsonify({"error": "No active game"}), 400
+        return jsonify({"error": "No active run"}), 400
 
     data = request.get_json() or {}
     user_answer = data.get("answer")
     is_timeout = data.get("timeout", False)
+    question = current_question(state)
+    correct_answer = question.get("answer") or question.get("correct")
+    state["question_number"] += 1
 
-    step = state["current_step"]
-    q = state["questions"][step]
-    correct_answer = q.get("answer") or q.get("correct")
+    if is_timeout or user_answer != correct_answer:
+        damage_taken = state["enemy"]["attack"]
+        state["hp"] = max(0, state["hp"] - damage_taken)
+        state["combo"] = 0
 
-    if state.get("walked_away"):
-        state["game_over"] = True
+        if state["hp"] == 0:
+            state["game_over"] = True
+            status = "game_over"
+        else:
+            status = "player_hit"
+
         session.modified = True
         return jsonify({
-            "status": "walked_away_revealed",
-            "user_choice": user_answer,
+            "status": status,
+            "was_timeout": is_timeout,
             "correct_answer": correct_answer,
-            "is_correct": (user_answer == correct_answer),
-            "explanation": q.get("explanation", ""),
-            "prize_won": PRIZES[step - 1] if step > 0 else "$0",
+            "explanation": question.get("explanation", ""),
+            "damage_taken": damage_taken,
+            **public_stats(state),
         })
 
-    if is_timeout:
-        state["game_over"] = True
-        session.modified = True
-        return jsonify({
-            "status": "timeout",
-            "correct_answer": correct_answer,
-            "explanation": q.get("explanation", ""),
-            "prize_won": get_guaranteed_prize(step),
-            "insult": random.choice(TIMEOUT_INSULTS)
-        })
+    state["combo"] += 1
+    damage_dealt = 2 if state["combo"] % 3 == 0 else 1
+    state["enemy"]["hp"] = max(0, state["enemy"]["hp"] - damage_dealt)
+    credits_earned = 10 + (state["combo"] * 2)
+    state["credits"] += credits_earned
 
-    if user_answer != correct_answer:
-        state["game_over"] = True
-        session.modified = True
-        return jsonify({
-            "status": "wrong",
-            "correct_answer": correct_answer,
-            "explanation": q.get("explanation", ""),
-            "prize_won": get_guaranteed_prize(step),
-            "insult": random.choice(WRONG_ANSWER_INSULTS)
-        })
+    enemy_defeated = state["enemy"]["hp"] == 0
+    defeated_enemy = state["enemy"]["name"] if enemy_defeated else None
 
-    state["current_step"] += 1
-    next_step = state["current_step"]
-
-    if next_step >= 15:
-        state["game_over"] = True
-        session.modified = True
-        return jsonify({
-            "status": "won",
-            "correct_answer": correct_answer,
-            "explanation": q.get("explanation", ""),
-            "prize_won": "$1,000,000",
-        })
-
-    checkpoint_reached = next_step in [5, 10]
-    guaranteed_prize = get_guaranteed_prize(next_step)
+    if enemy_defeated:
+        if state["current_room"] == TOTAL_ROOMS:
+            state["game_over"] = True
+            status = "won"
+        else:
+            state["current_room"] += 1
+            state["enemy"] = create_enemy(state["current_room"])
+            status = "room_cleared"
+    else:
+        status = "enemy_hit"
 
     session.modified = True
-
     return jsonify({
-        "status": "correct",
+        "status": status,
         "correct_answer": correct_answer,
-        "explanation": q.get("explanation", ""),
-        "checkpoint_reached": checkpoint_reached,
-        "guaranteed_prize": guaranteed_prize,
-        "next_step": next_step,
+        "explanation": question.get("explanation", ""),
+        "damage_dealt": damage_dealt,
+        "credits_earned": credits_earned,
+        "defeated_enemy": defeated_enemy,
+        **public_stats(state),
     })
 
-@app.route("/api/cashout", methods=["POST"])
-def cashout():
+
+@app.route("/api/powerup/packet-sniffer", methods=["POST"])
+def use_packet_sniffer():
     state = session.get("game_state")
     if not state or state.get("game_over"):
-        return jsonify({"error": "No active game"}), 400
+        return jsonify({"error": "No active run"}), 400
 
-    step = state["current_step"]
-    state["walked_away"] = True
-    session.modified = True
+    if state["packet_sniffer_used"]:
+        return jsonify({"error": "Packet Sniffer already used"}), 400
 
-    prize_won = PRIZES[step - 1] if step > 0 else "$0"
-    return jsonify({
-        "status": "walk_away_initiated",
-        "prize_won": prize_won,
-        "message": "You walked away! Take a guess to see if you would have been correct.",
-    })
-
-@app.route("/api/checkpoint_choice", methods=["POST"])
-def checkpoint_choice():
-    data = request.get_json() or {}
-    user_choice = data.get("choice")
-
-    state = session.get("game_state")
-    if not state or state.get("game_over"):
-        return jsonify({"error": "No active game"}), 400
-
-    if user_choice == "cashout":
-        step = state["current_step"]
-        prize_won = get_guaranteed_prize(step)
-        state["walked_away"] = True
-        state["game_over"] = True
-        session.modified = True
-        return jsonify({"status": "cashed_out", "prize_won": prize_won})
-
-    return jsonify({"status": "continue"})
-
-@app.route("/api/lifeline/5050", methods=["POST"])
-def lifeline_5050():
-    state = session.get("game_state")
-    if not state or state.get("game_over"):
-        return jsonify({"error": "No active game"}), 400
-
-    if state["lifeline_5050_used"]:
-        return jsonify({"error": "Lifeline already used"}), 400
-
-    step = state["current_step"]
-    q = state["questions"][step]
-    correct_answer = q.get("answer") or q.get("correct")
-
-    incorrect_keys = [k for k in q["options"].keys() if k != correct_answer]
+    question = current_question(state)
+    correct_answer = question.get("answer") or question.get("correct")
+    incorrect_keys = [key for key in question["options"] if key != correct_answer]
     removed_keys = random.sample(incorrect_keys, 2)
 
-    state["lifeline_5050_used"] = True
+    state["packet_sniffer_used"] = True
     session.modified = True
-
     return jsonify({"status": "success", "removed": removed_keys})
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
