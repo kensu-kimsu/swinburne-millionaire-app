@@ -9,6 +9,7 @@ combat-based quiz game. The original version remains safe on the `main` branch.
 ## Version 1 features
 
 - A 15-room run with easy, medium and hard areas
+- Three difficulty-matched question banks with 100 questions each
 - Five player health points
 - Correct answers damage enemies
 - Wrong answers and timeouts damage the player
@@ -84,8 +85,10 @@ git push
 ## Project files
 
 ```text
-app.py               Flask routes and game rules
-questions.json        Cybersecurity question bank
+app.py                   Flask routes and game rules
+questions.json            100 Easy cybersecurity questions
+questions_medium.json     100 Medium cybersecurity questions
+questions_hard.json       100 Hard cybersecurity questions
 templates/index.html  Page structure and browser game logic
 static/style.css      Roguelike visual design
 test_app.py           Automated game-rule checks
