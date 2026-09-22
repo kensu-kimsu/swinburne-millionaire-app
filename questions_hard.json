@@ -3,7 +3,7 @@
     "id": "H001",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? A certificate template permits client authentication, enrolment by ordinary users, and a requester-supplied subject alternative name.",
+    "question": "A template allows user enrolment, client auth, and supplied identities. What is this?",
     "options": {
       "A": "Unconstrained delegation abuse",
       "B": "Constrained delegation abuse",
@@ -17,9 +17,9 @@
     "id": "H002",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of AD CS ESC1, which action would provide the clearest evidence?",
+    "question": "Best evidence of AD CS ESC1?",
     "options": {
-      "A": "Use Certipy to enumerate vulnerable templates and enrolment rights",
+      "A": "Use Certipy to find vulnerable templates and rights",
       "B": "Review msDS-AllowedToDelegateTo and S4U activity",
       "C": "Inspect delegation flags and cached Kerberos tickets",
       "D": "Detect replication API use from non-domain controllers"
@@ -31,12 +31,12 @@
     "id": "H003",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of AD CS ESC1?",
+    "question": "Best control against AD CS ESC1?",
     "options": {
-      "A": "Remove unnecessary replication rights and rotate exposed credentials",
-      "B": "Limit delegation targets and use group managed service accounts",
-      "C": "Disable requester-supplied identities and restrict template enrolment",
-      "D": "Remove unconstrained delegation and protect privileged accounts"
+      "A": "Remove replication rights and rotate exposed credentials",
+      "B": "Limit delegation and use managed service accounts",
+      "C": "Disable supplied identities; restrict template enrolment",
+      "D": "Remove unconstrained delegation; protect privileged users"
     },
     "answer": "C",
     "explanation": "The most direct control is to disable requester-supplied identities and restrict template enrolment."
@@ -45,12 +45,12 @@
     "id": "H004",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes AD CS ESC1?",
+    "question": "What is AD CS ESC1?",
     "options": {
-      "A": "Unconstrained delegation lets a trusted host receive reusable user TGTs.",
-      "B": "DCSync abuses directory replication privileges to retrieve password data.",
-      "C": "Constrained delegation permits a service to impersonate users to specifically configured services.",
-      "D": "ESC1 allows an enrollee to request an authentication certificate for another identity."
+      "A": "Unconstrained delegation exposes reusable user TGTs.",
+      "B": "DCSync abuses replication rights to retrieve passwords.",
+      "C": "Constrained delegation impersonates users to set services.",
+      "D": "ESC1 requests an auth certificate as another identity."
     },
     "answer": "D",
     "explanation": "ESC1 allows an enrollee to request an authentication certificate for another identity."
@@ -59,7 +59,7 @@
     "id": "H005",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? A server can retain forwarded TGTs from users who authenticate to it, including privileged users.",
+    "question": "A server retains forwarded TGTs from users who connect. What is this?",
     "options": {
       "A": "DCSync",
       "B": "Golden Ticket",
@@ -73,7 +73,7 @@
     "id": "H006",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of Unconstrained delegation abuse, which action would provide the clearest evidence?",
+    "question": "Best evidence of Unconstrained delegation abuse?",
     "options": {
       "A": "Detect replication API use from non-domain controllers",
       "B": "Hunt for anomalous TGT lifetimes and encryption details",
@@ -87,12 +87,12 @@
     "id": "H007",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of Unconstrained delegation abuse?",
+    "question": "Best control against Unconstrained delegation abuse?",
     "options": {
-      "A": "Remove unnecessary replication rights and rotate exposed credentials",
+      "A": "Remove replication rights and rotate exposed credentials",
       "B": "Reset KRBTGT twice after removing attacker access",
-      "C": "Limit delegation targets and use group managed service accounts",
-      "D": "Remove unconstrained delegation and protect privileged accounts"
+      "C": "Limit delegation and use managed service accounts",
+      "D": "Remove unconstrained delegation; protect privileged users"
     },
     "answer": "D",
     "explanation": "The most direct control is to remove unconstrained delegation and protect privileged accounts."
@@ -101,12 +101,12 @@
     "id": "H008",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes Unconstrained delegation abuse?",
+    "question": "What is Unconstrained delegation abuse?",
     "options": {
-      "A": "Constrained delegation permits a service to impersonate users to specifically configured services.",
-      "B": "Unconstrained delegation lets a trusted host receive reusable user TGTs.",
-      "C": "DCSync abuses directory replication privileges to retrieve password data.",
-      "D": "A Golden Ticket is a forged Kerberos TGT signed with the domain KRBTGT key."
+      "A": "Constrained delegation impersonates users to set services.",
+      "B": "Unconstrained delegation exposes reusable user TGTs.",
+      "C": "DCSync abuses replication rights to retrieve passwords.",
+      "D": "A Golden Ticket is a TGT forged with the KRBTGT key."
     },
     "answer": "B",
     "explanation": "Unconstrained delegation lets a trusted host receive reusable user TGTs."
@@ -115,7 +115,7 @@
     "id": "H009",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? A compromised service account can request delegated tickets to services listed in its allowed-to-delegate configuration.",
+    "question": "A service account requests delegated tickets to its allowed services. What is this?",
     "options": {
       "A": "DCSync",
       "B": "Constrained delegation abuse",
@@ -129,9 +129,9 @@
     "id": "H010",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of Constrained delegation abuse, which action would provide the clearest evidence?",
+    "question": "Best evidence of Constrained delegation abuse?",
     "options": {
-      "A": "Compare service logons with missing corresponding KDC ticket events",
+      "A": "Find service logons without matching KDC ticket events",
       "B": "Review msDS-AllowedToDelegateTo and S4U activity",
       "C": "Detect replication API use from non-domain controllers",
       "D": "Hunt for anomalous TGT lifetimes and encryption details"
@@ -143,10 +143,10 @@
     "id": "H011",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of Constrained delegation abuse?",
+    "question": "Best control against Constrained delegation abuse?",
     "options": {
-      "A": "Limit delegation targets and use group managed service accounts",
-      "B": "Remove unnecessary replication rights and rotate exposed credentials",
+      "A": "Limit delegation and use managed service accounts",
+      "B": "Remove replication rights and rotate exposed credentials",
       "C": "Rotate the service account key and use managed accounts",
       "D": "Reset KRBTGT twice after removing attacker access"
     },
@@ -157,12 +157,12 @@
     "id": "H012",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes Constrained delegation abuse?",
+    "question": "What is Constrained delegation abuse?",
     "options": {
-      "A": "Constrained delegation permits a service to impersonate users to specifically configured services.",
-      "B": "A Silver Ticket is a forged Kerberos service ticket created with a service account key.",
-      "C": "A Golden Ticket is a forged Kerberos TGT signed with the domain KRBTGT key.",
-      "D": "DCSync abuses directory replication privileges to retrieve password data."
+      "A": "Constrained delegation impersonates users to set services.",
+      "B": "A Silver Ticket is forged with a service account key.",
+      "C": "A Golden Ticket is a TGT forged with the KRBTGT key.",
+      "D": "DCSync abuses replication rights to retrieve passwords."
     },
     "answer": "A",
     "explanation": "Constrained delegation permits a service to impersonate users to specifically configured services."
@@ -171,7 +171,7 @@
     "id": "H013",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? A non-domain-controller account requests password replication data using directory replication rights.",
+    "question": "A non-DC account requests password data through replication. What is this?",
     "options": {
       "A": "NTLM relay to LDAP",
       "B": "Golden Ticket",
@@ -185,12 +185,12 @@
     "id": "H014",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of DCSync, which action would provide the clearest evidence?",
+    "question": "Best evidence of DCSync?",
     "options": {
-      "A": "Correlate NTLM authentication with unexpected LDAP modifications",
+      "A": "Link NTLM authentication to unexpected LDAP changes",
       "B": "Hunt for anomalous TGT lifetimes and encryption details",
       "C": "Detect replication API use from non-domain controllers",
-      "D": "Compare service logons with missing corresponding KDC ticket events"
+      "D": "Find service logons without matching KDC ticket events"
     },
     "answer": "C",
     "explanation": "Detect replication API use from non-domain controllers is the most relevant investigation step for confirming DCSync."
@@ -199,12 +199,12 @@
     "id": "H015",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of DCSync?",
+    "question": "Best control against DCSync?",
     "options": {
       "A": "Require LDAP signing and channel binding",
       "B": "Reset KRBTGT twice after removing attacker access",
       "C": "Rotate the service account key and use managed accounts",
-      "D": "Remove unnecessary replication rights and rotate exposed credentials"
+      "D": "Remove replication rights and rotate exposed credentials"
     },
     "answer": "D",
     "explanation": "The most direct control is to remove unnecessary replication rights and rotate exposed credentials."
@@ -213,12 +213,12 @@
     "id": "H016",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes DCSync?",
+    "question": "What is DCSync?",
     "options": {
-      "A": "NTLM relay to LDAP forwards authentication to perform directory actions as the victim.",
-      "B": "DCSync abuses directory replication privileges to retrieve password data.",
-      "C": "A Golden Ticket is a forged Kerberos TGT signed with the domain KRBTGT key.",
-      "D": "A Silver Ticket is a forged Kerberos service ticket created with a service account key."
+      "A": "NTLM-to-LDAP relay performs directory actions as the victim.",
+      "B": "DCSync abuses replication rights to retrieve passwords.",
+      "C": "A Golden Ticket is a TGT forged with the KRBTGT key.",
+      "D": "A Silver Ticket is forged with a service account key."
     },
     "answer": "B",
     "explanation": "DCSync abuses directory replication privileges to retrieve password data."
@@ -227,7 +227,7 @@
     "id": "H017",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? Forged TGTs remain possible because the attacker obtained the KRBTGT account key.",
+    "question": "An attacker forges TGTs using the KRBTGT key. What is this?",
     "options": {
       "A": "NTLM relay to LDAP",
       "B": "Silver Ticket",
@@ -241,12 +241,12 @@
     "id": "H018",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of Golden Ticket, which action would provide the clearest evidence?",
+    "question": "Best evidence of Golden Ticket?",
     "options": {
-      "A": "Correlate NTLM authentication with unexpected LDAP modifications",
+      "A": "Link NTLM authentication to unexpected LDAP changes",
       "B": "Hunt for anomalous TGT lifetimes and encryption details",
       "C": "Audit msDS-AllowedToActOnBehalfOfOtherIdentity changes",
-      "D": "Compare service logons with missing corresponding KDC ticket events"
+      "D": "Find service logons without matching KDC ticket events"
     },
     "answer": "B",
     "explanation": "Hunt for anomalous TGT lifetimes and encryption details is the most relevant investigation step for confirming Golden Ticket."
@@ -255,12 +255,12 @@
     "id": "H019",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of Golden Ticket?",
+    "question": "Best control against Golden Ticket?",
     "options": {
       "A": "Require LDAP signing and channel binding",
       "B": "Rotate the service account key and use managed accounts",
       "C": "Reset KRBTGT twice after removing attacker access",
-      "D": "Restrict computer-object writes and monitor delegation attributes"
+      "D": "Restrict computer writes; monitor delegation attributes"
     },
     "answer": "C",
     "explanation": "The most direct control is to reset KRBTGT twice after removing attacker access."
@@ -269,12 +269,12 @@
     "id": "H020",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes Golden Ticket?",
+    "question": "What is Golden Ticket?",
     "options": {
-      "A": "A Silver Ticket is a forged Kerberos service ticket created with a service account key.",
-      "B": "A Golden Ticket is a forged Kerberos TGT signed with the domain KRBTGT key.",
-      "C": "NTLM relay to LDAP forwards authentication to perform directory actions as the victim.",
-      "D": "RBCD lets the target resource decide which principals may delegate identities to it."
+      "A": "A Silver Ticket is forged with a service account key.",
+      "B": "A Golden Ticket is a TGT forged with the KRBTGT key.",
+      "C": "NTLM-to-LDAP relay performs directory actions as the victim.",
+      "D": "RBCD lets a target choose who may delegate identities."
     },
     "answer": "B",
     "explanation": "A Golden Ticket is a forged Kerberos TGT signed with the domain KRBTGT key."
@@ -283,7 +283,7 @@
     "id": "H021",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? A forged service ticket accesses one service using that service account's key without contacting the KDC.",
+    "question": "A forged ticket accesses one service without contacting the KDC. What is this?",
     "options": {
       "A": "HTTP request smuggling",
       "B": "Silver Ticket",
@@ -297,12 +297,12 @@
     "id": "H022",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of Silver Ticket, which action would provide the clearest evidence?",
+    "question": "Best evidence of Silver Ticket?",
     "options": {
       "A": "Use timing and differential CL.TE/TE.CL tests",
-      "B": "Correlate NTLM authentication with unexpected LDAP modifications",
+      "B": "Link NTLM authentication to unexpected LDAP changes",
       "C": "Audit msDS-AllowedToActOnBehalfOfOtherIdentity changes",
-      "D": "Compare service logons with missing corresponding KDC ticket events"
+      "D": "Find service logons without matching KDC ticket events"
     },
     "answer": "D",
     "explanation": "Compare service logons with missing corresponding KDC ticket events is the most relevant investigation step for confirming Silver Ticket."
@@ -311,10 +311,10 @@
     "id": "H023",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of Silver Ticket?",
+    "question": "Best control against Silver Ticket?",
     "options": {
       "A": "Rotate the service account key and use managed accounts",
-      "B": "Restrict computer-object writes and monitor delegation attributes",
+      "B": "Restrict computer writes; monitor delegation attributes",
       "C": "Normalise requests and reject ambiguous message framing",
       "D": "Require LDAP signing and channel binding"
     },
@@ -325,12 +325,12 @@
     "id": "H024",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes Silver Ticket?",
+    "question": "What is Silver Ticket?",
     "options": {
-      "A": "A Silver Ticket is a forged Kerberos service ticket created with a service account key.",
-      "B": "RBCD lets the target resource decide which principals may delegate identities to it.",
-      "C": "NTLM relay to LDAP forwards authentication to perform directory actions as the victim.",
-      "D": "Request smuggling exploits inconsistent HTTP message-boundary parsing between servers."
+      "A": "A Silver Ticket is forged with a service account key.",
+      "B": "RBCD lets a target choose who may delegate identities.",
+      "C": "NTLM-to-LDAP relay performs directory actions as the victim.",
+      "D": "Request smuggling abuses conflicting HTTP boundaries."
     },
     "answer": "A",
     "explanation": "A Silver Ticket is a forged Kerberos service ticket created with a service account key."
@@ -339,7 +339,7 @@
     "id": "H025",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? Relayed machine authentication modifies directory permissions because LDAP signing or channel binding is not enforced.",
+    "question": "Relayed machine auth changes LDAP permissions without signing. What is this?",
     "options": {
       "A": "HTTP request smuggling",
       "B": "Web cache poisoning",
@@ -353,11 +353,11 @@
     "id": "H026",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of NTLM relay to LDAP, which action would provide the clearest evidence?",
+    "question": "Best evidence of NTLM relay to LDAP?",
     "options": {
       "A": "Use timing and differential CL.TE/TE.CL tests",
       "B": "Probe cache keys with controlled cache-buster requests",
-      "C": "Correlate NTLM authentication with unexpected LDAP modifications",
+      "C": "Link NTLM authentication to unexpected LDAP changes",
       "D": "Audit msDS-AllowedToActOnBehalfOfOtherIdentity changes"
     },
     "answer": "C",
@@ -367,11 +367,11 @@
     "id": "H027",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of NTLM relay to LDAP?",
+    "question": "Best control against NTLM relay to LDAP?",
     "options": {
       "A": "Normalise requests and reject ambiguous message framing",
-      "B": "Include influential inputs in the cache key or remove their influence",
-      "C": "Restrict computer-object writes and monitor delegation attributes",
+      "B": "Put influential inputs in the cache key or remove them",
+      "C": "Restrict computer writes; monitor delegation attributes",
       "D": "Require LDAP signing and channel binding"
     },
     "answer": "D",
@@ -381,12 +381,12 @@
     "id": "H028",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes NTLM relay to LDAP?",
+    "question": "What is NTLM relay to LDAP?",
     "options": {
-      "A": "NTLM relay to LDAP forwards authentication to perform directory actions as the victim.",
-      "B": "RBCD lets the target resource decide which principals may delegate identities to it.",
-      "C": "Web cache poisoning stores attacker-influenced content in a shared cache.",
-      "D": "Request smuggling exploits inconsistent HTTP message-boundary parsing between servers."
+      "A": "NTLM-to-LDAP relay performs directory actions as the victim.",
+      "B": "RBCD lets a target choose who may delegate identities.",
+      "C": "Cache poisoning stores attacker-controlled shared content.",
+      "D": "Request smuggling abuses conflicting HTTP boundaries."
     },
     "answer": "A",
     "explanation": "NTLM relay to LDAP forwards authentication to perform directory actions as the victim."
@@ -395,7 +395,7 @@
     "id": "H029",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which security issue best explains this scenario? An attacker who can edit a computer object's delegation attribute allows a controlled machine to impersonate users to it.",
+    "question": "A computer delegation attribute lets a controlled machine impersonate users. What is this?",
     "options": {
       "A": "Web cache poisoning",
       "B": "HTTP request smuggling",
@@ -409,7 +409,7 @@
     "id": "H030",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "During an investigation of Resource-based constrained delegation, which action would provide the clearest evidence?",
+    "question": "Best evidence of Resource-based constrained delegation?",
     "options": {
       "A": "Audit msDS-AllowedToActOnBehalfOfOtherIdentity changes",
       "B": "Test recursive merge inputs for inherited property changes",
@@ -423,12 +423,12 @@
     "id": "H031",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which control most directly reduces the risk of Resource-based constrained delegation?",
+    "question": "Best control against Resource-based constrained delegation?",
     "options": {
-      "A": "Include influential inputs in the cache key or remove their influence",
+      "A": "Put influential inputs in the cache key or remove them",
       "B": "Reject dangerous keys and use prototype-safe objects",
       "C": "Normalise requests and reject ambiguous message framing",
-      "D": "Restrict computer-object writes and monitor delegation attributes"
+      "D": "Restrict computer writes; monitor delegation attributes"
     },
     "answer": "D",
     "explanation": "The most direct control is to restrict computer-object writes and monitor delegation attributes."
@@ -437,12 +437,12 @@
     "id": "H032",
     "difficulty": "HARD",
     "domain": "Active Directory",
-    "question": "Which statement most accurately describes Resource-based constrained delegation?",
+    "question": "What is Resource-based constrained delegation?",
     "options": {
-      "A": "RBCD lets the target resource decide which principals may delegate identities to it.",
-      "B": "Request smuggling exploits inconsistent HTTP message-boundary parsing between servers.",
-      "C": "Prototype pollution adds properties to shared prototypes that affect unrelated objects.",
-      "D": "Web cache poisoning stores attacker-influenced content in a shared cache."
+      "A": "RBCD lets a target choose who may delegate identities.",
+      "B": "Request smuggling abuses conflicting HTTP boundaries.",
+      "C": "Prototype pollution changes shared object prototypes.",
+      "D": "Cache poisoning stores attacker-controlled shared content."
     },
     "answer": "A",
     "explanation": "RBCD lets the target resource decide which principals may delegate identities to it."
@@ -451,7 +451,7 @@
     "id": "H033",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? A front end and back end disagree about whether Content-Length or Transfer-Encoding defines a request boundary.",
+    "question": "Front and back-end servers disagree on HTTP request boundaries. What is this?",
     "options": {
       "A": "Race condition",
       "B": "Server-side prototype pollution",
@@ -465,7 +465,7 @@
     "id": "H034",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of HTTP request smuggling, which action would provide the clearest evidence?",
+    "question": "Best evidence of HTTP request smuggling?",
     "options": {
       "A": "Send synchronised parallel requests and compare outcomes",
       "B": "Probe cache keys with controlled cache-buster requests",
@@ -479,10 +479,10 @@
     "id": "H035",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of HTTP request smuggling?",
+    "question": "Best control against HTTP request smuggling?",
     "options": {
       "A": "Reject dangerous keys and use prototype-safe objects",
-      "B": "Include influential inputs in the cache key or remove their influence",
+      "B": "Put influential inputs in the cache key or remove them",
       "C": "Normalise requests and reject ambiguous message framing",
       "D": "Use atomic database operations and locking"
     },
@@ -493,12 +493,12 @@
     "id": "H036",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes HTTP request smuggling?",
+    "question": "What is HTTP request smuggling?",
     "options": {
-      "A": "Request smuggling exploits inconsistent HTTP message-boundary parsing between servers.",
-      "B": "Prototype pollution adds properties to shared prototypes that affect unrelated objects.",
-      "C": "A race condition exploits unsafe timing between a check and a state-changing operation.",
-      "D": "Web cache poisoning stores attacker-influenced content in a shared cache."
+      "A": "Request smuggling abuses conflicting HTTP boundaries.",
+      "B": "Prototype pollution changes shared object prototypes.",
+      "C": "A race condition exploits timing between check and change.",
+      "D": "Cache poisoning stores attacker-controlled shared content."
     },
     "answer": "A",
     "explanation": "Request smuggling exploits inconsistent HTTP message-boundary parsing between servers."
@@ -507,7 +507,7 @@
     "id": "H037",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? An unkeyed request header changes a cached response that is then served to other visitors.",
+    "question": "An unkeyed header poisons a response served from cache. What is this?",
     "options": {
       "A": "Web cache poisoning",
       "B": "Blind SSRF",
@@ -521,7 +521,7 @@
     "id": "H038",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of Web cache poisoning, which action would provide the clearest evidence?",
+    "question": "Best evidence of Web cache poisoning?",
     "options": {
       "A": "Send synchronised parallel requests and compare outcomes",
       "B": "Probe cache keys with controlled cache-buster requests",
@@ -535,9 +535,9 @@
     "id": "H039",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of Web cache poisoning?",
+    "question": "Best control against Web cache poisoning?",
     "options": {
-      "A": "Include influential inputs in the cache key or remove their influence",
+      "A": "Put influential inputs in the cache key or remove them",
       "B": "Use atomic database operations and locking",
       "C": "Reject dangerous keys and use prototype-safe objects",
       "D": "Enforce egress allowlists and validate resolved IP addresses"
@@ -549,12 +549,12 @@
     "id": "H040",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes Web cache poisoning?",
+    "question": "What is Web cache poisoning?",
     "options": {
-      "A": "Blind SSRF triggers server-side requests whose responses are not directly shown.",
-      "B": "Prototype pollution adds properties to shared prototypes that affect unrelated objects.",
-      "C": "Web cache poisoning stores attacker-influenced content in a shared cache.",
-      "D": "A race condition exploits unsafe timing between a check and a state-changing operation."
+      "A": "Blind SSRF hides the server-side response.",
+      "B": "Prototype pollution changes shared object prototypes.",
+      "C": "Cache poisoning stores attacker-controlled shared content.",
+      "D": "A race condition exploits timing between check and change."
     },
     "answer": "C",
     "explanation": "Web cache poisoning stores attacker-influenced content in a shared cache."
@@ -563,7 +563,7 @@
     "id": "H041",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? Attacker-controlled object properties modify a JavaScript prototype and alter server application logic.",
+    "question": "Object properties alter a JavaScript prototype and app logic. What is this?",
     "options": {
       "A": "Blind SSRF",
       "B": "Race condition",
@@ -577,7 +577,7 @@
     "id": "H042",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of Server-side prototype pollution, which action would provide the clearest evidence?",
+    "question": "Best evidence of Server-side prototype pollution?",
     "options": {
       "A": "Trace stored values into later database queries",
       "B": "Test recursive merge inputs for inherited property changes",
@@ -591,7 +591,7 @@
     "id": "H043",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of Server-side prototype pollution?",
+    "question": "Best control against Server-side prototype pollution?",
     "options": {
       "A": "Parameterise every query, including those using stored data",
       "B": "Reject dangerous keys and use prototype-safe objects",
@@ -605,12 +605,12 @@
     "id": "H044",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes Server-side prototype pollution?",
+    "question": "What is Server-side prototype pollution?",
     "options": {
-      "A": "Prototype pollution adds properties to shared prototypes that affect unrelated objects.",
-      "B": "Second-order SQL injection occurs when stored input becomes dangerous in a later query context.",
-      "C": "Blind SSRF triggers server-side requests whose responses are not directly shown.",
-      "D": "A race condition exploits unsafe timing between a check and a state-changing operation."
+      "A": "Prototype pollution changes shared object prototypes.",
+      "B": "Second-order SQLi uses stored input in a later query.",
+      "C": "Blind SSRF hides the server-side response.",
+      "D": "A race condition exploits timing between check and change."
     },
     "answer": "A",
     "explanation": "Prototype pollution adds properties to shared prototypes that affect unrelated objects."
@@ -619,7 +619,7 @@
     "id": "H045",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? Two concurrent requests both pass a one-time-use check before either transaction records completion.",
+    "question": "Two requests pass a one-use check before either records completion. What is this?",
     "options": {
       "A": "Second-order SQL injection",
       "B": "Blind SSRF",
@@ -633,7 +633,7 @@
     "id": "H046",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of Race condition, which action would provide the clearest evidence?",
+    "question": "Best evidence of Race condition?",
     "options": {
       "A": "Test XPath boolean expressions and response differences",
       "B": "Use an out-of-band interaction server",
@@ -647,7 +647,7 @@
     "id": "H047",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of Race condition?",
+    "question": "Best control against Race condition?",
     "options": {
       "A": "Parameterise every query, including those using stored data",
       "B": "Use atomic database operations and locking",
@@ -661,12 +661,12 @@
     "id": "H048",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes Race condition?",
+    "question": "What is Race condition?",
     "options": {
-      "A": "A race condition exploits unsafe timing between a check and a state-changing operation.",
-      "B": "XPath injection changes an XML query by inserting attacker-controlled expression syntax.",
-      "C": "Blind SSRF triggers server-side requests whose responses are not directly shown.",
-      "D": "Second-order SQL injection occurs when stored input becomes dangerous in a later query context."
+      "A": "A race condition exploits timing between check and change.",
+      "B": "XPath injection inserts attacker syntax into XML queries.",
+      "C": "Blind SSRF hides the server-side response.",
+      "D": "Second-order SQLi uses stored input in a later query."
     },
     "answer": "A",
     "explanation": "A race condition exploits unsafe timing between a check and a state-changing operation."
@@ -675,7 +675,7 @@
     "id": "H049",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? The application fetches a supplied URL but returns no response content, while an external callback confirms the request.",
+    "question": "A URL fetch returns nothing, but an external callback arrives. What is this?",
     "options": {
       "A": "CBC padding oracle",
       "B": "Blind SSRF",
@@ -689,7 +689,7 @@
     "id": "H050",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of Blind SSRF, which action would provide the clearest evidence?",
+    "question": "Best evidence of Blind SSRF?",
     "options": {
       "A": "Trace stored values into later database queries",
       "B": "Use an out-of-band interaction server",
@@ -703,7 +703,7 @@
     "id": "H051",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of Blind SSRF?",
+    "question": "Best control against Blind SSRF?",
     "options": {
       "A": "Use parameterised XPath APIs or strict input handling",
       "B": "Parameterise every query, including those using stored data",
@@ -717,12 +717,12 @@
     "id": "H052",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes Blind SSRF?",
+    "question": "What is Blind SSRF?",
     "options": {
-      "A": "Second-order SQL injection occurs when stored input becomes dangerous in a later query context.",
-      "B": "A padding oracle leaks padding validity and can enable plaintext recovery for CBC ciphertext.",
-      "C": "Blind SSRF triggers server-side requests whose responses are not directly shown.",
-      "D": "XPath injection changes an XML query by inserting attacker-controlled expression syntax."
+      "A": "Second-order SQLi uses stored input in a later query.",
+      "B": "A padding oracle leaks CBC padding validity.",
+      "C": "Blind SSRF hides the server-side response.",
+      "D": "XPath injection inserts attacker syntax into XML queries."
     },
     "answer": "C",
     "explanation": "Blind SSRF triggers server-side requests whose responses are not directly shown."
@@ -731,7 +731,7 @@
     "id": "H053",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? Input is stored safely at registration but becomes part of an unsafe SQL query in a later administrative workflow.",
+    "question": "Stored input becomes unsafe SQL in a later workflow. What is this?",
     "options": {
       "A": "XPath injection",
       "B": "AES-GCM nonce reuse",
@@ -745,7 +745,7 @@
     "id": "H054",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of Second-order SQL injection, which action would provide the clearest evidence?",
+    "question": "Best evidence of Second-order SQL injection?",
     "options": {
       "A": "Compare IV values for ciphertexts using the same key",
       "B": "Automate ciphertext mutations and compare oracle responses",
@@ -759,7 +759,7 @@
     "id": "H055",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of Second-order SQL injection?",
+    "question": "Best control against Second-order SQL injection?",
     "options": {
       "A": "Guarantee a unique nonce for every encryption under a key",
       "B": "Use parameterised XPath APIs or strict input handling",
@@ -773,12 +773,12 @@
     "id": "H056",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes Second-order SQL injection?",
+    "question": "What is Second-order SQL injection?",
     "options": {
-      "A": "GCM nonce reuse can reveal plaintext relationships and undermine authentication tags.",
-      "B": "XPath injection changes an XML query by inserting attacker-controlled expression syntax.",
-      "C": "Second-order SQL injection occurs when stored input becomes dangerous in a later query context.",
-      "D": "A padding oracle leaks padding validity and can enable plaintext recovery for CBC ciphertext."
+      "A": "GCM nonce reuse leaks data and weakens authentication.",
+      "B": "XPath injection inserts attacker syntax into XML queries.",
+      "C": "Second-order SQLi uses stored input in a later query.",
+      "D": "A padding oracle leaks CBC padding validity."
     },
     "answer": "C",
     "explanation": "Second-order SQL injection occurs when stored input becomes dangerous in a later query context."
@@ -787,7 +787,7 @@
     "id": "H057",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which security issue best explains this scenario? A login form concatenates user input into an XPath expression used to query an XML document.",
+    "question": "Login input changes an XPath query against XML. What is this?",
     "options": {
       "A": "AES-GCM nonce reuse",
       "B": "XPath injection",
@@ -801,11 +801,11 @@
     "id": "H058",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "During an investigation of XPath injection, which action would provide the clearest evidence?",
+    "question": "Best evidence of XPath injection?",
     "options": {
       "A": "Automate ciphertext mutations and compare oracle responses",
       "B": "Test XPath boolean expressions and response differences",
-      "C": "Query authorised etcd endpoint configuration and access controls",
+      "C": "Check authorised etcd configuration and access controls",
       "D": "Compare IV values for ciphertexts using the same key"
     },
     "answer": "B",
@@ -815,7 +815,7 @@
     "id": "H059",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which control most directly reduces the risk of XPath injection?",
+    "question": "Best control against XPath injection?",
     "options": {
       "A": "Require mutual TLS and restrict etcd to control-plane hosts",
       "B": "Guarantee a unique nonce for every encryption under a key",
@@ -829,12 +829,12 @@
     "id": "H060",
     "difficulty": "HARD",
     "domain": "Web Security",
-    "question": "Which statement most accurately describes XPath injection?",
+    "question": "What is XPath injection?",
     "options": {
-      "A": "GCM nonce reuse can reveal plaintext relationships and undermine authentication tags.",
-      "B": "A padding oracle leaks padding validity and can enable plaintext recovery for CBC ciphertext.",
-      "C": "XPath injection changes an XML query by inserting attacker-controlled expression syntax.",
-      "D": "Kubernetes etcd contains sensitive cluster state and must not be anonymously reachable."
+      "A": "GCM nonce reuse leaks data and weakens authentication.",
+      "B": "A padding oracle leaks CBC padding validity.",
+      "C": "XPath injection inserts attacker syntax into XML queries.",
+      "D": "Kubernetes etcd stores sensitive cluster state."
     },
     "answer": "C",
     "explanation": "XPath injection changes an XML query by inserting attacker-controlled expression syntax."
@@ -843,7 +843,7 @@
     "id": "H061",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "Which security issue best explains this scenario? A service reveals whether modified ciphertext has valid padding through different errors or response times.",
+    "question": "Different responses reveal whether CBC padding is valid. What is this?",
     "options": {
       "A": "Exposed Kubernetes etcd",
       "B": "AES-GCM nonce reuse",
@@ -857,12 +857,12 @@
     "id": "H062",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "During an investigation of CBC padding oracle, which action would provide the clearest evidence?",
+    "question": "Best evidence of CBC padding oracle?",
     "options": {
       "A": "Automate ciphertext mutations and compare oracle responses",
       "B": "Inspect container mounts and Docker socket permissions",
       "C": "Compare IV values for ciphertexts using the same key",
-      "D": "Query authorised etcd endpoint configuration and access controls"
+      "D": "Check authorised etcd configuration and access controls"
     },
     "answer": "A",
     "explanation": "Automate ciphertext mutations and compare oracle responses is the most relevant investigation step for confirming CBC padding oracle."
@@ -871,7 +871,7 @@
     "id": "H063",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "Which control most directly reduces the risk of CBC padding oracle?",
+    "question": "Best control against CBC padding oracle?",
     "options": {
       "A": "Require mutual TLS and restrict etcd to control-plane hosts",
       "B": "Never expose the Docker socket to untrusted containers",
@@ -885,12 +885,12 @@
     "id": "H064",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "Which statement most accurately describes CBC padding oracle?",
+    "question": "What is CBC padding oracle?",
     "options": {
-      "A": "GCM nonce reuse can reveal plaintext relationships and undermine authentication tags.",
-      "B": "Kubernetes etcd contains sensitive cluster state and must not be anonymously reachable.",
-      "C": "A padding oracle leaks padding validity and can enable plaintext recovery for CBC ciphertext.",
-      "D": "Docker socket access often provides effective control of the host Docker daemon."
+      "A": "GCM nonce reuse leaks data and weakens authentication.",
+      "B": "Kubernetes etcd stores sensitive cluster state.",
+      "C": "A padding oracle leaks CBC padding validity.",
+      "D": "Docker socket access can control the host daemon."
     },
     "answer": "C",
     "explanation": "A padding oracle leaks padding validity and can enable plaintext recovery for CBC ciphertext."
@@ -899,7 +899,7 @@
     "id": "H065",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "Which security issue best explains this scenario? Two messages are encrypted under the same GCM key and nonce.",
+    "question": "Identify the issue: Two messages are encrypted under the same GCM key and nonce.",
     "options": {
       "A": "AWS metadata-service SSRF",
       "B": "Docker socket escape",
@@ -913,11 +913,11 @@
     "id": "H066",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "During an investigation of AES-GCM nonce reuse, which action would provide the clearest evidence?",
+    "question": "Best evidence of AES-GCM nonce reuse?",
     "options": {
       "A": "Compare IV values for ciphertexts using the same key",
       "B": "Review metadata requests and temporary credential use",
-      "C": "Query authorised etcd endpoint configuration and access controls",
+      "C": "Check authorised etcd configuration and access controls",
       "D": "Inspect container mounts and Docker socket permissions"
     },
     "answer": "A",
@@ -927,7 +927,7 @@
     "id": "H067",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "Which control most directly reduces the risk of AES-GCM nonce reuse?",
+    "question": "Best control against AES-GCM nonce reuse?",
     "options": {
       "A": "Require IMDSv2 and block unneeded metadata access",
       "B": "Require mutual TLS and restrict etcd to control-plane hosts",
@@ -941,12 +941,12 @@
     "id": "H068",
     "difficulty": "HARD",
     "domain": "Cryptography",
-    "question": "Which statement most accurately describes AES-GCM nonce reuse?",
+    "question": "What is AES-GCM nonce reuse?",
     "options": {
-      "A": "Kubernetes etcd contains sensitive cluster state and must not be anonymously reachable.",
-      "B": "GCM nonce reuse can reveal plaintext relationships and undermine authentication tags.",
-      "C": "Metadata SSRF can steal temporary credentials assigned to a cloud instance.",
-      "D": "Docker socket access often provides effective control of the host Docker daemon."
+      "A": "Kubernetes etcd stores sensitive cluster state.",
+      "B": "GCM nonce reuse leaks data and weakens authentication.",
+      "C": "Metadata SSRF steals temporary instance credentials.",
+      "D": "Docker socket access can control the host daemon."
     },
     "answer": "B",
     "explanation": "GCM nonce reuse can reveal plaintext relationships and undermine authentication tags."
@@ -955,7 +955,7 @@
     "id": "H069",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "Which security issue best explains this scenario? An unauthenticated datastore endpoint reveals cluster secrets and configuration.",
+    "question": "Identify the issue: An unauthenticated datastore endpoint reveals cluster secrets and configuration.",
     "options": {
       "A": "Docker socket escape",
       "B": "Exposed Kubernetes etcd",
@@ -969,9 +969,9 @@
     "id": "H070",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "During an investigation of Exposed Kubernetes etcd, which action would provide the clearest evidence?",
+    "question": "Best evidence of Exposed Kubernetes etcd?",
     "options": {
-      "A": "Query authorised etcd endpoint configuration and access controls",
+      "A": "Check authorised etcd configuration and access controls",
       "B": "Inspect container mounts and Docker socket permissions",
       "C": "Review metadata requests and temporary credential use",
       "D": "Review managed-identity token use and resource access logs"
@@ -983,7 +983,7 @@
     "id": "H071",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "Which control most directly reduces the risk of Exposed Kubernetes etcd?",
+    "question": "Best control against Exposed Kubernetes etcd?",
     "options": {
       "A": "Apply least-privilege role assignments to managed identities",
       "B": "Require mutual TLS and restrict etcd to control-plane hosts",
@@ -997,12 +997,12 @@
     "id": "H072",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "Which statement most accurately describes Exposed Kubernetes etcd?",
+    "question": "What is Exposed Kubernetes etcd?",
     "options": {
-      "A": "Docker socket access often provides effective control of the host Docker daemon.",
-      "B": "Metadata SSRF can steal temporary credentials assigned to a cloud instance.",
-      "C": "Managed identity abuse uses tokens available to a resource to access permitted Azure services.",
-      "D": "Kubernetes etcd contains sensitive cluster state and must not be anonymously reachable."
+      "A": "Docker socket access can control the host daemon.",
+      "B": "Metadata SSRF steals temporary instance credentials.",
+      "C": "Managed identity abuse reuses tokens for Azure access.",
+      "D": "Kubernetes etcd stores sensitive cluster state."
     },
     "answer": "D",
     "explanation": "Kubernetes etcd contains sensitive cluster state and must not be anonymously reachable."
@@ -1011,7 +1011,7 @@
     "id": "H073",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "Which security issue best explains this scenario? A container can access /var/run/docker.sock and create a privileged container mounting the host filesystem.",
+    "question": "A container uses docker.sock to mount the host filesystem. What is this?",
     "options": {
       "A": "AWS metadata-service SSRF",
       "B": "Azure managed identity abuse",
@@ -1025,7 +1025,7 @@
     "id": "H074",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "During an investigation of Docker socket escape, which action would provide the clearest evidence?",
+    "question": "Best evidence of Docker socket escape?",
     "options": {
       "A": "Review metadata requests and temporary credential use",
       "B": "Inspect container mounts and Docker socket permissions",
@@ -1039,7 +1039,7 @@
     "id": "H075",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "Which control most directly reduces the risk of Docker socket escape?",
+    "question": "Best control against Docker socket escape?",
     "options": {
       "A": "Require PKCE with S256 and exact redirect URIs",
       "B": "Require IMDSv2 and block unneeded metadata access",
@@ -1053,12 +1053,12 @@
     "id": "H076",
     "difficulty": "HARD",
     "domain": "Containers",
-    "question": "Which statement most accurately describes Docker socket escape?",
+    "question": "What is Docker socket escape?",
     "options": {
-      "A": "Metadata SSRF can steal temporary credentials assigned to a cloud instance.",
-      "B": "PKCE binds an authorization code to a verifier held by the client that initiated the flow.",
-      "C": "Managed identity abuse uses tokens available to a resource to access permitted Azure services.",
-      "D": "Docker socket access often provides effective control of the host Docker daemon."
+      "A": "Metadata SSRF steals temporary instance credentials.",
+      "B": "PKCE binds an auth code to the client verifier.",
+      "C": "Managed identity abuse reuses tokens for Azure access.",
+      "D": "Docker socket access can control the host daemon."
     },
     "answer": "D",
     "explanation": "Docker socket access often provides effective control of the host Docker daemon."
@@ -1067,7 +1067,7 @@
     "id": "H077",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "Which security issue best explains this scenario? A vulnerable web service retrieves instance-role credentials from the link-local metadata endpoint.",
+    "question": "A web service retrieves instance credentials from metadata. What is this?",
     "options": {
       "A": "AWS metadata-service SSRF",
       "B": "OAuth authorization-code interception",
@@ -1081,9 +1081,9 @@
     "id": "H078",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "During an investigation of AWS metadata-service SSRF, which action would provide the clearest evidence?",
+    "question": "Best evidence of AWS metadata-service SSRF?",
     "options": {
-      "A": "Compare the validated XML node with the node used for authorization",
+      "A": "Compare validated and authorized XML nodes",
       "B": "Review managed-identity token use and resource access logs",
       "C": "Review whether authorization requests use PKCE",
       "D": "Review metadata requests and temporary credential use"
@@ -1095,12 +1095,12 @@
     "id": "H079",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "Which control most directly reduces the risk of AWS metadata-service SSRF?",
+    "question": "Best control against AWS metadata-service SSRF?",
     "options": {
       "A": "Apply least-privilege role assignments to managed identities",
       "B": "Require PKCE with S256 and exact redirect URIs",
       "C": "Require IMDSv2 and block unneeded metadata access",
-      "D": "Use hardened SAML libraries and bind processing to the signed element"
+      "D": "Use hardened SAML; process only the signed element"
     },
     "answer": "C",
     "explanation": "The most direct control is to require IMDSv2 and block unneeded metadata access."
@@ -1109,12 +1109,12 @@
     "id": "H080",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "Which statement most accurately describes AWS metadata-service SSRF?",
+    "question": "What is AWS metadata-service SSRF?",
     "options": {
-      "A": "PKCE binds an authorization code to a verifier held by the client that initiated the flow.",
-      "B": "Managed identity abuse uses tokens available to a resource to access permitted Azure services.",
-      "C": "SAML signature wrapping exploits ambiguity between signed and consumed XML elements.",
-      "D": "Metadata SSRF can steal temporary credentials assigned to a cloud instance."
+      "A": "PKCE binds an auth code to the client verifier.",
+      "B": "Managed identity abuse reuses tokens for Azure access.",
+      "C": "SAML wrapping swaps signed and consumed XML elements.",
+      "D": "Metadata SSRF steals temporary instance credentials."
     },
     "answer": "D",
     "explanation": "Metadata SSRF can steal temporary credentials assigned to a cloud instance."
@@ -1123,7 +1123,7 @@
     "id": "H081",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "Which security issue best explains this scenario? Code running on a compromised Azure resource requests an access token for its assigned identity and accesses another service.",
+    "question": "A compromised Azure resource uses its identity token on another service. What is this?",
     "options": {
       "A": "OAuth authorization-code interception",
       "B": "Azure managed identity abuse",
@@ -1137,11 +1137,11 @@
     "id": "H082",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "During an investigation of Azure managed identity abuse, which action would provide the clearest evidence?",
+    "question": "Best evidence of Azure managed identity abuse?",
     "options": {
       "A": "Review whether authorization requests use PKCE",
       "B": "Measure DNS label length, entropy, and query volume",
-      "C": "Compare the validated XML node with the node used for authorization",
+      "C": "Compare validated and authorized XML nodes",
       "D": "Review managed-identity token use and resource access logs"
     },
     "answer": "D",
@@ -1151,10 +1151,10 @@
     "id": "H083",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "Which control most directly reduces the risk of Azure managed identity abuse?",
+    "question": "Best control against Azure managed identity abuse?",
     "options": {
       "A": "Require PKCE with S256 and exact redirect URIs",
-      "B": "Use hardened SAML libraries and bind processing to the signed element",
+      "B": "Use hardened SAML; process only the signed element",
       "C": "Apply least-privilege role assignments to managed identities",
       "D": "Restrict resolvers and alert on anomalous DNS patterns"
     },
@@ -1165,12 +1165,12 @@
     "id": "H084",
     "difficulty": "HARD",
     "domain": "Cloud",
-    "question": "Which statement most accurately describes Azure managed identity abuse?",
+    "question": "What is Azure managed identity abuse?",
     "options": {
-      "A": "PKCE binds an authorization code to a verifier held by the client that initiated the flow.",
-      "B": "SAML signature wrapping exploits ambiguity between signed and consumed XML elements.",
-      "C": "Managed identity abuse uses tokens available to a resource to access permitted Azure services.",
-      "D": "DNS tunnelling encodes command or data traffic inside DNS queries and responses."
+      "A": "PKCE binds an auth code to the client verifier.",
+      "B": "SAML wrapping swaps signed and consumed XML elements.",
+      "C": "Managed identity abuse reuses tokens for Azure access.",
+      "D": "DNS tunnelling hides data inside DNS traffic."
     },
     "answer": "C",
     "explanation": "Managed identity abuse uses tokens available to a resource to access permitted Azure services."
@@ -1179,7 +1179,7 @@
     "id": "H085",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "Which security issue best explains this scenario? A public client accepts an intercepted authorization code without proving it initiated the request.",
+    "question": "A client accepts an auth code without proving it began the request. What is missing?",
     "options": {
       "A": "SAML signature wrapping",
       "B": "Process hollowing",
@@ -1193,11 +1193,11 @@
     "id": "H086",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "During an investigation of OAuth authorization-code interception, which action would provide the clearest evidence?",
+    "question": "Best evidence of OAuth authorization-code interception?",
     "options": {
-      "A": "Compare the validated XML node with the node used for authorization",
+      "A": "Compare validated and authorized XML nodes",
       "B": "Review whether authorization requests use PKCE",
-      "C": "Correlate process creation with memory replacement and thread context changes",
+      "C": "Link process creation, memory replacement, and threads",
       "D": "Measure DNS label length, entropy, and query volume"
     },
     "answer": "B",
@@ -1207,9 +1207,9 @@
     "id": "H087",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "Which control most directly reduces the risk of OAuth authorization-code interception?",
+    "question": "Best control against OAuth authorization-code interception?",
     "options": {
-      "A": "Use hardened SAML libraries and bind processing to the signed element",
+      "A": "Use hardened SAML; process only the signed element",
       "B": "Restrict resolvers and alert on anomalous DNS patterns",
       "C": "Require PKCE with S256 and exact redirect URIs",
       "D": "Use behaviour-based endpoint detection for process injection"
@@ -1221,12 +1221,12 @@
     "id": "H088",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "Which statement most accurately describes OAuth authorization-code interception?",
+    "question": "What is OAuth authorization-code interception?",
     "options": {
-      "A": "Process hollowing runs malicious code inside the identity and container of a legitimate process.",
-      "B": "SAML signature wrapping exploits ambiguity between signed and consumed XML elements.",
-      "C": "PKCE binds an authorization code to a verifier held by the client that initiated the flow.",
-      "D": "DNS tunnelling encodes command or data traffic inside DNS queries and responses."
+      "A": "Process hollowing runs code inside a legitimate process.",
+      "B": "SAML wrapping swaps signed and consumed XML elements.",
+      "C": "PKCE binds an auth code to the client verifier.",
+      "D": "DNS tunnelling hides data inside DNS traffic."
     },
     "answer": "C",
     "explanation": "PKCE binds an authorization code to a verifier held by the client that initiated the flow."
@@ -1235,7 +1235,7 @@
     "id": "H089",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "Which security issue best explains this scenario? A service provider validates one signed XML element but consumes identity data from a different attacker-controlled element.",
+    "question": "SAML validates one XML element but uses identity data from another. What is this?",
     "options": {
       "A": "AD CS ESC1",
       "B": "SAML signature wrapping",
@@ -1249,12 +1249,12 @@
     "id": "H090",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "During an investigation of SAML signature wrapping, which action would provide the clearest evidence?",
+    "question": "Best evidence of SAML signature wrapping?",
     "options": {
       "A": "Measure DNS label length, entropy, and query volume",
-      "B": "Correlate process creation with memory replacement and thread context changes",
-      "C": "Compare the validated XML node with the node used for authorization",
-      "D": "Use Certipy to enumerate vulnerable templates and enrolment rights"
+      "B": "Link process creation, memory replacement, and threads",
+      "C": "Compare validated and authorized XML nodes",
+      "D": "Use Certipy to find vulnerable templates and rights"
     },
     "answer": "C",
     "explanation": "Compare the validated XML node with the node used for authorization is the most relevant investigation step for confirming SAML signature wrapping."
@@ -1263,12 +1263,12 @@
     "id": "H091",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "Which control most directly reduces the risk of SAML signature wrapping?",
+    "question": "Best control against SAML signature wrapping?",
     "options": {
       "A": "Use behaviour-based endpoint detection for process injection",
-      "B": "Disable requester-supplied identities and restrict template enrolment",
+      "B": "Disable supplied identities; restrict template enrolment",
       "C": "Restrict resolvers and alert on anomalous DNS patterns",
-      "D": "Use hardened SAML libraries and bind processing to the signed element"
+      "D": "Use hardened SAML; process only the signed element"
     },
     "answer": "D",
     "explanation": "The most direct control is to use hardened SAML libraries and bind processing to the signed element."
@@ -1277,12 +1277,12 @@
     "id": "H092",
     "difficulty": "HARD",
     "domain": "Identity",
-    "question": "Which statement most accurately describes SAML signature wrapping?",
+    "question": "What is SAML signature wrapping?",
     "options": {
-      "A": "SAML signature wrapping exploits ambiguity between signed and consumed XML elements.",
-      "B": "DNS tunnelling encodes command or data traffic inside DNS queries and responses.",
-      "C": "ESC1 allows an enrollee to request an authentication certificate for another identity.",
-      "D": "Process hollowing runs malicious code inside the identity and container of a legitimate process."
+      "A": "SAML wrapping swaps signed and consumed XML elements.",
+      "B": "DNS tunnelling hides data inside DNS traffic.",
+      "C": "ESC1 requests an auth certificate as another identity.",
+      "D": "Process hollowing runs code inside a legitimate process."
     },
     "answer": "A",
     "explanation": "SAML signature wrapping exploits ambiguity between signed and consumed XML elements."
@@ -1291,7 +1291,7 @@
     "id": "H093",
     "difficulty": "HARD",
     "domain": "Threat Detection",
-    "question": "Which security issue best explains this scenario? A host sends many long, high-entropy subdomain queries and receives small encoded DNS responses.",
+    "question": "A host sends long encoded subdomains and receives encoded DNS replies. What is this?",
     "options": {
       "A": "Process hollowing",
       "B": "DNS tunnelling",
@@ -1305,11 +1305,11 @@
     "id": "H094",
     "difficulty": "HARD",
     "domain": "Threat Detection",
-    "question": "During an investigation of DNS tunnelling, which action would provide the clearest evidence?",
+    "question": "Best evidence of DNS tunnelling?",
     "options": {
       "A": "Inspect delegation flags and cached Kerberos tickets",
-      "B": "Use Certipy to enumerate vulnerable templates and enrolment rights",
-      "C": "Correlate process creation with memory replacement and thread context changes",
+      "B": "Use Certipy to find vulnerable templates and rights",
+      "C": "Link process creation, memory replacement, and threads",
       "D": "Measure DNS label length, entropy, and query volume"
     },
     "answer": "D",
@@ -1319,12 +1319,12 @@
     "id": "H095",
     "difficulty": "HARD",
     "domain": "Threat Detection",
-    "question": "Which control most directly reduces the risk of DNS tunnelling?",
+    "question": "Best control against DNS tunnelling?",
     "options": {
-      "A": "Disable requester-supplied identities and restrict template enrolment",
+      "A": "Disable supplied identities; restrict template enrolment",
       "B": "Restrict resolvers and alert on anomalous DNS patterns",
       "C": "Use behaviour-based endpoint detection for process injection",
-      "D": "Remove unconstrained delegation and protect privileged accounts"
+      "D": "Remove unconstrained delegation; protect privileged users"
     },
     "answer": "B",
     "explanation": "The most direct control is to restrict resolvers and alert on anomalous DNS patterns."
@@ -1333,12 +1333,12 @@
     "id": "H096",
     "difficulty": "HARD",
     "domain": "Threat Detection",
-    "question": "Which statement most accurately describes DNS tunnelling?",
+    "question": "What is DNS tunnelling?",
     "options": {
-      "A": "Unconstrained delegation lets a trusted host receive reusable user TGTs.",
-      "B": "ESC1 allows an enrollee to request an authentication certificate for another identity.",
-      "C": "Process hollowing runs malicious code inside the identity and container of a legitimate process.",
-      "D": "DNS tunnelling encodes command or data traffic inside DNS queries and responses."
+      "A": "Unconstrained delegation exposes reusable user TGTs.",
+      "B": "ESC1 requests an auth certificate as another identity.",
+      "C": "Process hollowing runs code inside a legitimate process.",
+      "D": "DNS tunnelling hides data inside DNS traffic."
     },
     "answer": "D",
     "explanation": "DNS tunnelling encodes command or data traffic inside DNS queries and responses."
@@ -1347,7 +1347,7 @@
     "id": "H097",
     "difficulty": "HARD",
     "domain": "Malware Analysis",
-    "question": "Which security issue best explains this scenario? A legitimate suspended process is created, its image is replaced in memory, and its main thread is resumed.",
+    "question": "A suspended process has its image replaced before resuming. What is this?",
     "options": {
       "A": "Unconstrained delegation abuse",
       "B": "Constrained delegation abuse",
@@ -1361,11 +1361,11 @@
     "id": "H098",
     "difficulty": "HARD",
     "domain": "Malware Analysis",
-    "question": "During an investigation of Process hollowing, which action would provide the clearest evidence?",
+    "question": "Best evidence of Process hollowing?",
     "options": {
-      "A": "Correlate process creation with memory replacement and thread context changes",
+      "A": "Link process creation, memory replacement, and threads",
       "B": "Review msDS-AllowedToDelegateTo and S4U activity",
-      "C": "Use Certipy to enumerate vulnerable templates and enrolment rights",
+      "C": "Use Certipy to find vulnerable templates and rights",
       "D": "Inspect delegation flags and cached Kerberos tickets"
     },
     "answer": "A",
@@ -1375,11 +1375,11 @@
     "id": "H099",
     "difficulty": "HARD",
     "domain": "Malware Analysis",
-    "question": "Which control most directly reduces the risk of Process hollowing?",
+    "question": "Best control against Process hollowing?",
     "options": {
-      "A": "Remove unconstrained delegation and protect privileged accounts",
-      "B": "Disable requester-supplied identities and restrict template enrolment",
-      "C": "Limit delegation targets and use group managed service accounts",
+      "A": "Remove unconstrained delegation; protect privileged users",
+      "B": "Disable supplied identities; restrict template enrolment",
+      "C": "Limit delegation and use managed service accounts",
       "D": "Use behaviour-based endpoint detection for process injection"
     },
     "answer": "D",
@@ -1389,12 +1389,12 @@
     "id": "H100",
     "difficulty": "HARD",
     "domain": "Malware Analysis",
-    "question": "Which statement most accurately describes Process hollowing?",
+    "question": "What is Process hollowing?",
     "options": {
-      "A": "Unconstrained delegation lets a trusted host receive reusable user TGTs.",
-      "B": "Constrained delegation permits a service to impersonate users to specifically configured services.",
-      "C": "ESC1 allows an enrollee to request an authentication certificate for another identity.",
-      "D": "Process hollowing runs malicious code inside the identity and container of a legitimate process."
+      "A": "Unconstrained delegation exposes reusable user TGTs.",
+      "B": "Constrained delegation impersonates users to set services.",
+      "C": "ESC1 requests an auth certificate as another identity.",
+      "D": "Process hollowing runs code inside a legitimate process."
     },
     "answer": "D",
     "explanation": "Process hollowing runs malicious code inside the identity and container of a legitimate process."

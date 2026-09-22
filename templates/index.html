@@ -89,6 +89,10 @@
                     <span class="stat-label">COMBO</span>
                     <strong id="combo">x0</strong>
                 </div>
+                <div class="stat">
+                    <span class="stat-label">FOCUS</span>
+                    <strong id="focus">◇◇</strong>
+                </div>
                 <button class="icon-button" onclick="openEncyclopedia()" title="Encyclopedia">📖</button>
                 <div class="timer" id="timer">30</div>
             </header>
@@ -107,9 +111,9 @@
                     <div class="hp-track"><div id="enemy-hp-bar"></div></div>
                     <div class="ability-list" id="enemy-abilities"></div>
                     <div class="intent-panel" id="intent-panel">
-                        <span>NEXT ENEMY ACTION</span>
-                        <strong id="enemy-intent">—</strong>
-                        <p id="enemy-intent-description">No active threat.</p>
+                        <span>ENEMY ACTION</span>
+                        <strong id="enemy-intent">❓ Hidden</strong>
+                        <p id="enemy-intent-description">The action is revealed after your turn.</p>
                     </div>
                 </div>
             </section>
@@ -120,9 +124,9 @@
                     <span id="tier" class="tier easy">EASY</span>
                 </div>
                 <div class="combat-actions" id="combat-actions">
-                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong>⚔️ ATTACK</strong><span>Damage enemy; their action still happens</span></button>
-                    <button data-action="defend" onclick="selectCombatAction('defend')"><strong>🛡️ DEFEND</strong><span>Correct: cancel intent. Wrong: reduce attack by 1</span></button>
-                    <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong>💻 EXPLOIT</strong><span>Correct: double damage + cancel. Wrong: +1 damage</span></button>
+                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong>⚔️ ATTACK</strong><span>2 damage, +1 Focus, and soften an enemy attack</span></button>
+                    <button data-action="defend" onclick="selectCombatAction('defend')"><strong>🛡️ DEFEND</strong><span>Safely interrupt the enemy; does not build Focus</span></button>
+                    <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong>💻 EXPLOIT <em>2◇</em></strong><span>4 damage + interrupt; wrong answers are punished</span></button>
                 </div>
                 <h3 id="question">Start a run to enter the dungeon.</h3>
                 <div class="options" id="options">
@@ -155,11 +159,12 @@
                     LOCK IN TURN
                 </button>
             </div>
+            <div id="combat-fx-layer" aria-hidden="true"></div>
         </section>
 
         <aside class="run-panel">
             <p class="eyebrow">CURRENT RUN</p>
-            <h2>ROOM <span id="current-room">1</span> / 15</h2>
+            <h2>STAGE <span id="current-room">1</span> / 15</h2>
             <div class="path" id="room-path"></div>
             <div class="status-box">
                 <strong>ACTIVE DEFENCES</strong>
@@ -267,11 +272,13 @@
             document.getElementById('player-hp').textContent = hearts;
             document.getElementById('credits').textContent = data.credits;
             document.getElementById('combo').textContent = `x${data.combo}`;
+            document.getElementById('focus').textContent = '◆'.repeat(data.focus) + '◇'.repeat(data.max_focus - data.focus);
             updatePath(data.room);
             renderEnemy(data.enemy);
             renderInventory(data.inventory, data.inventory_limit);
             renderRelics(data.relics);
             renderEffects(data.effects);
+            updateCombatActionAvailability();
         }
 
         function renderEnemy(enemy) {
@@ -296,10 +303,8 @@
             document.getElementById('enemy-abilities').innerHTML = enemy.ability_details.map(ability =>
                 `<span title="${escapeHtml(ability.description)}">${ability.icon} ${escapeHtml(ability.name)}</span>`
             ).join('');
-            const intent = enemy.intent_detail;
-            const amount = intent.amount ? ` • ${intent.amount} damage` : '';
-            document.getElementById('enemy-intent').textContent = `${intent.icon} ${intent.name}${amount}`;
-            document.getElementById('enemy-intent-description').textContent = intent.description;
+            document.getElementById('enemy-intent').textContent = '❓ Hidden';
+            document.getElementById('enemy-intent-description').textContent = 'Commit your action to reveal the enemy turn.';
             card.classList.toggle('boss', enemy.kind !== 'ENEMY');
         }
 
@@ -429,11 +434,28 @@
 
         function selectCombatAction(action) {
             if (!acceptingAnswers) return;
+            if (action === 'exploit' && (!currentState || currentState.focus < 2)) {
+                showToast('Exploit needs 2 Focus. Build Focus with Attack.');
+                return;
+            }
             selectedCombatAction = action;
             document.querySelectorAll('.combat-actions button').forEach(button =>
                 button.classList.toggle('selected', button.dataset.action === action)
             );
             updateTurnButton();
+        }
+
+        function updateCombatActionAvailability() {
+            const exploit = document.querySelector('[data-action="exploit"]');
+            if (!exploit || !currentState) return;
+            const locked = currentState.focus < 2;
+            exploit.disabled = locked || !questionLoaded;
+            exploit.classList.toggle('focus-locked', locked);
+            exploit.title = locked ? `Needs ${2 - currentState.focus} more Focus` : 'Ready';
+            if (locked && selectedCombatAction === 'exploit') {
+                selectedCombatAction = null;
+                exploit.classList.remove('selected');
+            }
         }
 
         function updateTurnButton() {
@@ -525,20 +547,43 @@
         function flashCombat(data) {
             const enemyCard = document.getElementById('enemy-card');
             const playerHud = document.querySelector('.player-hud');
+            const shell = document.querySelector('.main-panel');
             if (data.damage_dealt) {
                 enemyCard.classList.remove('enemy-hit');
                 void enemyCard.offsetWidth;
                 enemyCard.classList.add('enemy-hit');
+                spawnCombatFx(`-${data.damage_dealt}`, 'enemy-damage', data.combat_action === 'exploit' ? '💻' : '⚔️');
             }
             if (data.damage_taken) {
                 playerHud.classList.remove('player-hit');
                 void playerHud.offsetWidth;
                 playerHud.classList.add('player-hit');
+                shell.classList.add('screen-shake');
+                spawnCombatFx(`-${data.damage_taken} HP`, 'player-damage', data.enemy_action?.icon || '💥');
+            } else if (data.enemy_action?.canceled) {
+                spawnCombatFx('INTERRUPTED', 'interrupt-fx', '🛡️');
+            } else if (data.enemy_action && !data.damage_dealt) {
+                spawnCombatFx(data.enemy_action.name, 'enemy-action-fx', data.enemy_action.icon);
             }
             setTimeout(() => {
                 enemyCard.classList.remove('enemy-hit');
                 playerHud.classList.remove('player-hit');
+                shell.classList.remove('screen-shake');
             }, 500);
+        }
+
+        function spawnCombatFx(label, className, icon) {
+            const layer = document.getElementById('combat-fx-layer');
+            const effect = document.createElement('div');
+            effect.className = `combat-fx ${className}`;
+            effect.innerHTML = `<span>${icon}</span><strong>${escapeHtml(label)}</strong>`;
+            layer.appendChild(effect);
+            for (let i = 0; i < 7; i++) {
+                const particle = document.createElement('i');
+                particle.style.setProperty('--angle', `${i * 51}deg`);
+                effect.appendChild(particle);
+            }
+            setTimeout(() => effect.remove(), 900);
         }
 
         function showPending(data) {
@@ -581,7 +626,7 @@
 
         function showRouteChoice(data) {
             stopAllSounds();
-            openDecision('ROUTE SELECTION', `Choose Room ${data.room}`, 'Each path changes the risks and rewards in this run.');
+            openDecision('ROUTE SELECTION', `Prepare for Stage ${data.room}`, 'Support rooms happen between fights and do not advance the 15-stage run.');
             const area = document.getElementById('decision-options');
             data.room_options.forEach(room => area.appendChild(choiceButton(room, () => chooseRoute(room.id))));
         }

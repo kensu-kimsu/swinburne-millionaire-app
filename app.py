@@ -52,7 +52,7 @@ ITEMS = {
 RELICS = {
     "exploit_chain": {
         "name": "Exploit Chain", "icon": "🔥",
-        "description": "Every third correct answer deals 3 damage instead of 2.",
+        "description": "Every third correct answer adds 2 damage instead of 1.",
     },
     "tux_kernel": {
         "name": "Tux Kernel", "icon": "🐧",
@@ -188,17 +188,17 @@ ENEMY_PATTERNS = {
 ROOMS = {
     "combat": {"name": "Combat", "icon": "⚔️", "description": "Fight a normal enemy."},
     "elite": {"name": "Elite", "icon": "💀", "description": "Fight a stronger enemy for improved rewards."},
-    "loot": {"name": "Data Cache", "icon": "🎁", "description": "Choose a free consumable or credits."},
-    "heal": {"name": "Repair Station", "icon": "❤️", "description": "Restore HP or improve maximum HP."},
-    "shop": {"name": "Dark Web Market", "icon": "🛒", "description": "Spend credits on consumables."},
-    "event": {"name": "Unknown Signal", "icon": "❓", "description": "Make a risky decision with an uncertain outcome."},
+    "loot": {"name": "Data Cache", "icon": "🎁", "description": "Choose a free consumable or credits without advancing the stage."},
+    "heal": {"name": "Repair Station", "icon": "❤️", "description": "Restore or improve HP without advancing the stage."},
+    "shop": {"name": "Dark Web Market", "icon": "🛒", "description": "Buy consumables between combat stages."},
+    "event": {"name": "Unknown Signal", "icon": "❓", "description": "Take a risk between fights without advancing the stage."},
     "boss": {"name": "Boss", "icon": "👑", "description": "A powerful enemy with special abilities."},
 }
 
 MECHANICS = {
-    "combat": {"name": "Active Quiz Combat", "description": "Choose Attack, Defend, or Exploit before answering. Enemy intents resolve after every question unless interrupted or defeated."},
+    "combat": {"name": "Active Quiz Combat", "description": "Enemy actions are hidden. Attack builds Focus and softens incoming damage; spend 2 Focus on Exploit."},
     "combo": {"name": "Combo Damage", "description": "Every third consecutive correct answer deals additional damage."},
-    "routes": {"name": "Route Choices", "description": "Choose between two rooms to shape the current run."},
+    "routes": {"name": "Route Choices", "description": "Support rooms happen between fights. Only completed combat advances the 15 stages."},
     "inventory": {"name": "Inventory", "description": "Carry up to four consumable items and choose when to use them."},
     "loot": {"name": "Loot", "description": "Defeated enemies and data caches offer a choice of rewards."},
     "relics": {"name": "Relics", "description": "Relics provide passive bonuses that last for the entire run."},
@@ -351,7 +351,7 @@ def create_enemy(room, elite=False, relics=None):
         enemy = BOSSES[room].copy()
     else:
         template = random.choice(NORMAL_ENEMIES[get_tier(room)])
-        base_hp = {"EASY": 2, "MEDIUM": 3, "HARD": 4}[get_tier(room)]
+        base_hp = {"EASY": 3, "MEDIUM": 4, "HARD": 5}[get_tier(room)]
         enemy = {
             **template,
             "kind": "ELITE" if elite else "ENEMY",
@@ -402,11 +402,11 @@ def current_question(state):
 def public_enemy(enemy):
     if not enemy:
         return None
+    public = {key: value for key, value in enemy.items() if key != "intent"}
     return {
-        **enemy,
+        **public,
         "ability_details": [ability_view(ability) for ability in enemy["abilities"]],
-        "intent_detail": intent_view(enemy["intent"], enemy),
-        "pattern_details": [intent_view(intent_id, enemy) for intent_id in enemy_pattern(enemy)],
+        "intent_hidden": True,
     }
 
 
@@ -418,6 +418,8 @@ def public_state(state):
         "max_hp": state["max_hp"],
         "credits": state["credits"],
         "combo": state["combo"],
+        "focus": state.get("focus", 0),
+        "max_focus": 2,
         "inventory_limit": INVENTORY_LIMIT,
         "inventory": [item_view(item) for item in state["inventory"]],
         "relics": [relic_view(relic) for relic in state["relics"]],
@@ -454,16 +456,20 @@ def choose_relic_rewards():
     return [{"type": "relic", **relic_view(relic_id)} for relic_id in relic_ids]
 
 
-def set_reward(state, kind):
+def set_reward(state, kind, advance_after=False):
     state["pending"] = "reward"
     state["reward_kind"] = kind
+    state["advance_after_reward"] = advance_after
     state["reward_options"] = choose_relic_rewards() if kind == "relic" else choose_item_rewards()
     discover("mechanics", "loot")
 
 
-def generate_room_options():
-    available = ["combat", "elite", "loot", "heal", "shop", "event"]
-    choices = random.sample(available, 2)
+def generate_room_options(support_used=False):
+    if support_used:
+        choices = ["combat", "elite"]
+    else:
+        choices = [random.choice(["combat", "combat", "elite"]), random.choice(["loot", "heal", "shop", "event"])]
+        random.shuffle(choices)
     for room_type in choices:
         discover("rooms", room_type)
     return choices
@@ -477,6 +483,8 @@ def advance_stage(state):
     state["reward_options"] = []
     state["shop_items"] = []
     state["event"] = None
+    state["support_used"] = False
+    state["advance_after_reward"] = False
     if state["current_room"] in BOSSES:
         state["enemy"] = create_enemy(state["current_room"], relics=state["relics"])
         discover("rooms", "boss")
@@ -484,6 +492,17 @@ def advance_stage(state):
     else:
         state["pending"] = "route"
         state["room_options"] = generate_room_options()
+
+
+def return_to_stage_route(state):
+    state["enemy"] = None
+    state["pending"] = "route"
+    state["reward_options"] = []
+    state["shop_items"] = []
+    state["event"] = None
+    state["support_used"] = True
+    state["advance_after_reward"] = False
+    state["room_options"] = generate_room_options(support_used=True)
 
 
 def build_shop():
@@ -504,7 +523,7 @@ def start_room(state, room_type):
         state["enemy"] = create_enemy(state["current_room"], elite=True, relics=state["relics"])
         discover("mechanics", "elites")
     elif room_type == "loot":
-        set_reward(state, "item")
+        set_reward(state, "item", advance_after=False)
     elif room_type == "heal":
         state["pending"] = "heal"
     elif room_type == "shop":
@@ -541,14 +560,14 @@ def complete_combat(state):
     if enemy["kind"] in {"MINIBOSS", "MAJOR BOSS"}:
         if "incident_response" in state["relics"]:
             state["hp"] = min(state["max_hp"], state["hp"] + 1)
-        set_reward(state, "relic")
+        set_reward(state, "relic", advance_after=True)
     elif enemy["kind"] == "ELITE":
         if random.random() < 0.4:
-            set_reward(state, "relic")
+            set_reward(state, "relic", advance_after=True)
         else:
-            set_reward(state, "item")
+            set_reward(state, "item", advance_after=True)
     else:
-        set_reward(state, "item")
+        set_reward(state, "item", advance_after=True)
     return "enemy_defeated"
 
 
@@ -566,14 +585,14 @@ def revive_if_possible(state):
     return False
 
 
-def resolve_enemy_intent(state, combat_action, canceled=False):
+def resolve_enemy_intent(state, combat_action, canceled=False, attack_guard=False):
     enemy = state["enemy"]
     intent_id = enemy["intent"]
     detail = intent_view(intent_id, enemy)
     result = {
         "id": intent_id, "name": detail["name"], "icon": detail["icon"],
         "canceled": canceled, "damage_taken": 0, "blocked_by": None,
-        "destroyed_item": None,
+        "destroyed_item": None, "mitigated": 0,
     }
     if canceled:
         result["message"] = f"{detail['name']} was interrupted."
@@ -585,15 +604,19 @@ def resolve_enemy_intent(state, combat_action, canceled=False):
             damage = max(0, damage - 1)
         elif combat_action == "exploit":
             damage += 1
-        if state["effects"]["sandbox"]:
-            state["effects"]["sandbox"] -= 1
-            result["blocked_by"] = "Sandbox"
-        elif state["effects"]["firewall"]:
-            state["effects"]["firewall"] -= 1
-            result["blocked_by"] = "Firewall"
-        elif "zero_trust" in state["relics"] and enemy.get("zero_trust_available", True):
-            enemy["zero_trust_available"] = False
-            result["blocked_by"] = "Zero Trust"
+        elif attack_guard:
+            damage = max(0, damage - 1)
+            result["mitigated"] = 1
+        if damage > 0:
+            if state["effects"]["sandbox"]:
+                state["effects"]["sandbox"] -= 1
+                result["blocked_by"] = "Sandbox"
+            elif state["effects"]["firewall"]:
+                state["effects"]["firewall"] -= 1
+                result["blocked_by"] = "Firewall"
+            elif "zero_trust" in state["relics"] and enemy.get("zero_trust_available", True):
+                enemy["zero_trust_available"] = False
+                result["blocked_by"] = "Zero Trust"
         if result["blocked_by"]:
             damage = 0
         state["hp"] = max(0, state["hp"] - damage)
@@ -646,6 +669,7 @@ def start_game():
         "max_hp": PLAYER_MAX_HP + bonus_hp,
         "credits": starting_credits,
         "combo": 0,
+        "focus": 0,
         "inventory": ["packet_sniffer"],
         "relics": [],
         "effects": {"firewall": 0, "sandbox": 0, "root_lock": 0},
@@ -656,6 +680,8 @@ def start_game():
         "reward_options": [],
         "shop_items": [],
         "event": None,
+        "support_used": False,
+        "advance_after_reward": False,
         "game_over": False,
         "won": False,
         "stats": {
@@ -685,7 +711,7 @@ def get_question():
         return jsonify({"error": "No active combat question"}), 400
     question = current_question(state)
     tier = get_tier(state["current_room"])
-    time_limit = 20 if "haste" in state["enemy"]["abilities"] else 30
+    time_limit = 30 if "haste" in state["enemy"]["abilities"] else 45
     if question.get("domain") == "Networking" and "wireshark" in state["relics"]:
         time_limit += 5
     return jsonify({
@@ -705,11 +731,14 @@ def submit_answer():
         return jsonify({"error": "No active combat"}), 400
 
     data = request.get_json() or {}
+    state.setdefault("focus", 0)
     user_answer = data.get("answer")
     is_timeout = data.get("timeout", False)
     combat_action = data.get("combat_action", "attack")
     if combat_action not in {"attack", "defend", "exploit"}:
         return jsonify({"error": "Choose Attack, Defend, or Exploit"}), 400
+    if combat_action == "exploit" and state["focus"] < 2:
+        return jsonify({"error": "Exploit requires 2 Focus. Use Attack to build it."}), 400
     question = current_question(state)
     correct_answer = question.get("answer") or question.get("correct")
     tier = get_tier(state["current_room"])
@@ -722,14 +751,18 @@ def submit_answer():
     credits_earned = 0
     enemy_action = None
     phase_changed = False
+    if combat_action == "exploit":
+        state["focus"] -= 2
 
     if is_correct:
         state["stats"]["correct_answers"] += 1
         state["combo"] += 1
+        if combat_action == "attack":
+            state["focus"] = min(2, state["focus"] + 1)
         if combat_action in {"attack", "exploit"}:
-            base_damage = 1
+            base_damage = 2 if combat_action == "attack" else 4
             if state["combo"] % 3 == 0:
-                base_damage = 3 if "exploit_chain" in state["relics"] else 2
+                base_damage += 2 if "exploit_chain" in state["relics"] else 1
             if question.get("domain") == "Linux" and "tux_kernel" in state["relics"]:
                 base_damage += 1
             if question.get("domain") == "Web Security" and "web_proxy" in state["relics"]:
@@ -737,7 +770,7 @@ def submit_answer():
             if state["effects"].get("root_lock"):
                 base_damage = max(0, base_damage - 1)
                 state["effects"]["root_lock"] = 0
-            damage_dealt = base_damage * (2 if combat_action == "exploit" else 1)
+            damage_dealt = base_damage
             armor_blocked = min(enemy.get("armor", 0), damage_dealt)
             damage_dealt -= armor_blocked
             enemy["armor"] = max(0, enemy.get("armor", 0) - armor_blocked)
@@ -752,7 +785,10 @@ def submit_answer():
         status = complete_combat(state)
     else:
         canceled = is_correct and combat_action in {"defend", "exploit"}
-        enemy_action = resolve_enemy_intent(state, combat_action, canceled=canceled)
+        enemy_action = resolve_enemy_intent(
+            state, combat_action, canceled=canceled,
+            attack_guard=is_correct and combat_action == "attack",
+        )
         revived = revive_if_possible(state)
         if state["hp"] == 0:
             finish_failed_run(state)
@@ -808,7 +844,10 @@ def choose_reward():
         discover("relics", reward_id)
     else:
         state["credits"] += 50
-    advance_stage(state)
+    if state.get("advance_after_reward"):
+        advance_stage(state)
+    else:
+        return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "reward_collected", **public_state(state)})
 
@@ -824,7 +863,7 @@ def choose_heal():
     else:
         state["max_hp"] += 1
         state["hp"] = min(state["max_hp"], state["hp"] + 1)
-    advance_stage(state)
+    return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "repaired", **public_state(state)})
 
@@ -854,7 +893,7 @@ def leave_shop():
     state = session.get("game_state")
     if not state or state.get("pending") != "shop":
         return jsonify({"error": "No active shop"}), 400
-    advance_stage(state)
+    return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "shop_left", **public_state(state)})
 
@@ -914,7 +953,7 @@ def choose_event():
         else:
             state["hp"] = max(1, state["hp"] - 2)
             message = "The exploit backfired. You lost 2 HP."
-    advance_stage(state)
+    return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "event_resolved", "message": message, **public_state(state)})
 
@@ -997,7 +1036,7 @@ def encyclopedia():
                 "description": enemy_catalog[key]["description"],
                 "strategy": enemy_catalog[key]["strategy"],
                 "max_hp": enemy_catalog[key]["max_hp"] if "max_hp" in enemy_catalog[key] else next(
-                    {"EASY": 2, "MEDIUM": 3, "HARD": 4}[tier]
+                    {"EASY": 3, "MEDIUM": 4, "HARD": 5}[tier]
                     for tier, enemies in NORMAL_ENEMIES.items()
                     if any(entry["id"] == key for entry in enemies)
                 ),

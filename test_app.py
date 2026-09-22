@@ -23,15 +23,17 @@ class RoguelikeGameTests(unittest.TestCase):
             question_index = state["question_orders"][tier][position]
         return load_questions(tier)[question_index]["answer"]
 
-    def test_new_run_starts_with_seven_hp_and_visible_intent(self):
+    def test_new_run_starts_with_seven_hp_and_hidden_intent(self):
         response = self.client.get("/api/question")
         data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["room"], 1)
         self.assertEqual(data["hp"], 7)
-        self.assertEqual(data["enemy"]["hp"], 2)
-        self.assertEqual(data["enemy"]["intent_detail"]["id"], "attack")
+        self.assertEqual(data["enemy"]["hp"], 3)
+        self.assertTrue(data["enemy"]["intent_hidden"])
+        self.assertNotIn("intent", data["enemy"])
+        self.assertNotIn("intent_detail", data["enemy"])
 
     def test_session_cookie_stays_within_browser_limit(self):
         response = self.client.post("/api/start")
@@ -79,8 +81,8 @@ class RoguelikeGameTests(unittest.TestCase):
         )
         data = response.get_json()
 
-        self.assertEqual(data["damage_dealt"], 2)
-        self.assertEqual(data["enemy"]["hp"], 5)
+        self.assertEqual(data["damage_dealt"], 3)
+        self.assertEqual(data["enemy"]["hp"], 4)
 
     def test_defeating_final_boss_wins_the_run(self):
         with self.client.session_transaction() as flask_session:
@@ -128,6 +130,8 @@ class RoguelikeGameTests(unittest.TestCase):
                 self.assertIn(question["answer"], question["options"])
                 self.assertTrue(question["question"].strip())
                 self.assertTrue(question["explanation"].strip())
+                self.assertLessEqual(len(question["question"]), 100)
+                self.assertLessEqual(max(map(len, question["options"].values())), 60)
 
                 question_id = str(question["id"])
                 unique_id = f"{tier}-{question_id}"
@@ -238,10 +242,11 @@ class RoguelikeGameTests(unittest.TestCase):
         ).get_json()
 
         self.assertTrue(result["is_correct"])
-        self.assertEqual(result["damage_dealt"], 1)
-        self.assertEqual(result["damage_taken"], 1)
-        self.assertEqual(result["hp"], 6)
+        self.assertEqual(result["damage_dealt"], 2)
+        self.assertEqual(result["damage_taken"], 0)
+        self.assertEqual(result["hp"], 7)
         self.assertEqual(result["enemy"]["hp"], 1)
+        self.assertEqual(result["focus"], 1)
 
     def test_correct_defend_interrupts_enemy_intent(self):
         result = self.client.post(
@@ -253,12 +258,14 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(result["damage_taken"], 0)
         self.assertTrue(result["enemy_action"]["canceled"])
         self.assertEqual(result["hp"], 7)
+        self.assertEqual(result["focus"], 0)
 
     def test_correct_exploit_deals_double_damage_and_interrupts(self):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
-            state["enemy"]["hp"] = 3
-            state["enemy"]["max_hp"] = 3
+            state["enemy"]["hp"] = 5
+            state["enemy"]["max_hp"] = 5
+            state["focus"] = 2
             flask_session["game_state"] = state
 
         result = self.client.post(
@@ -266,7 +273,7 @@ class RoguelikeGameTests(unittest.TestCase):
             json={"answer": self.answer_for_current_question(), "combat_action": "exploit"},
         ).get_json()
 
-        self.assertEqual(result["damage_dealt"], 2)
+        self.assertEqual(result["damage_dealt"], 4)
         self.assertEqual(result["damage_taken"], 0)
         self.assertTrue(result["enemy_action"]["canceled"])
         self.assertEqual(result["enemy"]["hp"], 1)
@@ -274,6 +281,10 @@ class RoguelikeGameTests(unittest.TestCase):
     def test_wrong_exploit_increases_incoming_attack(self):
         correct = self.answer_for_current_question()
         wrong = next(key for key in "ABCD" if key != correct)
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["focus"] = 2
+            flask_session["game_state"] = state
         result = self.client.post(
             "/api/answer", json={"answer": wrong, "combat_action": "exploit"}
         ).get_json()
@@ -285,8 +296,9 @@ class RoguelikeGameTests(unittest.TestCase):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
             state["relics"] = ["zero_trust"]
-            state["enemy"]["hp"] = 4
-            state["enemy"]["max_hp"] = 4
+            state["enemy"]["hp"] = 6
+            state["enemy"]["max_hp"] = 6
+            state["enemy"]["intent"] = "heavy_attack"
             flask_session["game_state"] = state
 
         first = self.client.post(
@@ -298,7 +310,7 @@ class RoguelikeGameTests(unittest.TestCase):
 
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
-            state["enemy"]["intent"] = "attack"
+            state["enemy"]["intent"] = "heavy_attack"
             flask_session["game_state"] = state
         second = self.client.post(
             "/api/answer",
@@ -306,6 +318,31 @@ class RoguelikeGameTests(unittest.TestCase):
         ).get_json()
         self.assertIsNone(second["blocked_by"])
         self.assertEqual(second["hp"], 6)
+
+    def test_exploit_requires_two_focus(self):
+        response = self.client.post(
+            "/api/answer",
+            json={"answer": self.answer_for_current_question(), "combat_action": "exploit"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("2 Focus", response.get_json()["error"])
+
+    def test_support_room_does_not_advance_stage(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["enemy"] = None
+            state["pending"] = "route"
+            state["room_options"] = ["heal", "combat"]
+            flask_session["game_state"] = state
+
+        selected = self.client.post("/api/route/choose", json={"room_type": "heal"}).get_json()
+        self.assertEqual(selected["room"], 1)
+        repaired = self.client.post("/api/heal/choose", json={"choice": "repair"}).get_json()
+
+        self.assertEqual(repaired["room"], 1)
+        self.assertEqual(repaired["pending"], "route")
+        self.assertEqual({entry["id"] for entry in repaired["room_options"]}, {"combat", "elite"})
 
     def test_boss_enters_phase_two_at_half_hp(self):
         with self.client.session_transaction() as flask_session:
@@ -340,7 +377,7 @@ class RoguelikeGameTests(unittest.TestCase):
             flask_session["game_state"] = state
 
         data = self.client.get("/api/question").get_json()
-        self.assertEqual(data["time_limit"], 20)
+        self.assertEqual(data["time_limit"], 30)
 
     def test_encyclopedia_only_returns_discovered_content(self):
         data = self.client.get("/api/encyclopedia").get_json()

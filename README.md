@@ -3,42 +3,43 @@
 **Swinburne Cyber Dungeon** is a cybersecurity quiz roguelite built with
 Python, Flask, HTML, CSS, and vanilla JavaScript.
 
-The player travels through a procedurally varied 15-room run. Every question is
-a combat turn: read the enemy's next action, choose Attack, Defend, or Exploit,
-then answer. Each route creates a different combination of items, relics,
-shops, events, elites, and bosses.
+The player fights through 15 combat stages. Every question is a combat turn:
+choose Attack, Defend, or Exploit without knowing the enemy's next action, then
+answer. Shops, repairs, caches, and events occur between fights and do not
+advance the stage counter.
 
 The original *Swinburne Millionaire* project remains on the `main` branch.
 The complete roguelite version is developed on `roguelike-v1`.
 
 ## Core game loop
 
-1. Read the enemy's visible next-action intent.
-2. Choose Attack, Defend, or Exploit, then answer the cybersecurity question.
+1. Choose Attack, Defend, or Exploit while the enemy action remains hidden.
+2. Answer a concise cybersecurity question within 45 seconds.
 3. Resolve both the player's action and the enemy's action.
 4. Defeat the enemy and choose one reward.
-5. Select one of two possible routes.
+5. Choose a combat path or take one optional support-room detour.
 6. Improve the current build using consumables and relics.
-7. Defeat the bosses in Rooms 5, 10, and 15.
+7. Defeat the bosses at Stages 5, 10, and 15.
 
 ### Combat actions
 
 | Action | Correct answer | Wrong answer |
 |---|---|---|
-| Attack | Deal normal damage; a surviving enemy still acts | Deal no damage; the enemy acts normally |
-| Defend | Cancel the enemy's action without dealing damage | Reduce an incoming attack by 1 damage; special actions still happen |
-| Exploit | Deal double damage and cancel the enemy's action | Deal no damage and take +1 damage from an incoming attack |
+| Attack | Deal 2 damage, gain 1 Focus, and reduce incoming attack damage by 1 | Deal no damage; the enemy acts normally |
+| Defend | Cancel the enemy action without building Focus | Reduce attack damage by 1; special actions still happen |
+| Exploit | Spend 2 Focus to deal 4 damage and interrupt | Spend 2 Focus, deal no damage, and take +1 attack damage |
 
-Enemies follow readable repeating patterns. Normal enemies now have 2–4 HP,
-elites have 4–6 HP, and the player begins with 7 HP so combat decisions matter
-without making one mistake end a run.
+Enemy actions are revealed only after the turn resolves. Normal enemies have
+3–5 HP, elites have 5–7 HP, and the player begins with 7 HP. Exploit is a
+powerful finisher, but it must first be charged through Attack. Defend remains
+the safe choice when survival matters, but cannot charge Exploit.
 
 Death ends the current run, but discovered encyclopedia entries and run
 statistics remain available until the player resets all progress.
 
 ## Run structure
 
-| Rooms | Area | Questions | Boss |
+| Stages | Area | Questions | Boss |
 |---|---|---|---|
 | 1–5 | Network Perimeter | Easy | Phishing King |
 | 6–10 | Internal Network | Medium | Ransomware Overlord |
@@ -50,19 +51,24 @@ The game contains 300 questions:
 - `questions_medium.json`: 100 Medium questions
 - `questions_hard.json`: 100 Hard questions
 
+All prompts are capped at 100 characters and every answer choice at 60
+characters. Standard battles allow 45 seconds; Time Compression allows 30.
+
 ## Room types
 
 | Room | Purpose |
 |---|---|
 | Combat | Fight a normal enemy and receive loot |
 | Elite | Fight a stronger multi-ability enemy for better rewards |
-| Data Cache | Choose a consumable or credits |
-| Repair Station | Restore HP or increase maximum HP |
-| Dark Web Market | Spend credits on consumable items |
-| Unknown Signal | Choose between event risks and rewards |
-| Boss | Fight a fixed powerful enemy at Rooms 5, 10, and 15 |
+| Data Cache | Choose a consumable or credits between stages |
+| Repair Station | Restore or increase HP between stages |
+| Dark Web Market | Spend credits between stages |
+| Unknown Signal | Choose an event risk or reward between stages |
+| Boss | Fight a fixed enemy at Stages 5, 10, and 15 |
 
-Two random room choices are offered between required boss encounters.
+Only defeated enemies advance the 15-stage run. After taking a support room,
+the next route offers Combat and Elite choices so support rooms cannot be
+farmed repeatedly or skip a boss.
 
 ## Consumable items
 
@@ -87,7 +93,7 @@ Relics provide passive effects for the remainder of the current run.
 
 | Relic | Passive effect |
 |---|---|
-| Exploit Chain | Every third correct answer deals 3 damage |
+| Exploit Chain | Every third correct answer adds 2 damage instead of 1 |
 | Tux Kernel | Correct Linux answers deal +1 damage |
 | Wireshark | Networking questions receive 5 extra seconds |
 | Web Proxy | Correct Web Security answers deal +1 damage |
@@ -106,7 +112,7 @@ Enemies are no longer cosmetic. Their abilities change the rules of combat.
 | Ability | Challenge |
 |---|---|
 | Hardened Shell | Reduces the first successful attack by 1 |
-| Time Compression | Reduces the question timer to 20 seconds |
+| Time Compression | Reduces the question timer to 30 seconds |
 | Signal Jammer | Can disable Packet Sniffer for two turns |
 | Data Leech | Adds Self Repair to an enemy's turn pattern |
 | Wallet Drain | Adds a turn that steals up to 20 credits |
@@ -114,7 +120,7 @@ Enemies are no longer cosmetic. Their abilities change the rules of combat.
 | Self Repair | Adds a turn that restores 1 enemy HP |
 | Critical Strike | Adds more Heavy Attacks to the turn pattern |
 
-Enemy intent is shown before the player chooses an action. Enemy actions include
+Enemy intent is hidden until the turn resolves. Enemy actions include
 Attack, Heavy Attack, Fortify, Self Repair, Wallet Drain, Signal Jam, Encrypt,
 and Root Lock. Elite enemies combine two abilities. Bosses change to a more
 aggressive second pattern at half HP.
@@ -162,7 +168,7 @@ The end screen reports:
 - enemies defeated
 - total damage taken
 - consumable items used
-- final room and credits
+- final stage and credits
 
 ## Run locally on Windows
 
@@ -187,8 +193,9 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The 23-test automated suite checks all three combat actions, simultaneous
-damage, enemy intent, Zero Trust, boss phases, combos, question difficulty,
+The 25-test automated suite checks Focus requirements, hidden intentions,
+support-room stage rules, question-length limits, all three combat actions,
+simultaneous damage, Zero Trust, boss phases, combos, question difficulty,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
 timers, encyclopedia detail data, progress reset, and browser session size.
 

@@ -355,7 +355,7 @@
     "domain": "Networking",
     "question": "What is the primary purpose of NAT (Network Address Translation)?",
     "options": {
-      "A": "Convert private IP addresses to a public IP address for internet traffic",
+      "A": "Translate private IPs to a public IP for internet access",
       "B": "Encrypt hard drive files",
       "C": "Filter spam emails",
       "D": "Assign MAC addresses to wireless access points"
@@ -483,7 +483,7 @@
   {
     "id": 38,
     "domain": "Linux",
-    "question": "Which command prefix allows a standard permitted user to run commands with administrative privileges?",
+    "question": "Which prefix lets an approved user run commands as administrator?",
     "options": {
       "A": "runas",
       "B": "sudo",
@@ -886,7 +886,7 @@
   {
     "id": 69,
     "domain": "Security",
-    "question": "Which principle of the CIA Triad ensures data remains accurate and unaltered by unauthorized parties?",
+    "question": "Which CIA Triad principle keeps data accurate and unaltered?",
     "options": {
       "A": "Confidentiality",
       "B": "Integrity",
@@ -899,7 +899,7 @@
   {
     "id": 70,
     "domain": "Security",
-    "question": "What type of social engineering attack uses deceptive emails to trick victims into sharing passwords?",
+    "question": "Which attack uses deceptive emails to steal passwords?",
     "options": {
       "A": "DDoS",
       "B": "Phishing",
@@ -964,7 +964,7 @@
   {
     "id": 75,
     "domain": "Security",
-    "question": "What malicious program self-replicates and spreads across networks WITHOUT needing a host program or human action?",
+    "question": "Which malware self-replicates across networks without a host?",
     "options": {
       "A": "Virus",
       "B": "Worm",
@@ -990,7 +990,7 @@
   {
     "id": 77,
     "domain": "Security",
-    "question": "Which security concept dictates giving users ONLY the minimum permissions needed to complete their job?",
+    "question": "Which principle gives users only the permissions they need?",
     "options": {
       "A": "Separation of Duties",
       "B": "Principle of Least Privilege",
@@ -1003,7 +1003,7 @@
   {
     "id": 78,
     "domain": "Security",
-    "question": "What type of attack attempts every possible combination of characters until the correct password is found?",
+    "question": "Which attack tries every possible password combination?",
     "options": {
       "A": "Dictionary Attack",
       "B": "Brute-Force Attack",
@@ -1016,7 +1016,7 @@
   {
     "id": 79,
     "domain": "Security",
-    "question": "What device or software acts as a barrier, filtering incoming and outgoing traffic based on defined security rules?",
+    "question": "What filters network traffic using security rules?",
     "options": {
       "A": "Switch",
       "B": "Firewall",
@@ -1029,7 +1029,7 @@
   {
     "id": 80,
     "domain": "Security",
-    "question": "What attack overwhelms a server or service with excessive traffic to render it unavailable to legitimate users?",
+    "question": "Which attack floods a service until it becomes unavailable?",
     "options": {
       "A": "Man-in-the-Middle",
       "B": "Denial of Service (DoS)",
@@ -1055,7 +1055,7 @@
   {
     "id": 82,
     "domain": "Security",
-    "question": "Unlike encryption, what mathematical process is one-way and cannot be mathematically reversed to recover original data?",
+    "question": "Which one-way process cannot be reversed to recover data?",
     "options": {
       "A": "Symmetric Cipher",
       "B": "Hashing",
@@ -1081,7 +1081,7 @@
   {
     "id": 84,
     "domain": "Security",
-    "question": "What social engineering tactic involves physically following an authorized employee into a secured building facility?",
+    "question": "Which tactic follows an employee into a secure building?",
     "options": {
       "A": "Shoulder Surfing",
       "B": "Tailgating / Piggybacking",
@@ -1094,7 +1094,7 @@
   {
     "id": 85,
     "domain": "Security",
-    "question": "What practice involves looking over someone's shoulder to steal sensitive information like PINs or passwords?",
+    "question": "Which tactic watches someone enter a PIN or password?",
     "options": {
       "A": "Dumpster Diving",
       "B": "Shoulder Surfing",
@@ -1146,7 +1146,7 @@
   {
     "id": 89,
     "domain": "Security",
-    "question": "What type of phishing attack specifically targets high-profile individuals like corporate executives?",
+    "question": "Which phishing attack targets executives?",
     "options": {
       "A": "Spear Phishing",
       "B": "Whaling",
@@ -1185,7 +1185,7 @@
   {
     "id": 92,
     "domain": "Security",
-    "question": "What type of malware gives an attacker stealthy, deep administrative root access to an OS while hiding its presence?",
+    "question": "Which hidden malware gives an attacker root access?",
     "options": {
       "A": "Rootkit",
       "B": "Adware",
@@ -1250,7 +1250,7 @@
   {
     "id": 97,
     "domain": "Security",
-    "question": "What is an unpatched software vulnerability that is actively exploited by attackers BEFORE the vendor becomes aware of it?",
+    "question": "What is an exploited flaw unknown to its vendor?",
     "options": {
       "A": "Zero-Day Vulnerability",
       "B": "Known Vulnerability",
@@ -1263,7 +1263,7 @@
   {
     "id": 98,
     "domain": "Security",
-    "question": "What type of firewall inspects traffic based solely on packet source/destination IP and port numbers without context?",
+    "question": "Which firewall checks only packet IPs and ports?",
     "options": {
       "A": "Stateless Packet Filter",
       "B": "Stateful Inspection Firewall",
@@ -1276,7 +1276,7 @@
   {
     "id": 99,
     "domain": "Security",
-    "question": "What physical or logical network segment isolates public-facing servers (like web servers) from the internal private LAN?",
+    "question": "Which network segment isolates public servers from the LAN?",
     "options": {
       "A": "VPN",
       "B": "DMZ (Demilitarized Zone)",
@@ -1289,7 +1289,7 @@
   {
     "id": 100,
     "domain": "Security",
-    "question": "What network security tool encrypts traffic passing between a user device and a remote network over the public internet?",
+    "question": "Which tool encrypts traffic to a remote network?",
     "options": {
       "A": "VPN (Virtual Private Network)",
       "B": "VLAN",
