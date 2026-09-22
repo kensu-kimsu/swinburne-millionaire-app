@@ -10,7 +10,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 
 TOTAL_ROOMS = 15
 INVENTORY_LIMIT = 4
-PLAYER_MAX_HP = 7
+PLAYER_MAX_HP = 12
 
 QUESTION_FILES = {
     "EASY": "questions.json",
@@ -207,6 +207,7 @@ MECHANICS = {
     "elites": {"name": "Elite Enemies", "description": "Elites have more HP and abilities but provide stronger rewards."},
     "bosses": {"name": "Boss Battles", "description": "Bosses have multiple HP, stronger attacks, and unique abilities."},
     "progression": {"name": "Discovery Progress", "description": "Enemies, items, relics, rooms, and abilities appear in the encyclopedia after discovery."},
+    "recovery": {"name": "Combat Recovery", "description": "Defeating an enemy restores 1 HP, rewarding aggressive but controlled play."},
 }
 
 EVENTS = {
@@ -410,6 +411,34 @@ def public_enemy(enemy):
     }
 
 
+def threat_warning(state):
+    enemy = state.get("enemy")
+    if not enemy:
+        return None
+    intent_id = enemy["intent"]
+    if intent_id in {"attack", "heavy_attack"}:
+        damage = enemy["attack"] + (1 if intent_id == "heavy_attack" else 0)
+        if damage >= state["hp"]:
+            return {
+                "level": "fatal", "label": "LETHAL THREAT",
+                "description": "The next enemy action could defeat you. Defend or Exploit.",
+            }
+        if intent_id == "heavy_attack":
+            return {
+                "level": "danger", "label": "MENACING ATTACK",
+                "description": "A powerful strike is being prepared. Defend or Exploit to interrupt it.",
+            }
+    if intent_id in {"encrypt", "root_lock"}:
+        return {
+            "level": "danger", "label": "DANGEROUS TECHNIQUE",
+            "description": "The enemy is preparing a major special action.",
+        }
+    return {
+        "level": "hidden", "label": "ACTION HIDDEN",
+        "description": "The enemy is preparing its turn.",
+    }
+
+
 def public_state(state):
     return {
         "room": state["current_room"],
@@ -425,6 +454,7 @@ def public_state(state):
         "relics": [relic_view(relic) for relic in state["relics"]],
         "effects": state["effects"],
         "enemy": public_enemy(state.get("enemy")),
+        "threat_warning": threat_warning(state),
         "pending": state.get("pending"),
         "room_options": [room_view(room) for room in state.get("room_options", [])],
         "reward_kind": state.get("reward_kind"),
@@ -547,6 +577,8 @@ def remove_random_item(state):
 def complete_combat(state):
     enemy = state["enemy"]
     state["stats"]["enemies_defeated"] += 1
+    state["hp"] = min(state["max_hp"], state["hp"] + 1)
+    discover("mechanics", "recovery")
     state["enemy"] = None
     if state["current_room"] == TOTAL_ROOMS:
         state["game_over"] = True
@@ -585,14 +617,14 @@ def revive_if_possible(state):
     return False
 
 
-def resolve_enemy_intent(state, combat_action, canceled=False, attack_guard=False):
+def resolve_enemy_intent(state, combat_action, canceled=False):
     enemy = state["enemy"]
     intent_id = enemy["intent"]
     detail = intent_view(intent_id, enemy)
     result = {
         "id": intent_id, "name": detail["name"], "icon": detail["icon"],
         "canceled": canceled, "damage_taken": 0, "blocked_by": None,
-        "destroyed_item": None, "mitigated": 0,
+        "destroyed_item": None,
     }
     if canceled:
         result["message"] = f"{detail['name']} was interrupted."
@@ -604,9 +636,6 @@ def resolve_enemy_intent(state, combat_action, canceled=False, attack_guard=Fals
             damage = max(0, damage - 1)
         elif combat_action == "exploit":
             damage += 1
-        elif attack_guard:
-            damage = max(0, damage - 1)
-            result["mitigated"] = 1
         if damage > 0:
             if state["effects"]["sandbox"]:
                 state["effects"]["sandbox"] -= 1
@@ -751,6 +780,7 @@ def submit_answer():
     credits_earned = 0
     enemy_action = None
     phase_changed = False
+    recovered_hp = 0
     if combat_action == "exploit":
         state["focus"] -= 2
 
@@ -782,13 +812,12 @@ def submit_answer():
 
     defeated_enemy = enemy["name"] if enemy["hp"] == 0 else None
     if enemy["hp"] == 0:
+        hp_before_recovery = state["hp"]
         status = complete_combat(state)
+        recovered_hp = state["hp"] - hp_before_recovery
     else:
         canceled = is_correct and combat_action in {"defend", "exploit"}
-        enemy_action = resolve_enemy_intent(
-            state, combat_action, canceled=canceled,
-            attack_guard=is_correct and combat_action == "attack",
-        )
+        enemy_action = resolve_enemy_intent(state, combat_action, canceled=canceled)
         revived = revive_if_possible(state)
         if state["hp"] == 0:
             finish_failed_run(state)
@@ -809,6 +838,7 @@ def submit_answer():
         "destroyed_item": enemy_action["destroyed_item"] if enemy_action else None,
         "enemy_action": enemy_action, "revived": revived,
         "phase_changed": phase_changed, "defeated_enemy": defeated_enemy,
+        "recovered_hp": recovered_hp,
         **public_state(state),
     })
 
@@ -989,7 +1019,9 @@ def use_item():
         enemy["hp"] = max(0, enemy["hp"] - 2)
         result["damage_dealt"] = 2
         if enemy["hp"] == 0:
+            hp_before_recovery = state["hp"]
             result["status"] = complete_combat(state)
+            result["recovered_hp"] = state["hp"] - hp_before_recovery
     elif item_id == "backup":
         return jsonify({"error": "Backup activates automatically when damage would defeat you"}), 400
     state["inventory"].remove(item_id)

@@ -293,6 +293,28 @@ button { font: inherit; }
 .intent-panel strong { font-size: .82rem; }
 .intent-panel p { color: var(--muted); font-size: .68rem; }
 
+@keyframes threat-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 91, 82, 0); transform: scale(1); }
+    50% { box-shadow: 0 0 22px rgba(255, 91, 82, .38); transform: scale(1.012); }
+}
+
+.intent-panel.danger {
+    border-color: #ffb347;
+    background: rgba(255, 145, 45, .14);
+    color: #ffd08a;
+    animation: threat-pulse 1s ease-in-out infinite;
+}
+
+.intent-panel.fatal {
+    border-color: #ff443a;
+    background: rgba(220, 37, 28, .22);
+    color: #ff7770;
+    animation: threat-pulse .55s ease-in-out infinite;
+}
+
+.intent-panel.danger > span,
+.intent-panel.fatal > span { color: currentColor; }
+
 .combat-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

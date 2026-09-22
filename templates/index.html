@@ -79,7 +79,7 @@
             <header class="player-hud">
                 <div class="stat">
                     <span class="stat-label">PLAYER HP</span>
-                    <strong id="player-hp">❤️❤️❤️❤️❤️</strong>
+                    <strong id="player-hp">❤️ 12 / 12</strong>
                 </div>
                 <div class="stat">
                     <span class="stat-label">CREDITS</span>
@@ -124,7 +124,7 @@
                     <span id="tier" class="tier easy">EASY</span>
                 </div>
                 <div class="combat-actions" id="combat-actions">
-                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong>⚔️ ATTACK</strong><span>2 damage, +1 Focus, and soften an enemy attack</span></button>
+                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong>⚔️ ATTACK</strong><span>2 damage and +1 Focus; surviving enemies hit back</span></button>
                     <button data-action="defend" onclick="selectCombatAction('defend')"><strong>🛡️ DEFEND</strong><span>Safely interrupt the enemy; does not build Focus</span></button>
                     <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong>💻 EXPLOIT <em>2◇</em></strong><span>4 damage + interrupt; wrong answers are punished</span></button>
                 </div>
@@ -268,13 +268,13 @@
 
         function renderState(data) {
             currentState = data;
-            const hearts = '❤️'.repeat(data.hp) + '🖤'.repeat(Math.max(0, data.max_hp - data.hp));
-            document.getElementById('player-hp').textContent = hearts;
+            document.getElementById('player-hp').textContent = `❤️ ${data.hp} / ${data.max_hp}`;
             document.getElementById('credits').textContent = data.credits;
             document.getElementById('combo').textContent = `x${data.combo}`;
             document.getElementById('focus').textContent = '◆'.repeat(data.focus) + '◇'.repeat(data.max_focus - data.focus);
             updatePath(data.room);
             renderEnemy(data.enemy);
+            renderThreatWarning(data.threat_warning);
             renderInventory(data.inventory, data.inventory_limit);
             renderRelics(data.relics);
             renderEffects(data.effects);
@@ -306,6 +306,39 @@
             document.getElementById('enemy-intent').textContent = '❓ Hidden';
             document.getElementById('enemy-intent-description').textContent = 'Commit your action to reveal the enemy turn.';
             card.classList.toggle('boss', enemy.kind !== 'ENEMY');
+        }
+
+        function renderThreatWarning(warning) {
+            const panel = document.getElementById('intent-panel');
+            panel.classList.remove('danger', 'fatal');
+            if (!warning) return;
+            const icon = warning.level === 'fatal' ? '☠️' : warning.level === 'danger' ? '⚠️' : '❓';
+            document.getElementById('enemy-intent').textContent = `${icon} ${warning.label}`;
+            document.getElementById('enemy-intent-description').textContent = warning.description;
+            if (warning.level === 'danger' || warning.level === 'fatal') panel.classList.add(warning.level);
+        }
+
+        function playThreatWarning(level) {
+            if (!['danger', 'fatal'].includes(level)) return;
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                const context = new AudioContextClass();
+                const tones = level === 'fatal' ? [180, 140, 100] : [240, 180];
+                tones.forEach((frequency, index) => {
+                    const oscillator = context.createOscillator();
+                    const gain = context.createGain();
+                    const start = context.currentTime + index * .16;
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(frequency, start);
+                    gain.gain.setValueAtTime(.0001, start);
+                    gain.gain.exponentialRampToValueAtTime(.09, start + .02);
+                    gain.gain.exponentialRampToValueAtTime(.0001, start + .13);
+                    oscillator.connect(gain).connect(context.destination);
+                    oscillator.start(start);
+                    oscillator.stop(start + .14);
+                });
+                setTimeout(() => context.close(), 900);
+            } catch (_) {}
         }
 
         function renderInventory(items, limit) {
@@ -421,6 +454,7 @@
                 button.onclick = () => selectAnswer(key);
                 area.appendChild(button);
             });
+            playThreatWarning(data.threat_warning?.level);
             startTimer(data.time_limit);
         }
 
@@ -540,6 +574,7 @@
             if (data.destroyed_item) details.push(`Encryption destroyed ${data.destroyed_item.name}.`);
             if (data.revived) details.push('Backup restored you to 1 HP.');
             if (data.phase_changed) details.push('The boss entered phase two and changed its pattern!');
+            if (data.recovered_hp) details.push(`Combat Recovery restored ${data.recovered_hp} HP.`);
             if (data.credits_earned) details.push(`+${data.credits_earned} credits.`);
             return details.join(' ');
         }

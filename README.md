@@ -25,14 +25,23 @@ The complete roguelite version is developed on `roguelike-v1`.
 
 | Action | Correct answer | Wrong answer |
 |---|---|---|
-| Attack | Deal 2 damage, gain 1 Focus, and reduce incoming attack damage by 1 | Deal no damage; the enemy acts normally |
+| Attack | Deal 2 damage and gain 1 Focus; a surviving enemy always acts | Deal no damage; the enemy acts normally |
 | Defend | Cancel the enemy action without building Focus | Reduce attack damage by 1; special actions still happen |
 | Exploit | Spend 2 Focus to deal 4 damage and interrupt | Spend 2 Focus, deal no damage, and take +1 attack damage |
 
 Enemy actions are revealed only after the turn resolves. Normal enemies have
-3–5 HP, elites have 5–7 HP, and the player begins with 7 HP. Exploit is a
+3–5 HP, elites have 5–7 HP, and the player begins with 12 HP. Exploit is a
 powerful finisher, but it must first be charged through Attack. Defend remains
 the safe choice when survival matters, but cannot charge Exploit.
+
+Powerful actions display a pulsing warning and play an alert sound without
+revealing the exact move. A separate lethal warning appears when the incoming
+attack could reduce the player to 0 HP. This gives Defend a clear tactical use
+while keeping ordinary enemy turns unpredictable.
+
+Every defeated enemy activates Combat Recovery and restores 1 HP. Additional
+healing remains available from Health Patches, Repair Stations, Backup, and the
+Incident Response Plan relic.
 
 Death ends the current run, but discovered encyclopedia entries and run
 statistics remain available until the player resets all progress.
@@ -193,9 +202,10 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The 25-test automated suite checks Focus requirements, hidden intentions,
-support-room stage rules, question-length limits, all three combat actions,
-simultaneous damage, Zero Trust, boss phases, combos, question difficulty,
+The 28-test automated suite checks Focus requirements, hidden intentions,
+danger and lethal warnings, post-fight healing, support-room stage rules,
+question-length limits, all three combat actions, simultaneous damage, Zero
+Trust, boss phases, combos, question difficulty,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
 timers, encyclopedia detail data, progress reset, and browser session size.
 
