@@ -1,0 +1,1402 @@
+[
+  {
+    "id": "M001",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which security issue best explains this scenario? A device reaches traffic assigned to another VLAN by abusing trunk negotiation or double tagging.",
+    "options": {
+      "A": "DNS cache poisoning",
+      "B": "SYN flood",
+      "C": "ARP spoofing",
+      "D": "VLAN hopping"
+    },
+    "answer": "D",
+    "explanation": "This is VLAN hopping. VLAN hopping lets traffic cross intended Layer 2 segmentation boundaries."
+  },
+  {
+    "id": "M002",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "During an investigation of VLAN hopping, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Check netstat and SYN/SYN-ACK packet counts",
+      "B": "Compare resolver cache entries with authoritative DNS",
+      "C": "Review switch trunk and DTP configuration",
+      "D": "Inspect the ARP table and packet captures"
+    },
+    "answer": "C",
+    "explanation": "Review switch trunk and DTP configuration is the most relevant investigation step for confirming VLAN hopping."
+  },
+  {
+    "id": "M003",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which control most directly reduces the risk of VLAN hopping?",
+    "options": {
+      "A": "Enable Dynamic ARP Inspection",
+      "B": "Disable DTP and use an unused native VLAN",
+      "C": "Use DNSSEC validation and restrict recursive queries",
+      "D": "Enable SYN cookies and rate limiting"
+    },
+    "answer": "B",
+    "explanation": "The most direct control is to disable DTP and use an unused native VLAN."
+  },
+  {
+    "id": "M004",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which statement most accurately describes VLAN hopping?",
+    "options": {
+      "A": "ARP spoofing poisons local address mappings so traffic is redirected through an attacker.",
+      "B": "A SYN flood consumes connection state by leaving TCP handshakes incomplete.",
+      "C": "DNS cache poisoning inserts false records into a resolver cache.",
+      "D": "VLAN hopping lets traffic cross intended Layer 2 segmentation boundaries."
+    },
+    "answer": "D",
+    "explanation": "VLAN hopping lets traffic cross intended Layer 2 segmentation boundaries."
+  },
+  {
+    "id": "M005",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which security issue best explains this scenario? Multiple hosts suddenly associate the default gateway IP with an unfamiliar MAC address.",
+    "options": {
+      "A": "SYN flood",
+      "B": "ARP spoofing",
+      "C": "DNS cache poisoning",
+      "D": "SMB relay"
+    },
+    "answer": "B",
+    "explanation": "This is ARP spoofing. ARP spoofing poisons local address mappings so traffic is redirected through an attacker."
+  },
+  {
+    "id": "M006",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "During an investigation of ARP spoofing, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Check netstat and SYN/SYN-ACK packet counts",
+      "B": "Inspect the ARP table and packet captures",
+      "C": "Compare resolver cache entries with authoritative DNS",
+      "D": "Review SMB signing and NTLM authentication logs"
+    },
+    "answer": "B",
+    "explanation": "Inspect the ARP table and packet captures is the most relevant investigation step for confirming ARP spoofing."
+  },
+  {
+    "id": "M007",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which control most directly reduces the risk of ARP spoofing?",
+    "options": {
+      "A": "Require SMB signing and reduce NTLM use",
+      "B": "Use DNSSEC validation and restrict recursive queries",
+      "C": "Enable Dynamic ARP Inspection",
+      "D": "Enable SYN cookies and rate limiting"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to enable Dynamic ARP Inspection."
+  },
+  {
+    "id": "M008",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which statement most accurately describes ARP spoofing?",
+    "options": {
+      "A": "ARP spoofing poisons local address mappings so traffic is redirected through an attacker.",
+      "B": "DNS cache poisoning inserts false records into a resolver cache.",
+      "C": "A SYN flood consumes connection state by leaving TCP handshakes incomplete.",
+      "D": "SMB relay reuses live NTLM authentication against a different service."
+    },
+    "answer": "A",
+    "explanation": "ARP spoofing poisons local address mappings so traffic is redirected through an attacker."
+  },
+  {
+    "id": "M009",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which security issue best explains this scenario? Users receive an attacker-controlled IP address when resolving a legitimate internal hostname.",
+    "options": {
+      "A": "Password spraying",
+      "B": "SMB relay",
+      "C": "DNS cache poisoning",
+      "D": "SYN flood"
+    },
+    "answer": "C",
+    "explanation": "This is DNS cache poisoning. DNS cache poisoning inserts false records into a resolver cache."
+  },
+  {
+    "id": "M010",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "During an investigation of DNS cache poisoning, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review SMB signing and NTLM authentication logs",
+      "B": "Compare resolver cache entries with authoritative DNS",
+      "C": "Group authentication failures by password window and source",
+      "D": "Check netstat and SYN/SYN-ACK packet counts"
+    },
+    "answer": "B",
+    "explanation": "Compare resolver cache entries with authoritative DNS is the most relevant investigation step for confirming DNS cache poisoning."
+  },
+  {
+    "id": "M011",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which control most directly reduces the risk of DNS cache poisoning?",
+    "options": {
+      "A": "Enable SYN cookies and rate limiting",
+      "B": "Require SMB signing and reduce NTLM use",
+      "C": "Use DNSSEC validation and restrict recursive queries",
+      "D": "Use MFA and detect distributed low-volume failures"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to use DNSSEC validation and restrict recursive queries."
+  },
+  {
+    "id": "M012",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which statement most accurately describes DNS cache poisoning?",
+    "options": {
+      "A": "DNS cache poisoning inserts false records into a resolver cache.",
+      "B": "SMB relay reuses live NTLM authentication against a different service.",
+      "C": "Password spraying tests a small number of passwords across many accounts.",
+      "D": "A SYN flood consumes connection state by leaving TCP handshakes incomplete."
+    },
+    "answer": "A",
+    "explanation": "DNS cache poisoning inserts false records into a resolver cache."
+  },
+  {
+    "id": "M013",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which security issue best explains this scenario? A server has thousands of half-open TCP connections and its connection queue is exhausted.",
+    "options": {
+      "A": "SYN flood",
+      "B": "Password spraying",
+      "C": "Credential stuffing",
+      "D": "SMB relay"
+    },
+    "answer": "A",
+    "explanation": "This is SYN flood. A SYN flood consumes connection state by leaving TCP handshakes incomplete."
+  },
+  {
+    "id": "M014",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "During an investigation of SYN flood, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review SMB signing and NTLM authentication logs",
+      "B": "Check netstat and SYN/SYN-ACK packet counts",
+      "C": "Group authentication failures by password window and source",
+      "D": "Compare login telemetry with known breached credentials"
+    },
+    "answer": "B",
+    "explanation": "Check netstat and SYN/SYN-ACK packet counts is the most relevant investigation step for confirming SYN flood."
+  },
+  {
+    "id": "M015",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which control most directly reduces the risk of SYN flood?",
+    "options": {
+      "A": "Enable SYN cookies and rate limiting",
+      "B": "Use MFA and detect distributed low-volume failures",
+      "C": "Use MFA and breached-password screening",
+      "D": "Require SMB signing and reduce NTLM use"
+    },
+    "answer": "A",
+    "explanation": "The most direct control is to enable SYN cookies and rate limiting."
+  },
+  {
+    "id": "M016",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which statement most accurately describes SYN flood?",
+    "options": {
+      "A": "SMB relay reuses live NTLM authentication against a different service.",
+      "B": "Password spraying tests a small number of passwords across many accounts.",
+      "C": "A SYN flood consumes connection state by leaving TCP handshakes incomplete.",
+      "D": "Credential stuffing reuses previously stolen username-password pairs."
+    },
+    "answer": "C",
+    "explanation": "A SYN flood consumes connection state by leaving TCP handshakes incomplete."
+  },
+  {
+    "id": "M017",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which security issue best explains this scenario? Captured NTLM authentication is forwarded to another server without cracking the password.",
+    "options": {
+      "A": "Directory traversal",
+      "B": "Password spraying",
+      "C": "Credential stuffing",
+      "D": "SMB relay"
+    },
+    "answer": "D",
+    "explanation": "This is SMB relay. SMB relay reuses live NTLM authentication against a different service."
+  },
+  {
+    "id": "M018",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "During an investigation of SMB relay, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review SMB signing and NTLM authentication logs",
+      "B": "Test canonicalised paths in an intercepting proxy",
+      "C": "Compare login telemetry with known breached credentials",
+      "D": "Group authentication failures by password window and source"
+    },
+    "answer": "A",
+    "explanation": "Review SMB signing and NTLM authentication logs is the most relevant investigation step for confirming SMB relay."
+  },
+  {
+    "id": "M019",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which control most directly reduces the risk of SMB relay?",
+    "options": {
+      "A": "Use MFA and breached-password screening",
+      "B": "Resolve paths safely and enforce an allowlisted base directory",
+      "C": "Use MFA and detect distributed low-volume failures",
+      "D": "Require SMB signing and reduce NTLM use"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to require SMB signing and reduce NTLM use."
+  },
+  {
+    "id": "M020",
+    "difficulty": "MEDIUM",
+    "domain": "Networking",
+    "question": "Which statement most accurately describes SMB relay?",
+    "options": {
+      "A": "Directory traversal uses path sequences to access files outside an allowed folder.",
+      "B": "Credential stuffing reuses previously stolen username-password pairs.",
+      "C": "Password spraying tests a small number of passwords across many accounts.",
+      "D": "SMB relay reuses live NTLM authentication against a different service."
+    },
+    "answer": "D",
+    "explanation": "SMB relay reuses live NTLM authentication against a different service."
+  },
+  {
+    "id": "M021",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "Which security issue best explains this scenario? One common password is attempted against many accounts while avoiding repeated failures per user.",
+    "options": {
+      "A": "Password spraying",
+      "B": "Credential stuffing",
+      "C": "Stored cross-site scripting",
+      "D": "Directory traversal"
+    },
+    "answer": "A",
+    "explanation": "This is Password spraying. Password spraying tests a small number of passwords across many accounts."
+  },
+  {
+    "id": "M022",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "During an investigation of Password spraying, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Group authentication failures by password window and source",
+      "B": "Test canonicalised paths in an intercepting proxy",
+      "C": "Compare login telemetry with known breached credentials",
+      "D": "Review stored input and output contexts with a web proxy"
+    },
+    "answer": "A",
+    "explanation": "Group authentication failures by password window and source is the most relevant investigation step for confirming Password spraying."
+  },
+  {
+    "id": "M023",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "Which control most directly reduces the risk of Password spraying?",
+    "options": {
+      "A": "Resolve paths safely and enforce an allowlisted base directory",
+      "B": "Apply context-aware output encoding and sanitisation",
+      "C": "Use MFA and breached-password screening",
+      "D": "Use MFA and detect distributed low-volume failures"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to use MFA and detect distributed low-volume failures."
+  },
+  {
+    "id": "M024",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "Which statement most accurately describes Password spraying?",
+    "options": {
+      "A": "Directory traversal uses path sequences to access files outside an allowed folder.",
+      "B": "Credential stuffing reuses previously stolen username-password pairs.",
+      "C": "Stored XSS persists attacker-controlled script that later runs in other users' browsers.",
+      "D": "Password spraying tests a small number of passwords across many accounts."
+    },
+    "answer": "D",
+    "explanation": "Password spraying tests a small number of passwords across many accounts."
+  },
+  {
+    "id": "M025",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "Which security issue best explains this scenario? Successful logins use username and password pairs exposed in an unrelated website breach.",
+    "options": {
+      "A": "Credential stuffing",
+      "B": "Stored cross-site scripting",
+      "C": "Directory traversal",
+      "D": "Cross-site request forgery"
+    },
+    "answer": "A",
+    "explanation": "This is Credential stuffing. Credential stuffing reuses previously stolen username-password pairs."
+  },
+  {
+    "id": "M026",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "During an investigation of Credential stuffing, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review stored input and output contexts with a web proxy",
+      "B": "Inspect requests for CSRF tokens and SameSite cookies",
+      "C": "Test canonicalised paths in an intercepting proxy",
+      "D": "Compare login telemetry with known breached credentials"
+    },
+    "answer": "D",
+    "explanation": "Compare login telemetry with known breached credentials is the most relevant investigation step for confirming Credential stuffing."
+  },
+  {
+    "id": "M027",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "Which control most directly reduces the risk of Credential stuffing?",
+    "options": {
+      "A": "Use unpredictable CSRF tokens and SameSite cookies",
+      "B": "Use MFA and breached-password screening",
+      "C": "Apply context-aware output encoding and sanitisation",
+      "D": "Resolve paths safely and enforce an allowlisted base directory"
+    },
+    "answer": "B",
+    "explanation": "The most direct control is to use MFA and breached-password screening."
+  },
+  {
+    "id": "M028",
+    "difficulty": "MEDIUM",
+    "domain": "Identity",
+    "question": "Which statement most accurately describes Credential stuffing?",
+    "options": {
+      "A": "CSRF tricks an authenticated browser into sending an unwanted request.",
+      "B": "Stored XSS persists attacker-controlled script that later runs in other users' browsers.",
+      "C": "Directory traversal uses path sequences to access files outside an allowed folder.",
+      "D": "Credential stuffing reuses previously stolen username-password pairs."
+    },
+    "answer": "D",
+    "explanation": "Credential stuffing reuses previously stolen username-password pairs."
+  },
+  {
+    "id": "M029",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? A download parameter containing ../../ returns a file outside the intended directory.",
+    "options": {
+      "A": "Stored cross-site scripting",
+      "B": "Cross-site request forgery",
+      "C": "Directory traversal",
+      "D": "Insecure deserialization"
+    },
+    "answer": "C",
+    "explanation": "This is Directory traversal. Directory traversal uses path sequences to access files outside an allowed folder."
+  },
+  {
+    "id": "M030",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Directory traversal, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Inspect requests for CSRF tokens and SameSite cookies",
+      "B": "Review stored input and output contexts with a web proxy",
+      "C": "Test canonicalised paths in an intercepting proxy",
+      "D": "Trace deserialization entry points and object types"
+    },
+    "answer": "C",
+    "explanation": "Test canonicalised paths in an intercepting proxy is the most relevant investigation step for confirming Directory traversal."
+  },
+  {
+    "id": "M031",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Directory traversal?",
+    "options": {
+      "A": "Apply context-aware output encoding and sanitisation",
+      "B": "Avoid untrusted native objects and verify signed data",
+      "C": "Use unpredictable CSRF tokens and SameSite cookies",
+      "D": "Resolve paths safely and enforce an allowlisted base directory"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to resolve paths safely and enforce an allowlisted base directory."
+  },
+  {
+    "id": "M032",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Directory traversal?",
+    "options": {
+      "A": "Insecure deserialization lets crafted object data trigger unintended logic or code paths.",
+      "B": "Directory traversal uses path sequences to access files outside an allowed folder.",
+      "C": "CSRF tricks an authenticated browser into sending an unwanted request.",
+      "D": "Stored XSS persists attacker-controlled script that later runs in other users' browsers."
+    },
+    "answer": "B",
+    "explanation": "Directory traversal uses path sequences to access files outside an allowed folder."
+  },
+  {
+    "id": "M033",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? A comment containing script code executes whenever another user views the page.",
+    "options": {
+      "A": "Insecure deserialization",
+      "B": "Stored cross-site scripting",
+      "C": "Cross-site request forgery",
+      "D": "Server-side request forgery"
+    },
+    "answer": "B",
+    "explanation": "This is Stored cross-site scripting. Stored XSS persists attacker-controlled script that later runs in other users' browsers."
+  },
+  {
+    "id": "M034",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Stored cross-site scripting, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Inspect requests for CSRF tokens and SameSite cookies",
+      "B": "Test outbound destinations through a controlled callback server",
+      "C": "Review stored input and output contexts with a web proxy",
+      "D": "Trace deserialization entry points and object types"
+    },
+    "answer": "C",
+    "explanation": "Review stored input and output contexts with a web proxy is the most relevant investigation step for confirming Stored cross-site scripting."
+  },
+  {
+    "id": "M035",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Stored cross-site scripting?",
+    "options": {
+      "A": "Use unpredictable CSRF tokens and SameSite cookies",
+      "B": "Allowlist destinations and block private address ranges",
+      "C": "Apply context-aware output encoding and sanitisation",
+      "D": "Avoid untrusted native objects and verify signed data"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to apply context-aware output encoding and sanitisation."
+  },
+  {
+    "id": "M036",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Stored cross-site scripting?",
+    "options": {
+      "A": "SSRF makes the server send attacker-chosen requests, often to internal systems.",
+      "B": "Stored XSS persists attacker-controlled script that later runs in other users' browsers.",
+      "C": "Insecure deserialization lets crafted object data trigger unintended logic or code paths.",
+      "D": "CSRF tricks an authenticated browser into sending an unwanted request."
+    },
+    "answer": "B",
+    "explanation": "Stored XSS persists attacker-controlled script that later runs in other users' browsers."
+  },
+  {
+    "id": "M037",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? A logged-in browser performs a state-changing request after the user visits an attacker page.",
+    "options": {
+      "A": "Server-side request forgery",
+      "B": "Insecure direct object reference",
+      "C": "Insecure deserialization",
+      "D": "Cross-site request forgery"
+    },
+    "answer": "D",
+    "explanation": "This is Cross-site request forgery. CSRF tricks an authenticated browser into sending an unwanted request."
+  },
+  {
+    "id": "M038",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Cross-site request forgery, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Inspect requests for CSRF tokens and SameSite cookies",
+      "B": "Test outbound destinations through a controlled callback server",
+      "C": "Repeat requests with another object ID and user account",
+      "D": "Trace deserialization entry points and object types"
+    },
+    "answer": "A",
+    "explanation": "Inspect requests for CSRF tokens and SameSite cookies is the most relevant investigation step for confirming Cross-site request forgery."
+  },
+  {
+    "id": "M039",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Cross-site request forgery?",
+    "options": {
+      "A": "Allowlist destinations and block private address ranges",
+      "B": "Avoid untrusted native objects and verify signed data",
+      "C": "Use unpredictable CSRF tokens and SameSite cookies",
+      "D": "Perform server-side ownership checks for every object"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to use unpredictable CSRF tokens and SameSite cookies."
+  },
+  {
+    "id": "M040",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Cross-site request forgery?",
+    "options": {
+      "A": "Insecure deserialization lets crafted object data trigger unintended logic or code paths.",
+      "B": "SSRF makes the server send attacker-chosen requests, often to internal systems.",
+      "C": "CSRF tricks an authenticated browser into sending an unwanted request.",
+      "D": "IDOR occurs when object identifiers are exposed without proper authorization checks."
+    },
+    "answer": "C",
+    "explanation": "CSRF tricks an authenticated browser into sending an unwanted request."
+  },
+  {
+    "id": "M041",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? A server accepts a modified serialized object that changes application behaviour during reconstruction.",
+    "options": {
+      "A": "Server-side request forgery",
+      "B": "Insecure deserialization",
+      "C": "Insecure direct object reference",
+      "D": "UNION-based SQL injection"
+    },
+    "answer": "B",
+    "explanation": "This is Insecure deserialization. Insecure deserialization lets crafted object data trigger unintended logic or code paths."
+  },
+  {
+    "id": "M042",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Insecure deserialization, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Test outbound destinations through a controlled callback server",
+      "B": "Trace deserialization entry points and object types",
+      "C": "Use Burp Repeater to test column count and data types",
+      "D": "Repeat requests with another object ID and user account"
+    },
+    "answer": "B",
+    "explanation": "Trace deserialization entry points and object types is the most relevant investigation step for confirming Insecure deserialization."
+  },
+  {
+    "id": "M043",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Insecure deserialization?",
+    "options": {
+      "A": "Avoid untrusted native objects and verify signed data",
+      "B": "Use parameterised queries with bound values",
+      "C": "Allowlist destinations and block private address ranges",
+      "D": "Perform server-side ownership checks for every object"
+    },
+    "answer": "A",
+    "explanation": "The most direct control is to avoid untrusted native objects and verify signed data."
+  },
+  {
+    "id": "M044",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Insecure deserialization?",
+    "options": {
+      "A": "SSRF makes the server send attacker-chosen requests, often to internal systems.",
+      "B": "Insecure deserialization lets crafted object data trigger unintended logic or code paths.",
+      "C": "IDOR occurs when object identifiers are exposed without proper authorization checks.",
+      "D": "UNION SQL injection combines attacker-selected rows with the application's original query."
+    },
+    "answer": "B",
+    "explanation": "Insecure deserialization lets crafted object data trigger unintended logic or code paths."
+  },
+  {
+    "id": "M045",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? A URL-fetch feature can request an internal admin service that users cannot reach directly.",
+    "options": {
+      "A": "Unrestricted file upload",
+      "B": "Server-side request forgery",
+      "C": "Insecure direct object reference",
+      "D": "UNION-based SQL injection"
+    },
+    "answer": "B",
+    "explanation": "This is Server-side request forgery. SSRF makes the server send attacker-chosen requests, often to internal systems."
+  },
+  {
+    "id": "M046",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Server-side request forgery, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Test outbound destinations through a controlled callback server",
+      "B": "Repeat requests with another object ID and user account",
+      "C": "Verify content, extension, storage path, and execution behaviour",
+      "D": "Use Burp Repeater to test column count and data types"
+    },
+    "answer": "A",
+    "explanation": "Test outbound destinations through a controlled callback server is the most relevant investigation step for confirming Server-side request forgery."
+  },
+  {
+    "id": "M047",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Server-side request forgery?",
+    "options": {
+      "A": "Use parameterised queries with bound values",
+      "B": "Store uploads outside the web root with generated names",
+      "C": "Perform server-side ownership checks for every object",
+      "D": "Allowlist destinations and block private address ranges"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to allowlist destinations and block private address ranges."
+  },
+  {
+    "id": "M048",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Server-side request forgery?",
+    "options": {
+      "A": "Unrestricted upload can place dangerous content where the server or users execute it.",
+      "B": "IDOR occurs when object identifiers are exposed without proper authorization checks.",
+      "C": "UNION SQL injection combines attacker-selected rows with the application's original query.",
+      "D": "SSRF makes the server send attacker-chosen requests, often to internal systems."
+    },
+    "answer": "D",
+    "explanation": "SSRF makes the server send attacker-chosen requests, often to internal systems."
+  },
+  {
+    "id": "M049",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? Changing /invoice/104 to /invoice/105 reveals another customer's invoice.",
+    "options": {
+      "A": "UNION-based SQL injection",
+      "B": "SUID binary abuse",
+      "C": "Insecure direct object reference",
+      "D": "Unrestricted file upload"
+    },
+    "answer": "C",
+    "explanation": "This is Insecure direct object reference. IDOR occurs when object identifiers are exposed without proper authorization checks."
+  },
+  {
+    "id": "M050",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Insecure direct object reference, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Find files with the SUID permission bit",
+      "B": "Verify content, extension, storage path, and execution behaviour",
+      "C": "Use Burp Repeater to test column count and data types",
+      "D": "Repeat requests with another object ID and user account"
+    },
+    "answer": "D",
+    "explanation": "Repeat requests with another object ID and user account is the most relevant investigation step for confirming Insecure direct object reference."
+  },
+  {
+    "id": "M051",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Insecure direct object reference?",
+    "options": {
+      "A": "Perform server-side ownership checks for every object",
+      "B": "Store uploads outside the web root with generated names",
+      "C": "Remove unnecessary SUID bits and patch unsafe binaries",
+      "D": "Use parameterised queries with bound values"
+    },
+    "answer": "A",
+    "explanation": "The most direct control is to perform server-side ownership checks for every object."
+  },
+  {
+    "id": "M052",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Insecure direct object reference?",
+    "options": {
+      "A": "A SUID program runs with the file owner's privileges rather than only the caller's.",
+      "B": "UNION SQL injection combines attacker-selected rows with the application's original query.",
+      "C": "Unrestricted upload can place dangerous content where the server or users execute it.",
+      "D": "IDOR occurs when object identifiers are exposed without proper authorization checks."
+    },
+    "answer": "D",
+    "explanation": "IDOR occurs when object identifiers are exposed without proper authorization checks."
+  },
+  {
+    "id": "M053",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? A product parameter accepts a UNION SELECT payload and returns data from another table.",
+    "options": {
+      "A": "Writable cron job",
+      "B": "Unrestricted file upload",
+      "C": "SUID binary abuse",
+      "D": "UNION-based SQL injection"
+    },
+    "answer": "D",
+    "explanation": "This is UNION-based SQL injection. UNION SQL injection combines attacker-selected rows with the application's original query."
+  },
+  {
+    "id": "M054",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of UNION-based SQL injection, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review crontabs and permissions of referenced scripts",
+      "B": "Find files with the SUID permission bit",
+      "C": "Verify content, extension, storage path, and execution behaviour",
+      "D": "Use Burp Repeater to test column count and data types"
+    },
+    "answer": "D",
+    "explanation": "Use Burp Repeater to test column count and data types is the most relevant investigation step for confirming UNION-based SQL injection."
+  },
+  {
+    "id": "M055",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of UNION-based SQL injection?",
+    "options": {
+      "A": "Store uploads outside the web root with generated names",
+      "B": "Restrict write access to root-owned scheduled scripts",
+      "C": "Remove unnecessary SUID bits and patch unsafe binaries",
+      "D": "Use parameterised queries with bound values"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to use parameterised queries with bound values."
+  },
+  {
+    "id": "M056",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes UNION-based SQL injection?",
+    "options": {
+      "A": "A SUID program runs with the file owner's privileges rather than only the caller's.",
+      "B": "A writable privileged cron script lets a lower-privileged user influence commands run as root.",
+      "C": "Unrestricted upload can place dangerous content where the server or users execute it.",
+      "D": "UNION SQL injection combines attacker-selected rows with the application's original query."
+    },
+    "answer": "D",
+    "explanation": "UNION SQL injection combines attacker-selected rows with the application's original query."
+  },
+  {
+    "id": "M057",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which security issue best explains this scenario? An image upload accepts a server-executable file that can later be requested from the web root.",
+    "options": {
+      "A": "SUID binary abuse",
+      "B": "Unquoted service path",
+      "C": "Writable cron job",
+      "D": "Unrestricted file upload"
+    },
+    "answer": "D",
+    "explanation": "This is Unrestricted file upload. Unrestricted upload can place dangerous content where the server or users execute it."
+  },
+  {
+    "id": "M058",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "During an investigation of Unrestricted file upload, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Verify content, extension, storage path, and execution behaviour",
+      "B": "Find files with the SUID permission bit",
+      "C": "Query service paths and their directory permissions",
+      "D": "Review crontabs and permissions of referenced scripts"
+    },
+    "answer": "A",
+    "explanation": "Verify content, extension, storage path, and execution behaviour is the most relevant investigation step for confirming Unrestricted file upload."
+  },
+  {
+    "id": "M059",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which control most directly reduces the risk of Unrestricted file upload?",
+    "options": {
+      "A": "Quote service executable paths and restrict folder writes",
+      "B": "Store uploads outside the web root with generated names",
+      "C": "Remove unnecessary SUID bits and patch unsafe binaries",
+      "D": "Restrict write access to root-owned scheduled scripts"
+    },
+    "answer": "B",
+    "explanation": "The most direct control is to store uploads outside the web root with generated names."
+  },
+  {
+    "id": "M060",
+    "difficulty": "MEDIUM",
+    "domain": "Web Security",
+    "question": "Which statement most accurately describes Unrestricted file upload?",
+    "options": {
+      "A": "Unrestricted upload can place dangerous content where the server or users execute it.",
+      "B": "A writable privileged cron script lets a lower-privileged user influence commands run as root.",
+      "C": "An unquoted service path may cause Windows to execute an attacker-controlled executable earlier in the path.",
+      "D": "A SUID program runs with the file owner's privileges rather than only the caller's."
+    },
+    "answer": "A",
+    "explanation": "Unrestricted upload can place dangerous content where the server or users execute it."
+  },
+  {
+    "id": "M061",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "Which security issue best explains this scenario? A non-root user runs a misconfigured SUID program and gains an effective UID of root.",
+    "options": {
+      "A": "SUID binary abuse",
+      "B": "Unquoted service path",
+      "C": "DLL search-order hijacking",
+      "D": "Writable cron job"
+    },
+    "answer": "A",
+    "explanation": "This is SUID binary abuse. A SUID program runs with the file owner's privileges rather than only the caller's."
+  },
+  {
+    "id": "M062",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "During an investigation of SUID binary abuse, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Find files with the SUID permission bit",
+      "B": "Use Process Monitor to inspect DLL load attempts",
+      "C": "Query service paths and their directory permissions",
+      "D": "Review crontabs and permissions of referenced scripts"
+    },
+    "answer": "A",
+    "explanation": "Find files with the SUID permission bit is the most relevant investigation step for confirming SUID binary abuse."
+  },
+  {
+    "id": "M063",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "Which control most directly reduces the risk of SUID binary abuse?",
+    "options": {
+      "A": "Quote service executable paths and restrict folder writes",
+      "B": "Restrict write access to root-owned scheduled scripts",
+      "C": "Use absolute DLL paths and secure search settings",
+      "D": "Remove unnecessary SUID bits and patch unsafe binaries"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to remove unnecessary SUID bits and patch unsafe binaries."
+  },
+  {
+    "id": "M064",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "Which statement most accurately describes SUID binary abuse?",
+    "options": {
+      "A": "A writable privileged cron script lets a lower-privileged user influence commands run as root.",
+      "B": "A SUID program runs with the file owner's privileges rather than only the caller's.",
+      "C": "An unquoted service path may cause Windows to execute an attacker-controlled executable earlier in the path.",
+      "D": "DLL search-order hijacking places a malicious library in a location searched before the legitimate one."
+    },
+    "answer": "B",
+    "explanation": "A SUID program runs with the file owner's privileges rather than only the caller's."
+  },
+  {
+    "id": "M065",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "Which security issue best explains this scenario? Root regularly executes a script that a low-privileged account is allowed to modify.",
+    "options": {
+      "A": "Writable cron job",
+      "B": "DLL search-order hijacking",
+      "C": "Unquoted service path",
+      "D": "Kerberoasting"
+    },
+    "answer": "A",
+    "explanation": "This is Writable cron job. A writable privileged cron script lets a lower-privileged user influence commands run as root."
+  },
+  {
+    "id": "M066",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "During an investigation of Writable cron job, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review crontabs and permissions of referenced scripts",
+      "B": "Query service paths and their directory permissions",
+      "C": "Review unusual TGS requests and service-account activity",
+      "D": "Use Process Monitor to inspect DLL load attempts"
+    },
+    "answer": "A",
+    "explanation": "Review crontabs and permissions of referenced scripts is the most relevant investigation step for confirming Writable cron job."
+  },
+  {
+    "id": "M067",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "Which control most directly reduces the risk of Writable cron job?",
+    "options": {
+      "A": "Restrict write access to root-owned scheduled scripts",
+      "B": "Use long managed service-account passwords",
+      "C": "Use absolute DLL paths and secure search settings",
+      "D": "Quote service executable paths and restrict folder writes"
+    },
+    "answer": "A",
+    "explanation": "The most direct control is to restrict write access to root-owned scheduled scripts."
+  },
+  {
+    "id": "M068",
+    "difficulty": "MEDIUM",
+    "domain": "Linux",
+    "question": "Which statement most accurately describes Writable cron job?",
+    "options": {
+      "A": "An unquoted service path may cause Windows to execute an attacker-controlled executable earlier in the path.",
+      "B": "DLL search-order hijacking places a malicious library in a location searched before the legitimate one.",
+      "C": "A writable privileged cron script lets a lower-privileged user influence commands run as root.",
+      "D": "Kerberoasting targets service-ticket material encrypted with a service account's password-derived key."
+    },
+    "answer": "C",
+    "explanation": "A writable privileged cron script lets a lower-privileged user influence commands run as root."
+  },
+  {
+    "id": "M069",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which security issue best explains this scenario? A privileged Windows service path contains spaces and is not enclosed in quotation marks.",
+    "options": {
+      "A": "Kerberoasting",
+      "B": "DLL search-order hijacking",
+      "C": "Pass-the-hash",
+      "D": "Unquoted service path"
+    },
+    "answer": "D",
+    "explanation": "This is Unquoted service path. An unquoted service path may cause Windows to execute an attacker-controlled executable earlier in the path."
+  },
+  {
+    "id": "M070",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "During an investigation of Unquoted service path, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Use Process Monitor to inspect DLL load attempts",
+      "B": "Query service paths and their directory permissions",
+      "C": "Review unusual TGS requests and service-account activity",
+      "D": "Correlate NTLM logons with unusual hosts and admin shares"
+    },
+    "answer": "B",
+    "explanation": "Query service paths and their directory permissions is the most relevant investigation step for confirming Unquoted service path."
+  },
+  {
+    "id": "M071",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which control most directly reduces the risk of Unquoted service path?",
+    "options": {
+      "A": "Use credential isolation and restrict NTLM administration",
+      "B": "Use absolute DLL paths and secure search settings",
+      "C": "Use long managed service-account passwords",
+      "D": "Quote service executable paths and restrict folder writes"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to quote service executable paths and restrict folder writes."
+  },
+  {
+    "id": "M072",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which statement most accurately describes Unquoted service path?",
+    "options": {
+      "A": "Kerberoasting targets service-ticket material encrypted with a service account's password-derived key.",
+      "B": "DLL search-order hijacking places a malicious library in a location searched before the legitimate one.",
+      "C": "Pass-the-hash uses an NTLM password hash directly for authentication.",
+      "D": "An unquoted service path may cause Windows to execute an attacker-controlled executable earlier in the path."
+    },
+    "answer": "D",
+    "explanation": "An unquoted service path may cause Windows to execute an attacker-controlled executable earlier in the path."
+  },
+  {
+    "id": "M073",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which security issue best explains this scenario? An application loads a missing DLL from a user-writable directory before checking a trusted location.",
+    "options": {
+      "A": "Pass-the-hash",
+      "B": "Public object storage",
+      "C": "Kerberoasting",
+      "D": "DLL search-order hijacking"
+    },
+    "answer": "D",
+    "explanation": "This is DLL search-order hijacking. DLL search-order hijacking places a malicious library in a location searched before the legitimate one."
+  },
+  {
+    "id": "M074",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "During an investigation of DLL search-order hijacking, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review unusual TGS requests and service-account activity",
+      "B": "Correlate NTLM logons with unusual hosts and admin shares",
+      "C": "Use Process Monitor to inspect DLL load attempts",
+      "D": "Review bucket policy and public-access settings"
+    },
+    "answer": "C",
+    "explanation": "Use Process Monitor to inspect DLL load attempts is the most relevant investigation step for confirming DLL search-order hijacking."
+  },
+  {
+    "id": "M075",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which control most directly reduces the risk of DLL search-order hijacking?",
+    "options": {
+      "A": "Use credential isolation and restrict NTLM administration",
+      "B": "Block public access and grant least-privilege identities",
+      "C": "Use absolute DLL paths and secure search settings",
+      "D": "Use long managed service-account passwords"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to use absolute DLL paths and secure search settings."
+  },
+  {
+    "id": "M076",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which statement most accurately describes DLL search-order hijacking?",
+    "options": {
+      "A": "Kerberoasting targets service-ticket material encrypted with a service account's password-derived key.",
+      "B": "DLL search-order hijacking places a malicious library in a location searched before the legitimate one.",
+      "C": "Public object storage exposes data when access policies permit anonymous retrieval.",
+      "D": "Pass-the-hash uses an NTLM password hash directly for authentication."
+    },
+    "answer": "B",
+    "explanation": "DLL search-order hijacking places a malicious library in a location searched before the legitimate one."
+  },
+  {
+    "id": "M077",
+    "difficulty": "MEDIUM",
+    "domain": "Active Directory",
+    "question": "Which security issue best explains this scenario? A domain user requests service tickets for SPN accounts and cracks their encrypted portions offline.",
+    "options": {
+      "A": "Overexposed security group",
+      "B": "Public object storage",
+      "C": "Pass-the-hash",
+      "D": "Kerberoasting"
+    },
+    "answer": "D",
+    "explanation": "This is Kerberoasting. Kerberoasting targets service-ticket material encrypted with a service account's password-derived key."
+  },
+  {
+    "id": "M078",
+    "difficulty": "MEDIUM",
+    "domain": "Active Directory",
+    "question": "During an investigation of Kerberoasting, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Audit effective inbound cloud firewall rules",
+      "B": "Correlate NTLM logons with unusual hosts and admin shares",
+      "C": "Review bucket policy and public-access settings",
+      "D": "Review unusual TGS requests and service-account activity"
+    },
+    "answer": "D",
+    "explanation": "Review unusual TGS requests and service-account activity is the most relevant investigation step for confirming Kerberoasting."
+  },
+  {
+    "id": "M079",
+    "difficulty": "MEDIUM",
+    "domain": "Active Directory",
+    "question": "Which control most directly reduces the risk of Kerberoasting?",
+    "options": {
+      "A": "Block public access and grant least-privilege identities",
+      "B": "Use credential isolation and restrict NTLM administration",
+      "C": "Restrict the rule to required sources and ports",
+      "D": "Use long managed service-account passwords"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to use long managed service-account passwords."
+  },
+  {
+    "id": "M080",
+    "difficulty": "MEDIUM",
+    "domain": "Active Directory",
+    "question": "Which statement most accurately describes Kerberoasting?",
+    "options": {
+      "A": "Pass-the-hash uses an NTLM password hash directly for authentication.",
+      "B": "Public object storage exposes data when access policies permit anonymous retrieval.",
+      "C": "An overexposed security group makes services reachable from more networks than necessary.",
+      "D": "Kerberoasting targets service-ticket material encrypted with a service account's password-derived key."
+    },
+    "answer": "D",
+    "explanation": "Kerberoasting targets service-ticket material encrypted with a service account's password-derived key."
+  },
+  {
+    "id": "M081",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which security issue best explains this scenario? An attacker authenticates with an NTLM hash without learning the account's plaintext password.",
+    "options": {
+      "A": "Malicious Office macro",
+      "B": "Pass-the-hash",
+      "C": "Public object storage",
+      "D": "Overexposed security group"
+    },
+    "answer": "B",
+    "explanation": "This is Pass-the-hash. Pass-the-hash uses an NTLM password hash directly for authentication."
+  },
+  {
+    "id": "M082",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "During an investigation of Pass-the-hash, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review bucket policy and public-access settings",
+      "B": "Correlate NTLM logons with unusual hosts and admin shares",
+      "C": "Audit effective inbound cloud firewall rules",
+      "D": "Inspect child processes spawned by the Office application"
+    },
+    "answer": "B",
+    "explanation": "Correlate NTLM logons with unusual hosts and admin shares is the most relevant investigation step for confirming Pass-the-hash."
+  },
+  {
+    "id": "M083",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which control most directly reduces the risk of Pass-the-hash?",
+    "options": {
+      "A": "Block internet macros and use protected viewing",
+      "B": "Block public access and grant least-privilege identities",
+      "C": "Restrict the rule to required sources and ports",
+      "D": "Use credential isolation and restrict NTLM administration"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to use credential isolation and restrict NTLM administration."
+  },
+  {
+    "id": "M084",
+    "difficulty": "MEDIUM",
+    "domain": "Windows",
+    "question": "Which statement most accurately describes Pass-the-hash?",
+    "options": {
+      "A": "Pass-the-hash uses an NTLM password hash directly for authentication.",
+      "B": "An overexposed security group makes services reachable from more networks than necessary.",
+      "C": "Public object storage exposes data when access policies permit anonymous retrieval.",
+      "D": "A malicious macro abuses document automation to start commands or deliver malware."
+    },
+    "answer": "A",
+    "explanation": "Pass-the-hash uses an NTLM password hash directly for authentication."
+  },
+  {
+    "id": "M085",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "Which security issue best explains this scenario? A storage bucket containing customer exports permits unauthenticated internet downloads.",
+    "options": {
+      "A": "Malicious Office macro",
+      "B": "Overexposed security group",
+      "C": "Public object storage",
+      "D": "Command-and-control beaconing"
+    },
+    "answer": "C",
+    "explanation": "This is Public object storage. Public object storage exposes data when access policies permit anonymous retrieval."
+  },
+  {
+    "id": "M086",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "During an investigation of Public object storage, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Audit effective inbound cloud firewall rules",
+      "B": "Review bucket policy and public-access settings",
+      "C": "Analyse proxy timing and destination rarity",
+      "D": "Inspect child processes spawned by the Office application"
+    },
+    "answer": "B",
+    "explanation": "Review bucket policy and public-access settings is the most relevant investigation step for confirming Public object storage."
+  },
+  {
+    "id": "M087",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "Which control most directly reduces the risk of Public object storage?",
+    "options": {
+      "A": "Restrict the rule to required sources and ports",
+      "B": "Block internet macros and use protected viewing",
+      "C": "Block public access and grant least-privilege identities",
+      "D": "Isolate the host and block the confirmed C2 destination"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to block public access and grant least-privilege identities."
+  },
+  {
+    "id": "M088",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "Which statement most accurately describes Public object storage?",
+    "options": {
+      "A": "An overexposed security group makes services reachable from more networks than necessary.",
+      "B": "C2 beaconing is regular outbound traffic used by malware to check in for instructions.",
+      "C": "Public object storage exposes data when access policies permit anonymous retrieval.",
+      "D": "A malicious macro abuses document automation to start commands or deliver malware."
+    },
+    "answer": "C",
+    "explanation": "Public object storage exposes data when access policies permit anonymous retrieval."
+  },
+  {
+    "id": "M089",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "Which security issue best explains this scenario? A database port is reachable from 0.0.0.0/0 instead of only the application subnet.",
+    "options": {
+      "A": "VLAN hopping",
+      "B": "Malicious Office macro",
+      "C": "Command-and-control beaconing",
+      "D": "Overexposed security group"
+    },
+    "answer": "D",
+    "explanation": "This is Overexposed security group. An overexposed security group makes services reachable from more networks than necessary."
+  },
+  {
+    "id": "M090",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "During an investigation of Overexposed security group, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review switch trunk and DTP configuration",
+      "B": "Inspect child processes spawned by the Office application",
+      "C": "Analyse proxy timing and destination rarity",
+      "D": "Audit effective inbound cloud firewall rules"
+    },
+    "answer": "D",
+    "explanation": "Audit effective inbound cloud firewall rules is the most relevant investigation step for confirming Overexposed security group."
+  },
+  {
+    "id": "M091",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "Which control most directly reduces the risk of Overexposed security group?",
+    "options": {
+      "A": "Disable DTP and use an unused native VLAN",
+      "B": "Block internet macros and use protected viewing",
+      "C": "Isolate the host and block the confirmed C2 destination",
+      "D": "Restrict the rule to required sources and ports"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to restrict the rule to required sources and ports."
+  },
+  {
+    "id": "M092",
+    "difficulty": "MEDIUM",
+    "domain": "Cloud",
+    "question": "Which statement most accurately describes Overexposed security group?",
+    "options": {
+      "A": "VLAN hopping lets traffic cross intended Layer 2 segmentation boundaries.",
+      "B": "An overexposed security group makes services reachable from more networks than necessary.",
+      "C": "A malicious macro abuses document automation to start commands or deliver malware.",
+      "D": "C2 beaconing is regular outbound traffic used by malware to check in for instructions."
+    },
+    "answer": "B",
+    "explanation": "An overexposed security group makes services reachable from more networks than necessary."
+  },
+  {
+    "id": "M093",
+    "difficulty": "MEDIUM",
+    "domain": "Endpoint Security",
+    "question": "Which security issue best explains this scenario? A document launches PowerShell after a user enables active content.",
+    "options": {
+      "A": "ARP spoofing",
+      "B": "Command-and-control beaconing",
+      "C": "VLAN hopping",
+      "D": "Malicious Office macro"
+    },
+    "answer": "D",
+    "explanation": "This is Malicious Office macro. A malicious macro abuses document automation to start commands or deliver malware."
+  },
+  {
+    "id": "M094",
+    "difficulty": "MEDIUM",
+    "domain": "Endpoint Security",
+    "question": "During an investigation of Malicious Office macro, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Review switch trunk and DTP configuration",
+      "B": "Analyse proxy timing and destination rarity",
+      "C": "Inspect the ARP table and packet captures",
+      "D": "Inspect child processes spawned by the Office application"
+    },
+    "answer": "D",
+    "explanation": "Inspect child processes spawned by the Office application is the most relevant investigation step for confirming Malicious Office macro."
+  },
+  {
+    "id": "M095",
+    "difficulty": "MEDIUM",
+    "domain": "Endpoint Security",
+    "question": "Which control most directly reduces the risk of Malicious Office macro?",
+    "options": {
+      "A": "Disable DTP and use an unused native VLAN",
+      "B": "Isolate the host and block the confirmed C2 destination",
+      "C": "Enable Dynamic ARP Inspection",
+      "D": "Block internet macros and use protected viewing"
+    },
+    "answer": "D",
+    "explanation": "The most direct control is to block internet macros and use protected viewing."
+  },
+  {
+    "id": "M096",
+    "difficulty": "MEDIUM",
+    "domain": "Endpoint Security",
+    "question": "Which statement most accurately describes Malicious Office macro?",
+    "options": {
+      "A": "VLAN hopping lets traffic cross intended Layer 2 segmentation boundaries.",
+      "B": "A malicious macro abuses document automation to start commands or deliver malware.",
+      "C": "C2 beaconing is regular outbound traffic used by malware to check in for instructions.",
+      "D": "ARP spoofing poisons local address mappings so traffic is redirected through an attacker."
+    },
+    "answer": "B",
+    "explanation": "A malicious macro abuses document automation to start commands or deliver malware."
+  },
+  {
+    "id": "M097",
+    "difficulty": "MEDIUM",
+    "domain": "Threat Detection",
+    "question": "Which security issue best explains this scenario? A workstation makes small encrypted connections to the same rare domain at exact five-minute intervals.",
+    "options": {
+      "A": "VLAN hopping",
+      "B": "DNS cache poisoning",
+      "C": "ARP spoofing",
+      "D": "Command-and-control beaconing"
+    },
+    "answer": "D",
+    "explanation": "This is Command-and-control beaconing. C2 beaconing is regular outbound traffic used by malware to check in for instructions."
+  },
+  {
+    "id": "M098",
+    "difficulty": "MEDIUM",
+    "domain": "Threat Detection",
+    "question": "During an investigation of Command-and-control beaconing, which action would provide the clearest evidence?",
+    "options": {
+      "A": "Analyse proxy timing and destination rarity",
+      "B": "Inspect the ARP table and packet captures",
+      "C": "Compare resolver cache entries with authoritative DNS",
+      "D": "Review switch trunk and DTP configuration"
+    },
+    "answer": "A",
+    "explanation": "Analyse proxy timing and destination rarity is the most relevant investigation step for confirming Command-and-control beaconing."
+  },
+  {
+    "id": "M099",
+    "difficulty": "MEDIUM",
+    "domain": "Threat Detection",
+    "question": "Which control most directly reduces the risk of Command-and-control beaconing?",
+    "options": {
+      "A": "Disable DTP and use an unused native VLAN",
+      "B": "Enable Dynamic ARP Inspection",
+      "C": "Isolate the host and block the confirmed C2 destination",
+      "D": "Use DNSSEC validation and restrict recursive queries"
+    },
+    "answer": "C",
+    "explanation": "The most direct control is to isolate the host and block the confirmed C2 destination."
+  },
+  {
+    "id": "M100",
+    "difficulty": "MEDIUM",
+    "domain": "Threat Detection",
+    "question": "Which statement most accurately describes Command-and-control beaconing?",
+    "options": {
+      "A": "ARP spoofing poisons local address mappings so traffic is redirected through an attacker.",
+      "B": "DNS cache poisoning inserts false records into a resolver cache.",
+      "C": "VLAN hopping lets traffic cross intended Layer 2 segmentation boundaries.",
+      "D": "C2 beaconing is regular outbound traffic used by malware to check in for instructions."
+    },
+    "answer": "D",
+    "explanation": "C2 beaconing is regular outbound traffic used by malware to check in for instructions."
+  }
+]
