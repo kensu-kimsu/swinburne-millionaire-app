@@ -1,103 +1,196 @@
 # Swinburne Cyber Dungeon
 
-A cybersecurity quiz roguelike made with Python, Flask, HTML, CSS and vanilla
-JavaScript.
+**Swinburne Cyber Dungeon** is a cybersecurity quiz roguelite built with
+Python, Flask, HTML, CSS, and vanilla JavaScript.
 
-This branch changes the original *Swinburne Millionaire* school project into a
-combat-based quiz game. The original version remains safe on the `main` branch.
+The player travels through a procedurally varied 15-room run. Correct answers
+damage enemies, wrong answers allow enemies to attack, and each route creates a
+different combination of items, relics, shops, events, elites, and bosses.
 
-## Version 1 features
+The original *Swinburne Millionaire* project remains on the `main` branch.
+The complete roguelite version is developed on `roguelike-v1`.
 
-- A 15-room run with easy, medium and hard areas
-- Three difficulty-matched question banks with 100 questions each
-- Five player health points
-- Correct answers damage enemies
-- Wrong answers and timeouts damage the player
-- A combo system that deals two damage on every third correct answer
-- Credits earned from correct answers
-- A reusable room-path interface
-- The Packet Sniffer power-up, which removes two wrong answers
-- A miniboss in room 5
-- A major boss in room 10
-- A final boss in room 15
+## Core game loop
+
+1. Enter a combat room and answer cybersecurity questions.
+2. Correct answers damage enemies and earn credits.
+3. Wrong answers reset the combo and trigger enemy abilities.
+4. Defeat the enemy and choose one reward.
+5. Select one of two possible routes.
+6. Improve the current build using consumables and relics.
+7. Defeat the bosses in Rooms 5, 10, and 15.
+
+Death ends the current run, but discovered encyclopedia entries and run
+statistics remain available until the player resets all progress.
+
+## Run structure
+
+| Rooms | Area | Questions | Boss |
+|---|---|---|---|
+| 1–5 | Network Perimeter | Easy | Phishing King |
+| 6–10 | Internal Network | Medium | Ransomware Overlord |
+| 11–15 | Root Layer | Hard | The Root Admin |
+
+The game contains 300 questions:
+
+- `questions.json`: 100 Easy questions
+- `questions_medium.json`: 100 Medium questions
+- `questions_hard.json`: 100 Hard questions
+
+## Room types
+
+| Room | Purpose |
+|---|---|
+| Combat | Fight a normal enemy and receive loot |
+| Elite | Fight a stronger multi-ability enemy for better rewards |
+| Data Cache | Choose a consumable or credits |
+| Repair Station | Restore HP or increase maximum HP |
+| Dark Web Market | Spend credits on consumable items |
+| Unknown Signal | Choose between event risks and rewards |
+| Boss | Fight a fixed powerful enemy at Rooms 5, 10, and 15 |
+
+Two random room choices are offered between required boss encounters.
+
+## Consumable items
+
+The inventory can hold four items. Consumables disappear after use.
+
+| Item | Effect |
+|---|---|
+| Packet Sniffer | Removes two incorrect answers |
+| Firewall | Blocks the next enemy attack |
+| Health Patch | Restores 2 HP |
+| Overclock | Adds 15 seconds to the current question |
+| Sandbox | Prevents HP damage from the next wrong answer |
+| Zero-Day | Immediately deals 2 enemy damage |
+| Backup | Automatically revives the player with 1 HP |
+
+Items can be used or discarded from the inventory bar. A full inventory must
+be managed before another item can be collected.
+
+## Relics
+
+Relics provide passive effects for the remainder of the current run.
+
+| Relic | Passive effect |
+|---|---|
+| Exploit Chain | Every third correct answer deals 3 damage |
+| Tux Kernel | Correct Linux answers deal +1 damage |
+| Wireshark | Networking questions receive 5 extra seconds |
+| Web Proxy | Correct Web Security answers deal +1 damage |
+| Zero Trust | Every fifth incoming attack is blocked |
+| Root Access | Bosses begin with 1 HP already removed |
+| Incident Response Plan | Restore 1 HP after defeating a boss |
+| Credit Miner | Correct answers earn 5 additional credits |
+
+Bosses always offer a choice of three relics. Elite enemies have a chance to
+offer relics instead of normal loot.
+
+## Enemy abilities
+
+Enemies are no longer cosmetic. Their abilities change the rules of combat.
+
+| Ability | Challenge |
+|---|---|
+| Hardened Shell | Reduces the first successful attack by 1 |
+| Time Compression | Reduces the question timer to 20 seconds |
+| Signal Jammer | Prevents Packet Sniffer use |
+| Data Leech | Restores enemy HP after a wrong answer |
+| Wallet Drain | Removes credits after a wrong answer |
+| Encryption | Destroys a random inventory item after a wrong answer |
+| Self Repair | Restores enemy HP after a wrong answer |
+| Critical Strike | Deals one additional player damage |
+
+Elite enemies combine two abilities. Bosses use fixed ability combinations.
 
 ## Bosses
 
-| Room | Boss | Health | Damage |
-|---|---|---:|---:|
-| 5 | Phishing King | 3 | 1 |
-| 10 | Ransomware Overlord | 4 | 1 |
-| 15 | The Root Admin | 5 | 2 |
+| Room | Boss | HP | Abilities |
+|---|---|---:|---|
+| 5 | Phishing King | 4 | Signal Jammer |
+| 10 | Ransomware Overlord | 6 | Encryption and Hardened Shell |
+| 15 | The Root Admin | 8 | Time Compression and Self Repair |
 
-## Run the game on Windows
+The Root Admin also deals 2 damage with each successful attack.
 
-Open the project folder in VS Code. Then open **Terminal > New Terminal** and
-enter these commands one at a time:
+## Encyclopedia and progression
+
+The encyclopedia can be opened before a run or during gameplay. It records:
+
+- mechanics
+- room types
+- consumable items
+- relics
+- enemies
+- enemy abilities
+- runs started, wins, and best room reached
+
+Only discovered entries are visible. Undiscovered entries are displayed only
+as locked totals, preventing the encyclopedia from spoiling future content.
+
+Permanent progress also provides small milestones:
+
+- After the first completed run, future runs begin with +1 maximum HP.
+- From the third started run onward, runs begin with 50 credits.
+
+The **Reset All Progress** option clears discoveries, statistics, milestone
+bonuses, and any active run. A confirmation message is shown before deletion.
+
+## Run summary
+
+The end screen reports:
+
+- answer accuracy
+- enemies defeated
+- total damage taken
+- consumable items used
+- final room and credits
+
+## Run locally on Windows
+
+Open the project folder in VS Code, then open **Terminal > New Terminal**:
 
 ```powershell
+git switch roguelike-v1
+git pull
 py -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 python app.py
 ```
 
-Open <http://127.0.0.1:5000> in your browser.
+Open <http://127.0.0.1:5000> in a browser.
 
-To stop the server, return to the terminal and press `Ctrl+C`.
+Press `Ctrl+C` in the terminal to stop the server.
 
-## Run the automated checks
-
-With the virtual environment activated, run:
+## Automated checks
 
 ```powershell
 python -m unittest -v
 ```
 
-The five tests check the starting health, damage from a wrong answer, normal
-room progression, combo damage and final-boss victory.
+The automated suite checks combat, damage, combos, question difficulty,
+question-bank integrity, rewards, routes, inventory, enemy abilities, boss
+timers, encyclopedia locking, progress reset, and browser session size.
 
-## Beginner Git workflow
-
-See which branch you are using and which files changed:
-
-```powershell
-git status
-```
-
-Move to the roguelike branch:
-
-```powershell
-git switch roguelike-v1
-```
-
-Upload the branch to GitHub for the first time:
-
-```powershell
-git push -u origin roguelike-v1
-```
-
-After the first upload, future saved commits only need:
-
-```powershell
-git push
-```
-
-## Project files
+## Project structure
 
 ```text
-app.py                   Flask routes and game rules
-questions.json            100 Easy cybersecurity questions
-questions_medium.json     100 Medium cybersecurity questions
-questions_hard.json       100 Hard cybersecurity questions
-templates/index.html  Page structure and browser game logic
-static/style.css      Roguelike visual design
-test_app.py           Automated game-rule checks
+app.py                    Flask routes, catalogues, combat and progression
+questions.json            100 Easy questions
+questions_medium.json     100 Medium questions
+questions_hard.json       100 Hard questions
+templates/index.html      Game interface and browser logic
+static/style.css          Responsive roguelite design
+static/*.mp3              Game audio
+test_app.py               Automated game-system tests
 ```
 
-## Planned versions
+## Technology
 
-1. **Version 1 — Combat foundation:** HP, enemies, combos and bosses
-2. **Version 2 — Loot:** choose one of three rewards after boss fights
-3. **Version 3 — Inventory:** Firewall, Health Patch and Overclock
-4. **Version 4 — Relics and shops:** passive builds and credit spending
-5. **Version 5 — Random events and branching paths**
+- Python 3
+- Flask
+- JavaScript
+- HTML5
+- CSS3
+- Flask signed-cookie sessions for current-run and discovery progress
