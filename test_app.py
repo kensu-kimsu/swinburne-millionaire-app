@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from app import app, create_enemy, load_questions
 
@@ -31,6 +32,11 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(data["hp"], 5)
         self.assertEqual(data["enemy"]["hp"], 1)
 
+    def test_session_cookie_stays_within_browser_limit(self):
+        response = self.client.post("/api/start")
+        cookie = response.headers.get("Set-Cookie", "")
+        self.assertLess(len(cookie), 4093)
+
     def test_wrong_answer_removes_hp_but_run_continues(self):
         correct_answer = self.answer_for_current_question()
         wrong_answer = next(key for key in "ABCD" if key != correct_answer)
@@ -49,8 +55,9 @@ class RoguelikeGameTests(unittest.TestCase):
         )
         data = response.get_json()
 
-        self.assertEqual(data["status"], "room_cleared")
-        self.assertEqual(data["room"], 2)
+        self.assertEqual(data["status"], "enemy_defeated")
+        self.assertEqual(data["pending"], "reward")
+        self.assertEqual(data["room"], 1)
         self.assertGreater(data["credits"], 0)
 
     def test_every_third_combo_deals_two_damage(self):
@@ -68,7 +75,7 @@ class RoguelikeGameTests(unittest.TestCase):
         data = response.get_json()
 
         self.assertEqual(data["damage_dealt"], 2)
-        self.assertEqual(data["enemy"]["hp"], 1)
+        self.assertEqual(data["enemy"]["hp"], 2)
 
     def test_defeating_final_boss_wins_the_run(self):
         with self.client.session_transaction() as flask_session:
@@ -85,7 +92,8 @@ class RoguelikeGameTests(unittest.TestCase):
         data = response.get_json()
 
         self.assertEqual(data["status"], "won")
-        self.assertTrue(data["enemy"]["hp"] == 0)
+        self.assertIsNone(data["enemy"])
+        self.assertEqual(data["pending"], "complete")
 
     def test_rooms_use_the_correct_difficulty_bank(self):
         expected_tiers = [(1, "EASY"), (6, "MEDIUM"), (11, "HARD")]
@@ -120,6 +128,87 @@ class RoguelikeGameTests(unittest.TestCase):
                 unique_id = f"{tier}-{question_id}"
                 self.assertNotIn(unique_id, all_ids)
                 all_ids.add(unique_id)
+
+    def test_reward_then_route_choice_advances_the_run(self):
+        answer = self.answer_for_current_question()
+        defeated = self.client.post("/api/answer", json={"answer": answer}).get_json()
+        credit_reward = next(
+            reward for reward in defeated["reward_options"]
+            if reward["type"] == "credits"
+        )
+
+        rewarded = self.client.post(
+            "/api/reward/choose",
+            json={"reward_id": credit_reward["id"]},
+        ).get_json()
+
+        self.assertEqual(rewarded["room"], 2)
+        self.assertEqual(rewarded["pending"], "route")
+        room_type = rewarded["room_options"][0]["id"]
+        selected = self.client.post(
+            "/api/route/choose",
+            json={"room_type": room_type},
+        )
+        self.assertEqual(selected.status_code, 200)
+
+    def test_firewall_blocks_the_next_wrong_answer(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["inventory"].append("firewall")
+            flask_session["game_state"] = state
+
+        used = self.client.post("/api/item/use", json={"item_id": "firewall"})
+        self.assertEqual(used.get_json()["effects"]["firewall"], 1)
+        correct_answer = self.answer_for_current_question()
+        wrong_answer = next(key for key in "ABCD" if key != correct_answer)
+        result = self.client.post("/api/answer", json={"answer": wrong_answer}).get_json()
+
+        self.assertEqual(result["damage_taken"], 0)
+        self.assertEqual(result["blocked_by"], "Firewall")
+        self.assertEqual(result["hp"], 5)
+
+    def test_ransomware_encryption_destroys_an_inventory_item(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["current_room"] = 10
+            state["enemy"] = create_enemy(10)
+            state["inventory"] = ["firewall", "health_patch"]
+            flask_session["game_state"] = state
+
+        correct_answer = self.answer_for_current_question()
+        wrong_answer = next(key for key in "ABCD" if key != correct_answer)
+        with patch("app.random.randrange", return_value=0):
+            result = self.client.post("/api/answer", json={"answer": wrong_answer}).get_json()
+
+        self.assertEqual(result["destroyed_item"]["id"], "firewall")
+        self.assertEqual(len(result["inventory"]), 1)
+
+    def test_final_boss_uses_shorter_timer(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["current_room"] = 15
+            state["enemy"] = create_enemy(15)
+            flask_session["game_state"] = state
+
+        data = self.client.get("/api/question").get_json()
+        self.assertEqual(data["time_limit"], 20)
+
+    def test_encyclopedia_only_returns_discovered_content(self):
+        data = self.client.get("/api/encyclopedia").get_json()
+        enemy_ids = {enemy["id"] for enemy in data["enemies"]}
+
+        self.assertTrue(enemy_ids)
+        self.assertGreater(data["locked_counts"]["enemies"], 0)
+        self.assertNotIn("root_admin", enemy_ids)
+
+    def test_progress_can_be_completely_reset(self):
+        self.client.post("/api/start")
+        response = self.client.post("/api/progress/reset")
+        self.assertEqual(response.get_json()["status"], "progress_reset")
+
+        encyclopedia = self.client.get("/api/encyclopedia").get_json()
+        self.assertEqual(encyclopedia["progress"]["runs_started"], 0)
+        self.assertEqual(encyclopedia["progress"]["best_room"], 0)
 
 
 if __name__ == "__main__":
