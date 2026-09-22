@@ -11,6 +11,12 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 TOTAL_ROOMS = 15
 PLAYER_MAX_HP = 5
 
+QUESTION_FILES = {
+    "EASY": "questions.json",
+    "MEDIUM": "questions_medium.json",
+    "HARD": "questions_hard.json",
+}
+
 NORMAL_ENEMIES = {
     "EASY": [
         {"name": "Spam Bot", "icon": "🤖"},
@@ -54,14 +60,16 @@ BOSSES = {
 }
 
 
-def load_questions():
-    """Load the question bank, including the optional local question file."""
-    try:
-        with open("questions_2.json", "r", encoding="utf-8") as file:
+def load_questions(tier=None):
+    """Load one difficulty bank, or combine all banks when no tier is given."""
+    if tier:
+        with open(QUESTION_FILES[tier], "r", encoding="utf-8") as file:
             return json.load(file)
-    except FileNotFoundError:
-        with open("questions.json", "r", encoding="utf-8") as file:
-            return json.load(file)
+
+    questions = []
+    for difficulty in QUESTION_FILES:
+        questions.extend(load_questions(difficulty))
+    return questions
 
 
 def get_tier(room):
@@ -103,13 +111,16 @@ def public_stats(state):
 
 
 def current_question(state):
-    questions = load_questions()
-    order = state["question_order"]
-    question_number = state["question_number"]
+    tier = get_tier(state["current_room"])
+    questions = load_questions(tier)
+    order = state["question_orders"][tier]
+    question_number = state["question_positions"][tier]
 
     if question_number >= len(order):
         # This is rare, but reshuffling prevents a long run from crashing.
-        order.extend(random.sample(range(len(questions)), len(questions)))
+        new_order = list(range(len(questions)))
+        random.shuffle(new_order)
+        order.extend(new_order)
 
     return questions[order[question_number]]
 
@@ -121,13 +132,15 @@ def index():
 
 @app.route("/api/start", methods=["POST"])
 def start_game():
-    questions = load_questions()
-    question_order = list(range(len(questions)))
-    random.shuffle(question_order)
+    question_orders = {}
+    for tier in QUESTION_FILES:
+        question_order = list(range(len(load_questions(tier))))
+        random.shuffle(question_order)
+        question_orders[tier] = question_order
 
     session["game_state"] = {
-        "question_order": question_order,
-        "question_number": 0,
+        "question_orders": question_orders,
+        "question_positions": {tier: 0 for tier in QUESTION_FILES},
         "current_room": 1,
         "hp": PLAYER_MAX_HP,
         "max_hp": PLAYER_MAX_HP,
@@ -148,8 +161,9 @@ def get_question():
         return jsonify({"error": "No active run"}), 400
 
     question = current_question(state)
+    tier = get_tier(state["current_room"])
     return jsonify({
-        "tier": get_tier(state["current_room"]),
+        "tier": tier,
         "domain": question.get("domain", "General Security"),
         "question": question["question"],
         "options": question["options"],
@@ -169,7 +183,8 @@ def submit_answer():
     is_timeout = data.get("timeout", False)
     question = current_question(state)
     correct_answer = question.get("answer") or question.get("correct")
-    state["question_number"] += 1
+    tier = get_tier(state["current_room"])
+    state["question_positions"][tier] += 1
 
     if is_timeout or user_answer != correct_answer:
         damage_taken = state["enemy"]["attack"]
