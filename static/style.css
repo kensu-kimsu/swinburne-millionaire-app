@@ -277,6 +277,53 @@ button { font: inherit; }
     font-size: .68rem;
 }
 
+.intent-panel {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    align-items: center;
+    margin-top: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 119, 112, .35);
+    border-radius: 7px;
+    background: rgba(220, 37, 28, .08);
+}
+
+.intent-panel > span { grid-row: span 2; color: #ff8983; font-size: .58rem; font-weight: 900; letter-spacing: .12em; }
+.intent-panel strong { font-size: .82rem; }
+.intent-panel p { color: var(--muted); font-size: .68rem; }
+
+.combat-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
+.combat-actions button {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: 62px;
+    padding: 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #111720;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+}
+
+.combat-actions button span { color: var(--muted); font-size: .62rem; line-height: 1.3; }
+.combat-actions button:hover:not(:disabled), .combat-actions button.selected { border-color: var(--blue); background: rgba(63, 142, 252, .12); }
+.combat-actions button.selected { box-shadow: inset 0 -3px var(--blue); }
+.combat-actions button:disabled { cursor: not-allowed; opacity: .65; }
+
+@keyframes enemy-hit { 35% { transform: translateX(7px); filter: brightness(1.7); } 70% { transform: translateX(-4px); } }
+@keyframes player-hit { 35% { transform: translateX(-5px); background: rgba(220, 37, 28, .28); } 70% { transform: translateX(4px); } }
+.enemy-card.enemy-hit { animation: enemy-hit .42s ease; }
+.player-hud.player-hit { animation: player-hit .42s ease; }
+
 .question-card {
     margin: 0 16px;
     padding: 17px;
@@ -573,17 +620,33 @@ button { font: inherit; }
     margin-top: 9px;
 }
 
-.encyclopedia-grid article {
+.encyclopedia-entry {
     min-height: 110px;
     padding: 11px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
 }
 
-.encyclopedia-grid article > span { display: block; margin-bottom: 5px; font-size: 1.5rem; }
-.encyclopedia-grid article strong { font-size: .84rem; }
-.encyclopedia-grid article p { margin-top: 5px; color: var(--muted); font-size: .72rem; line-height: 1.4; }
+.encyclopedia-entry:hover { border-color: var(--blue); transform: translateY(-2px); }
+.encyclopedia-entry > span { display: block; margin-bottom: 5px; font-size: 1.5rem; }
+.encyclopedia-entry strong { font-size: .84rem; }
+.encyclopedia-entry p { margin-top: 5px; color: var(--muted); font-size: .72rem; line-height: 1.4; }
+.encyclopedia-entry small { display: block; margin-top: 9px; color: #77b1ff; font-size: .58rem; font-weight: 900; }
+
+.encyclopedia-detail { margin-top: 18px; }
+.detail-back { margin-bottom: 14px; }
+.detail-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.detail-heading > span { font-size: 3rem; }
+.detail-heading h3 { font-size: 1.5rem; }
+.encyclopedia-detail > p { color: #cbd2dd; line-height: 1.6; }
+.detail-facts { display: grid; gap: 8px; margin-top: 16px; }
+.detail-facts div { padding: 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.detail-facts strong { color: #77b1ff; font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+.detail-facts p { margin-top: 4px; color: #d9e0ea; font-size: .82rem; line-height: 1.5; }
 .locked-message { color: var(--muted); font-style: italic; }
 .encyclopedia-reset { margin-top: 24px; border-color: var(--red); }
 
@@ -618,6 +681,7 @@ button { font: inherit; }
     .enemy-icon { width: 45px; flex-basis: 45px; font-size: 2.2rem; }
     .question-card { margin: 0 9px; padding: 12px; }
     .options, .build-panel, .choice-grid, .encyclopedia-grid { grid-template-columns: 1fr; }
+    .combat-actions { grid-template-columns: 1fr; }
     .feedback { margin: 9px 9px 0; }
     .actions { padding: 9px; }
     .modal-overlay { padding: 8px; }

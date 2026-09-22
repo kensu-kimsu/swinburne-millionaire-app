@@ -62,6 +62,12 @@
             <div class="progress-stats" id="progress-stats"></div>
             <p class="modal-copy">Only elements discovered during your runs are visible.</p>
             <div id="encyclopedia-content"></div>
+            <div id="encyclopedia-detail" class="encyclopedia-detail hidden">
+                <button class="text-button detail-back" onclick="hideEncyclopediaDetail()">← BACK TO DATABASE</button>
+                <div class="detail-heading"><span id="detail-icon"></span><div><p class="eyebrow" id="detail-category"></p><h3 id="detail-name"></h3></div></div>
+                <p id="detail-description"></p>
+                <div id="detail-facts" class="detail-facts"></div>
+            </div>
             <button class="secondary-button encyclopedia-reset" onclick="confirmResetProgress()">RESET ALL PROGRESS</button>
         </div>
     </section>
@@ -100,6 +106,11 @@
                     </div>
                     <div class="hp-track"><div id="enemy-hp-bar"></div></div>
                     <div class="ability-list" id="enemy-abilities"></div>
+                    <div class="intent-panel" id="intent-panel">
+                        <span>NEXT ENEMY ACTION</span>
+                        <strong id="enemy-intent">—</strong>
+                        <p id="enemy-intent-description">No active threat.</p>
+                    </div>
                 </div>
             </section>
 
@@ -107,6 +118,11 @@
                 <div class="question-meta">
                     <span id="domain">DOMAIN: ---</span>
                     <span id="tier" class="tier easy">EASY</span>
+                </div>
+                <div class="combat-actions" id="combat-actions">
+                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong>⚔️ ATTACK</strong><span>Damage enemy; their action still happens</span></button>
+                    <button data-action="defend" onclick="selectCombatAction('defend')"><strong>🛡️ DEFEND</strong><span>Correct: cancel intent. Wrong: reduce attack by 1</span></button>
+                    <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong>💻 EXPLOIT</strong><span>Correct: double damage + cancel. Wrong: +1 damage</span></button>
                 </div>
                 <h3 id="question">Start a run to enter the dungeon.</h3>
                 <div class="options" id="options">
@@ -136,7 +152,7 @@
 
             <div class="actions">
                 <button class="attack-button" id="attack-button" onclick="submitSelectedAnswer()" disabled>
-                    LOCK IN ATTACK
+                    LOCK IN TURN
                 </button>
             </div>
         </section>
@@ -158,6 +174,7 @@
 
     <script>
         let selectedAnswer = null;
+        let selectedCombatAction = null;
         let timerInterval = null;
         let timeLeft = 30;
         let totalQuestionTime = 30;
@@ -266,6 +283,8 @@
                 document.getElementById('enemy-hp-text').textContent = '';
                 document.getElementById('enemy-hp-bar').style.width = '0%';
                 document.getElementById('enemy-abilities').innerHTML = '';
+                document.getElementById('enemy-intent').textContent = '—';
+                document.getElementById('enemy-intent-description').textContent = 'No active threat.';
                 card.classList.remove('boss');
                 return;
             }
@@ -277,6 +296,10 @@
             document.getElementById('enemy-abilities').innerHTML = enemy.ability_details.map(ability =>
                 `<span title="${escapeHtml(ability.description)}">${ability.icon} ${escapeHtml(ability.name)}</span>`
             ).join('');
+            const intent = enemy.intent_detail;
+            const amount = intent.amount ? ` • ${intent.amount} damage` : '';
+            document.getElementById('enemy-intent').textContent = `${intent.icon} ${intent.name}${amount}`;
+            document.getElementById('enemy-intent-description').textContent = intent.description;
             card.classList.toggle('boss', enemy.kind !== 'ENEMY');
         }
 
@@ -335,6 +358,7 @@
             stopTimer();
             document.getElementById('feedback').classList.add('hidden');
             selectedAnswer = null;
+            selectedCombatAction = null;
             const response = await fetch('/api/state');
             const data = await response.json();
             if (!response.ok) return showFatalError(data.error);
@@ -363,6 +387,11 @@
             document.getElementById('feedback').classList.add('hidden');
             document.getElementById('attack-button').disabled = true;
             selectedAnswer = null;
+            selectedCombatAction = null;
+            document.querySelectorAll('.combat-actions button').forEach(button => {
+                button.classList.remove('selected');
+                button.disabled = false;
+            });
             const response = await fetch('/api/question');
             const data = await response.json();
             if (!response.ok) return showFatalError(data.error || 'Question could not load.');
@@ -395,11 +424,27 @@
             selectedAnswer = key;
             document.querySelectorAll('.option').forEach(button => button.classList.remove('selected'));
             document.getElementById(`option-${key}`).classList.add('selected');
-            document.getElementById('attack-button').disabled = false;
+            updateTurnButton();
+        }
+
+        function selectCombatAction(action) {
+            if (!acceptingAnswers) return;
+            selectedCombatAction = action;
+            document.querySelectorAll('.combat-actions button').forEach(button =>
+                button.classList.toggle('selected', button.dataset.action === action)
+            );
+            updateTurnButton();
+        }
+
+        function updateTurnButton() {
+            const ready = Boolean(selectedAnswer && selectedCombatAction && acceptingAnswers);
+            const button = document.getElementById('attack-button');
+            button.disabled = !ready;
+            button.textContent = selectedCombatAction ? `LOCK IN ${selectedCombatAction.toUpperCase()}` : 'CHOOSE AN ACTION';
         }
 
         function submitSelectedAnswer() {
-            if (selectedAnswer) submitAnswer(selectedAnswer, false);
+            if (selectedAnswer && selectedCombatAction) submitAnswer(selectedAnswer, false);
         }
 
         async function submitAnswer(answer, timeout) {
@@ -412,7 +457,7 @@
             const response = await fetch('/api/answer', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({answer, timeout})
+                body: JSON.stringify({answer, timeout, combat_action: selectedCombatAction || 'attack'})
             });
             const data = await response.json();
             if (!response.ok) return showFatalError(data.error);
@@ -421,6 +466,7 @@
 
         function disableCombatButtons() {
             document.querySelectorAll('.option').forEach(button => button.disabled = true);
+            document.querySelectorAll('.combat-actions button').forEach(button => button.disabled = true);
             document.getElementById('attack-button').disabled = true;
         }
 
@@ -435,17 +481,16 @@
             const text = document.getElementById('feedback-text');
             feedback.classList.remove('hidden', 'good', 'bad');
 
+            flashCombat(data);
             if (data.status === 'game_over') {
                 playSound('snd-wrong');
                 title.textContent = '💥 SYSTEM FAILURE';
-                text.textContent = buildWrongMessage(data);
+                text.textContent = buildTurnMessage(data);
                 feedback.classList.add('bad');
-            } else if (data.status === 'player_hit') {
+            } else if (!data.is_correct) {
                 playSound('snd-wrong');
-                title.textContent = data.blocked_by
-                    ? `🛡️ ${data.blocked_by.toUpperCase()} BLOCKED THE ATTACK`
-                    : `💥 YOU TOOK ${data.damage_taken} DAMAGE`;
-                text.textContent = buildWrongMessage(data);
+                title.textContent = data.was_timeout ? '⏱️ TIME EXPIRED' : '❌ INCORRECT';
+                text.textContent = buildTurnMessage(data);
                 feedback.classList.add('bad');
             } else if (data.status === 'won') {
                 playSound('snd-victory');
@@ -456,19 +501,44 @@
                 playSound('snd-correct');
                 title.textContent = data.status === 'enemy_defeated'
                     ? `⚔️ ${data.defeated_enemy} DEFEATED`
+                    : data.combat_action === 'defend' ? '🛡️ INTENT BLOCKED'
                     : `💥 ${data.damage_dealt} DAMAGE DEALT`;
-                const armor = data.armor_blocked ? ' The enemy armour blocked 1 damage.' : '';
-                text.textContent = `+${data.credits_earned} credits. ${data.explanation}${armor}`;
+                text.textContent = buildTurnMessage(data);
                 feedback.classList.add('good');
             }
         }
 
-        function buildWrongMessage(data) {
+        function buildTurnMessage(data) {
             const details = [];
-            details.push(`Correct answer: ${data.correct_answer}. ${data.explanation}`);
+            if (!data.is_correct) details.push(`Correct answer: ${data.correct_answer}.`);
+            details.push(data.explanation);
+            if (data.armor_blocked) details.push(`Enemy armor blocked ${data.armor_blocked} damage.`);
+            if (data.enemy_action) details.push(data.enemy_action.message);
+            if (data.blocked_by) details.push(`${data.blocked_by} prevented the damage.`);
             if (data.destroyed_item) details.push(`Encryption destroyed ${data.destroyed_item.name}.`);
             if (data.revived) details.push('Backup restored you to 1 HP.');
+            if (data.phase_changed) details.push('The boss entered phase two and changed its pattern!');
+            if (data.credits_earned) details.push(`+${data.credits_earned} credits.`);
             return details.join(' ');
+        }
+
+        function flashCombat(data) {
+            const enemyCard = document.getElementById('enemy-card');
+            const playerHud = document.querySelector('.player-hud');
+            if (data.damage_dealt) {
+                enemyCard.classList.remove('enemy-hit');
+                void enemyCard.offsetWidth;
+                enemyCard.classList.add('enemy-hit');
+            }
+            if (data.damage_taken) {
+                playerHud.classList.remove('player-hit');
+                void playerHud.offsetWidth;
+                playerHud.classList.add('player-hit');
+            }
+            setTimeout(() => {
+                enemyCard.classList.remove('enemy-hit');
+                playerHud.classList.remove('player-hit');
+            }, 500);
         }
 
         function showPending(data) {
@@ -672,6 +742,7 @@
             const response = await fetch('/api/encyclopedia');
             const data = await response.json();
             document.getElementById('encyclopedia-overlay').classList.remove('hidden');
+            hideEncyclopediaDetail();
             document.getElementById('progress-stats').innerHTML = `
                 <span>Runs <b>${data.progress.runs_started}</b></span>
                 <span>Wins <b>${data.progress.runs_completed}</b></span>
@@ -694,14 +765,47 @@
                 const grid = document.createElement('div');
                 grid.className = 'encyclopedia-grid';
                 entries.forEach(entry => {
-                    const card = document.createElement('article');
-                    card.innerHTML = `<span>${entry.icon || '📘'}</span><strong>${escapeHtml(entry.name)}</strong><p>${escapeHtml(entry.description || entry.kind || 'Discovered enemy')}</p>`;
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'encyclopedia-entry';
+                    card.innerHTML = `<span>${entry.icon || '📘'}</span><strong>${escapeHtml(entry.name)}</strong><p>${escapeHtml(entry.description || entry.kind || 'Discovered enemy')}</p><small>VIEW DETAILS →</small>`;
+                    card.onclick = () => showEncyclopediaDetail(title, entry);
                     grid.appendChild(card);
                 });
                 if (!entries.length) grid.innerHTML = '<p class="locked-message">Continue playing to discover this section.</p>';
                 section.appendChild(grid);
                 area.appendChild(section);
             });
+        }
+
+        function showEncyclopediaDetail(category, entry) {
+            document.getElementById('encyclopedia-content').classList.add('hidden');
+            const detail = document.getElementById('encyclopedia-detail');
+            detail.classList.remove('hidden');
+            document.getElementById('detail-icon').textContent = entry.icon || '📘';
+            document.getElementById('detail-category').textContent = category.toUpperCase();
+            document.getElementById('detail-name').textContent = entry.name;
+            document.getElementById('detail-description').textContent = entry.description || 'Discovered during your run.';
+            const facts = [];
+            if (entry.kind) facts.push(['Type', entry.kind]);
+            if (entry.rarity) facts.push(['Rarity', entry.rarity]);
+            if (entry.price) facts.push(['Shop price', `${entry.price} credits`]);
+            if (entry.max_hp) facts.push(['Base HP', entry.max_hp]);
+            if (entry.attack) facts.push(['Attack', entry.attack]);
+            if (entry.strategy) facts.push(['Strategy', entry.strategy]);
+            if (entry.abilities?.length) facts.push(['Abilities', entry.abilities.map(item => `${item.icon} ${item.name}: ${item.description}`).join(' • ')]);
+            if (entry.patterns?.length) entry.patterns.forEach((pattern, index) =>
+                facts.push([entry.patterns.length > 1 ? `Phase ${index + 1} pattern` : 'Turn pattern', pattern.map(intent => `${intent.icon} ${intent.name}`).join(' → ')])
+            );
+            document.getElementById('detail-facts').innerHTML = facts.length
+                ? facts.map(([label, value]) => `<div><strong>${escapeHtml(label)}</strong><p>${escapeHtml(value)}</p></div>`).join('')
+                : '<div><strong>How it works</strong><p>This encyclopedia entry describes a discovered game element.</p></div>';
+            detail.scrollIntoView({block: 'start'});
+        }
+
+        function hideEncyclopediaDetail() {
+            document.getElementById('encyclopedia-detail').classList.add('hidden');
+            document.getElementById('encyclopedia-content').classList.remove('hidden');
         }
 
         function closeEncyclopedia() {

@@ -10,7 +10,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 
 TOTAL_ROOMS = 15
 INVENTORY_LIMIT = 4
-PLAYER_MAX_HP = 5
+PLAYER_MAX_HP = 7
 
 QUESTION_FILES = {
     "EASY": "questions.json",
@@ -68,7 +68,7 @@ RELICS = {
     },
     "zero_trust": {
         "name": "Zero Trust", "icon": "🧱",
-        "description": "Every fifth incoming enemy attack is blocked.",
+        "description": "Block the first damaging enemy attack in every battle.",
     },
     "root_access": {
         "name": "Root Access", "icon": "🔑",
@@ -95,62 +95,94 @@ ABILITIES = {
     },
     "jammer": {
         "name": "Signal Jammer", "icon": "📵",
-        "description": "Packet Sniffer cannot be used during this battle.",
+        "description": "Can jam Packet Sniffer for the enemy's next two turns.",
     },
     "leech": {
         "name": "Data Leech", "icon": "🩸",
-        "description": "The enemy restores 1 HP after each wrong answer.",
+        "description": "Can spend a turn restoring 1 HP.",
     },
     "credit_drain": {
         "name": "Wallet Drain", "icon": "💸",
-        "description": "A wrong answer also removes 20 credits.",
+        "description": "Can spend a turn stealing up to 20 credits.",
     },
     "encryptor": {
         "name": "Encryption", "icon": "🔒",
-        "description": "A wrong answer destroys one random inventory item.",
+        "description": "Can spend a turn destroying one random inventory item.",
     },
     "regenerate": {
         "name": "Self Repair", "icon": "♻️",
-        "description": "The enemy restores 1 HP after each wrong answer.",
+        "description": "Can spend a turn restoring 1 HP.",
     },
     "brutal": {
         "name": "Critical Strike", "icon": "💥",
-        "description": "Enemy attacks deal 1 additional HP damage.",
+        "description": "Uses more Heavy Attacks that deal additional damage.",
     },
+}
+
+INTENTS = {
+    "attack": {"name": "Attack", "icon": "⚔️", "description": "Deal normal attack damage."},
+    "heavy_attack": {"name": "Heavy Attack", "icon": "💥", "description": "Deal 1 more damage than a normal attack."},
+    "defend": {"name": "Fortify", "icon": "🛡️", "description": "Gain 1 armor against the next hit."},
+    "heal": {"name": "Self Repair", "icon": "♻️", "description": "Restore 1 HP, up to maximum HP."},
+    "credit_drain": {"name": "Wallet Drain", "icon": "💸", "description": "Steal up to 20 credits."},
+    "jammer": {"name": "Signal Jam", "icon": "📵", "description": "Disable Packet Sniffer for two turns."},
+    "encrypt": {"name": "Encrypt", "icon": "🔒", "description": "Destroy one random inventory item."},
+    "root_lock": {"name": "Root Lock", "icon": "👑", "description": "Reset combo and weaken the next player attack."},
 }
 
 NORMAL_ENEMIES = {
     "EASY": [
-        {"id": "spam_bot", "name": "Spam Bot", "icon": "🤖", "abilities": ["credit_drain"]},
-        {"id": "phishing_email", "name": "Phishing Email", "icon": "📧", "abilities": ["jammer"]},
-        {"id": "adware_bug", "name": "Adware Bug", "icon": "🐛", "abilities": ["leech"]},
+        {"id": "spam_bot", "name": "Spam Bot", "icon": "🤖", "abilities": ["credit_drain"], "description": "A noisy automated sender that tries to empty your wallet.", "strategy": "Exploit its Wallet Drain turn or defend when an attack is coming."},
+        {"id": "phishing_email", "name": "Phishing Email", "icon": "📧", "abilities": ["jammer"], "description": "A deceptive message that disrupts your investigation tools.", "strategy": "Use Packet Sniffer before Signal Jam, or interrupt the jam with Exploit."},
+        {"id": "adware_bug", "name": "Adware Bug", "icon": "🐛", "abilities": ["leech"], "description": "Persistent nuisance software that repairs itself between attacks.", "strategy": "Interrupt Self Repair or use Exploit to outpace its healing."},
     ],
     "MEDIUM": [
-        {"id": "botnet_node", "name": "Botnet Node", "icon": "🧟", "abilities": ["shielded"]},
-        {"id": "credential_thief", "name": "Credential Thief", "icon": "🔓", "abilities": ["credit_drain"]},
-        {"id": "malware_loader", "name": "Malware Loader", "icon": "👾", "abilities": ["haste"]},
+        {"id": "botnet_node", "name": "Botnet Node", "icon": "🧟", "abilities": ["shielded"], "description": "A hardened member of a larger compromised network.", "strategy": "Break its starting armor, then interrupt Fortify before it rebuilds defenses."},
+        {"id": "credential_thief", "name": "Credential Thief", "icon": "🔓", "abilities": ["credit_drain"], "description": "A quick attacker that steals credits and follows with heavy damage.", "strategy": "Exploit Wallet Drain and defend against the following Heavy Attack."},
+        {"id": "malware_loader", "name": "Malware Loader", "icon": "👾", "abilities": ["haste"], "description": "A fast payload installer that shortens every decision window.", "strategy": "Plan your action before reading the answers; its questions only allow 20 seconds."},
     ],
     "HARD": [
-        {"id": "ransomware", "name": "Ransomware", "icon": "💀", "abilities": ["encryptor"]},
-        {"id": "insider_threat", "name": "Insider Threat", "icon": "🕵️", "abilities": ["brutal"]},
-        {"id": "zero_day_exploit", "name": "Zero-Day Exploit", "icon": "🐉", "abilities": ["regenerate"]},
+        {"id": "ransomware", "name": "Ransomware", "icon": "💀", "abilities": ["encryptor"], "description": "Destructive malware that targets both your health and inventory.", "strategy": "Interrupt Encrypt whenever you carry an important consumable."},
+        {"id": "insider_threat", "name": "Insider Threat", "icon": "🕵️", "abilities": ["brutal"], "description": "A trusted user turned hostile, capable of repeated critical strikes.", "strategy": "Defend against Heavy Attacks and Exploit its Fortify turns."},
+        {"id": "zero_day_exploit", "name": "Zero-Day Exploit", "icon": "🐉", "abilities": ["regenerate"], "description": "An unknown vulnerability that attacks hard and repairs itself.", "strategy": "Use Exploit on Self Repair and save defenses for Heavy Attacks."},
     ],
 }
 
 BOSSES = {
     5: {
         "id": "phishing_king", "name": "Phishing King", "icon": "🎣",
-        "kind": "MINIBOSS", "max_hp": 4, "attack": 1, "abilities": ["jammer"],
+        "kind": "MINIBOSS", "max_hp": 7, "attack": 1, "abilities": ["jammer"],
+        "description": "The ruler of deceptive messages, backed by an aggressive signal jammer.",
+        "strategy": "At half HP it chains jams and heavy attacks. Interrupt the jam before using tools.",
     },
     10: {
         "id": "ransomware_overlord", "name": "Ransomware Overlord", "icon": "🦠",
-        "kind": "MAJOR BOSS", "max_hp": 6, "attack": 1, "abilities": ["encryptor", "shielded"],
+        "kind": "MAJOR BOSS", "max_hp": 10, "attack": 1, "abilities": ["encryptor", "shielded"],
+        "description": "An armored extortion engine that repeatedly threatens your inventory.",
+        "strategy": "Remove its armor early. In phase two, prioritize interrupting Encrypt.",
     },
     15: {
         "id": "root_admin", "name": "The Root Admin", "icon": "👑",
-        "kind": "FINAL BOSS", "max_hp": 8, "attack": 2,
+        "kind": "FINAL BOSS", "max_hp": 14, "attack": 2,
         "abilities": ["haste", "regenerate"],
+        "description": "The system's ultimate administrator, combining speed, damage, and recovery.",
+        "strategy": "Watch every intent. Phase two adds Root Lock, so alternate Defend and Exploit carefully.",
     },
+}
+
+ENEMY_PATTERNS = {
+    "spam_bot": [["attack", "credit_drain", "attack"]],
+    "phishing_email": [["attack", "jammer", "attack"]],
+    "adware_bug": [["attack", "heal", "attack"]],
+    "botnet_node": [["attack", "defend", "heavy_attack"]],
+    "credential_thief": [["attack", "credit_drain", "heavy_attack"]],
+    "malware_loader": [["attack", "heavy_attack", "defend"]],
+    "ransomware": [["attack", "encrypt", "heavy_attack"]],
+    "insider_threat": [["attack", "heavy_attack", "defend"]],
+    "zero_day_exploit": [["attack", "heal", "heavy_attack"]],
+    "phishing_king": [["attack", "jammer", "attack"], ["heavy_attack", "jammer", "heavy_attack"]],
+    "ransomware_overlord": [["attack", "encrypt", "defend"], ["encrypt", "heavy_attack", "defend"]],
+    "root_admin": [["attack", "defend", "heal"], ["heavy_attack", "root_lock", "heal"]],
 }
 
 ROOMS = {
@@ -164,7 +196,7 @@ ROOMS = {
 }
 
 MECHANICS = {
-    "combat": {"name": "Quiz Combat", "description": "Correct answers damage enemies. Wrong answers allow enemies to attack."},
+    "combat": {"name": "Active Quiz Combat", "description": "Choose Attack, Defend, or Exploit before answering. Enemy intents resolve after every question unless interrupted or defeated."},
     "combo": {"name": "Combo Damage", "description": "Every third consecutive correct answer deals additional damage."},
     "routes": {"name": "Route Choices", "description": "Choose between two rooms to shape the current run."},
     "inventory": {"name": "Inventory", "description": "Carry up to four consumable items and choose when to use them."},
@@ -284,15 +316,46 @@ def room_view(room_id):
     return {"id": room_id, **ROOMS[room_id]}
 
 
+def intent_view(intent_id, enemy=None):
+    view = {"id": intent_id, **INTENTS[intent_id]}
+    if enemy and intent_id in {"attack", "heavy_attack"}:
+        view["amount"] = enemy["attack"] + (1 if intent_id == "heavy_attack" else 0)
+    return view
+
+
+def enemy_pattern(enemy):
+    patterns = ENEMY_PATTERNS[enemy["id"]]
+    return patterns[min(enemy.get("phase", 1) - 1, len(patterns) - 1)]
+
+
+def set_enemy_intent(enemy):
+    pattern = enemy_pattern(enemy)
+    enemy["intent"] = pattern[enemy.get("turn", 0) % len(pattern)]
+
+
+def advance_enemy_intent(enemy):
+    previous_phase = enemy.get("phase", 1)
+    if enemy["kind"] in {"MINIBOSS", "MAJOR BOSS", "FINAL BOSS"} and enemy["hp"] <= enemy["max_hp"] // 2:
+        enemy["phase"] = 2
+    if enemy.get("phase", 1) != previous_phase:
+        enemy["turn"] = -1
+    if enemy.get("jammer_turns", 0) > 0:
+        enemy["jammer_turns"] -= 1
+    enemy["turn"] = enemy.get("turn", 0) + 1
+    set_enemy_intent(enemy)
+    return enemy.get("phase", 1) != previous_phase
+
+
 def create_enemy(room, elite=False, relics=None):
     if room in BOSSES and not elite:
         enemy = BOSSES[room].copy()
     else:
         template = random.choice(NORMAL_ENEMIES[get_tier(room)])
+        base_hp = {"EASY": 2, "MEDIUM": 3, "HARD": 4}[get_tier(room)]
         enemy = {
             **template,
             "kind": "ELITE" if elite else "ENEMY",
-            "max_hp": 3 if elite else 1,
+            "max_hp": base_hp + 2 if elite else base_hp,
             "attack": 1,
         }
         if elite:
@@ -301,8 +364,13 @@ def create_enemy(room, elite=False, relics=None):
 
     enemy["hp"] = enemy["max_hp"]
     enemy["armor"] = 1 if "shielded" in enemy["abilities"] else 0
+    enemy["turn"] = 0
+    enemy["phase"] = 1
+    enemy["jammer_turns"] = 0
+    enemy["zero_trust_available"] = True
     if "root_access" in (relics or []) and enemy["kind"] != "ENEMY":
         enemy["hp"] = max(1, enemy["hp"] - 1)
+    set_enemy_intent(enemy)
 
     discover("enemies", enemy["id"])
     for ability in enemy["abilities"]:
@@ -337,6 +405,8 @@ def public_enemy(enemy):
     return {
         **enemy,
         "ability_details": [ability_view(ability) for ability in enemy["abilities"]],
+        "intent_detail": intent_view(enemy["intent"], enemy),
+        "pattern_details": [intent_view(intent_id, enemy) for intent_id in enemy_pattern(enemy)],
     }
 
 
@@ -488,6 +558,75 @@ def finish_failed_run(state):
     record_room(state["current_room"])
 
 
+def revive_if_possible(state):
+    if state["hp"] == 0 and "backup" in state["inventory"]:
+        state["inventory"].remove("backup")
+        state["hp"] = 1
+        return True
+    return False
+
+
+def resolve_enemy_intent(state, combat_action, canceled=False):
+    enemy = state["enemy"]
+    intent_id = enemy["intent"]
+    detail = intent_view(intent_id, enemy)
+    result = {
+        "id": intent_id, "name": detail["name"], "icon": detail["icon"],
+        "canceled": canceled, "damage_taken": 0, "blocked_by": None,
+        "destroyed_item": None,
+    }
+    if canceled:
+        result["message"] = f"{detail['name']} was interrupted."
+        return result
+
+    if intent_id in {"attack", "heavy_attack"}:
+        damage = enemy["attack"] + (1 if intent_id == "heavy_attack" else 0)
+        if combat_action == "defend":
+            damage = max(0, damage - 1)
+        elif combat_action == "exploit":
+            damage += 1
+        if state["effects"]["sandbox"]:
+            state["effects"]["sandbox"] -= 1
+            result["blocked_by"] = "Sandbox"
+        elif state["effects"]["firewall"]:
+            state["effects"]["firewall"] -= 1
+            result["blocked_by"] = "Firewall"
+        elif "zero_trust" in state["relics"] and enemy.get("zero_trust_available", True):
+            enemy["zero_trust_available"] = False
+            result["blocked_by"] = "Zero Trust"
+        if result["blocked_by"]:
+            damage = 0
+        state["hp"] = max(0, state["hp"] - damage)
+        state["stats"]["damage_taken"] += damage
+        result["damage_taken"] = damage
+        result["message"] = f"{detail['name']} dealt {damage} damage."
+    elif intent_id == "defend":
+        enemy["armor"] = min(2, enemy.get("armor", 0) + 1)
+        result["message"] = "The enemy gained 1 armor."
+    elif intent_id == "heal":
+        healed = min(1, enemy["max_hp"] - enemy["hp"])
+        enemy["hp"] += healed
+        result["message"] = f"The enemy restored {healed} HP."
+    elif intent_id == "credit_drain":
+        stolen = min(20, state["credits"])
+        state["credits"] -= stolen
+        result["message"] = f"The enemy stole {stolen} credits."
+    elif intent_id == "jammer":
+        # The turn-advance step happens immediately after this action, so 3
+        # produces two complete future turns of jamming.
+        enemy["jammer_turns"] = 3
+        result["message"] = "Packet Sniffer is jammed for two turns."
+    elif intent_id == "encrypt":
+        destroyed = remove_random_item(state)
+        result["destroyed_item"] = item_view(destroyed) if destroyed else None
+        result["message"] = f"{ITEMS[destroyed]['name']} was destroyed." if destroyed else "Encryption found no item to destroy."
+    elif intent_id == "root_lock":
+        state["combo"] = 0
+        state["effects"]["root_lock"] = 1
+        result["message"] = "Your combo was reset and your next attack is weakened."
+    return result
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -509,7 +648,7 @@ def start_game():
         "combo": 0,
         "inventory": ["packet_sniffer"],
         "relics": [],
-        "effects": {"firewall": 0, "sandbox": 0, "incoming_hits": 0},
+        "effects": {"firewall": 0, "sandbox": 0, "root_lock": 0},
         "enemy": None,
         "pending": None,
         "room_options": [],
@@ -568,77 +707,72 @@ def submit_answer():
     data = request.get_json() or {}
     user_answer = data.get("answer")
     is_timeout = data.get("timeout", False)
+    combat_action = data.get("combat_action", "attack")
+    if combat_action not in {"attack", "defend", "exploit"}:
+        return jsonify({"error": "Choose Attack, Defend, or Exploit"}), 400
     question = current_question(state)
     correct_answer = question.get("answer") or question.get("correct")
     tier = get_tier(state["current_room"])
     state["question_positions"][tier] += 1
     state["stats"]["questions_answered"] += 1
     enemy = state["enemy"]
+    is_correct = not is_timeout and user_answer == correct_answer
+    damage_dealt = 0
+    armor_blocked = 0
+    credits_earned = 0
+    enemy_action = None
+    phase_changed = False
 
-    if is_timeout or user_answer != correct_answer:
+    if is_correct:
+        state["stats"]["correct_answers"] += 1
+        state["combo"] += 1
+        if combat_action in {"attack", "exploit"}:
+            base_damage = 1
+            if state["combo"] % 3 == 0:
+                base_damage = 3 if "exploit_chain" in state["relics"] else 2
+            if question.get("domain") == "Linux" and "tux_kernel" in state["relics"]:
+                base_damage += 1
+            if question.get("domain") == "Web Security" and "web_proxy" in state["relics"]:
+                base_damage += 1
+            if state["effects"].get("root_lock"):
+                base_damage = max(0, base_damage - 1)
+                state["effects"]["root_lock"] = 0
+            damage_dealt = base_damage * (2 if combat_action == "exploit" else 1)
+            armor_blocked = min(enemy.get("armor", 0), damage_dealt)
+            damage_dealt -= armor_blocked
+            enemy["armor"] = max(0, enemy.get("armor", 0) - armor_blocked)
+            enemy["hp"] = max(0, enemy["hp"] - damage_dealt)
+        credits_earned = 10 + (state["combo"] * 2) + (5 if "credit_miner" in state["relics"] else 0)
+        state["credits"] += credits_earned
+    else:
         state["combo"] = 0
-        state["effects"]["incoming_hits"] += 1
-        blocked_by = None
-        if state["effects"]["sandbox"]:
-            state["effects"]["sandbox"] -= 1
-            blocked_by = "Sandbox"
-        elif state["effects"]["firewall"]:
-            state["effects"]["firewall"] -= 1
-            blocked_by = "Firewall"
-        elif "zero_trust" in state["relics"] and state["effects"]["incoming_hits"] % 5 == 0:
-            blocked_by = "Zero Trust"
 
-        damage_taken = 0 if blocked_by else enemy["attack"] + (1 if "brutal" in enemy["abilities"] else 0)
-        state["hp"] = max(0, state["hp"] - damage_taken)
-        state["stats"]["damage_taken"] += damage_taken
-        destroyed_item = remove_random_item(state) if "encryptor" in enemy["abilities"] else None
-        if "credit_drain" in enemy["abilities"]:
-            state["credits"] = max(0, state["credits"] - 20)
-        if "leech" in enemy["abilities"] or "regenerate" in enemy["abilities"]:
-            enemy["hp"] = min(enemy["max_hp"], enemy["hp"] + 1)
-
-        revived = False
-        if state["hp"] == 0 and "backup" in state["inventory"]:
-            state["inventory"].remove("backup")
-            state["hp"] = 1
-            revived = True
+    defeated_enemy = enemy["name"] if enemy["hp"] == 0 else None
+    if enemy["hp"] == 0:
+        status = complete_combat(state)
+    else:
+        canceled = is_correct and combat_action in {"defend", "exploit"}
+        enemy_action = resolve_enemy_intent(state, combat_action, canceled=canceled)
+        revived = revive_if_possible(state)
         if state["hp"] == 0:
             finish_failed_run(state)
             status = "game_over"
         else:
-            status = "player_hit"
-        session.modified = True
-        return jsonify({
-            "status": status, "was_timeout": is_timeout, "correct_answer": correct_answer,
-            "explanation": question.get("explanation", ""), "damage_taken": damage_taken,
-            "blocked_by": blocked_by, "destroyed_item": item_view(destroyed_item) if destroyed_item else None,
-            "revived": revived, **public_state(state),
-        })
+            phase_changed = advance_enemy_intent(enemy)
+            status = "enemy_hit" if is_correct else "player_hit"
 
-    state["stats"]["correct_answers"] += 1
-    state["combo"] += 1
-    damage_dealt = 1
-    if state["combo"] % 3 == 0:
-        damage_dealt = 3 if "exploit_chain" in state["relics"] else 2
-    if question.get("domain") == "Linux" and "tux_kernel" in state["relics"]:
-        damage_dealt += 1
-    if question.get("domain") == "Web Security" and "web_proxy" in state["relics"]:
-        damage_dealt += 1
-    armor_blocked = 0
-    if enemy.get("armor", 0):
-        armor_blocked = min(1, damage_dealt)
-        damage_dealt -= armor_blocked
-        enemy["armor"] = 0
-    enemy["hp"] = max(0, enemy["hp"] - damage_dealt)
-    credits_earned = 10 + (state["combo"] * 2) + (5 if "credit_miner" in state["relics"] else 0)
-    state["credits"] += credits_earned
-    status = complete_combat(state) if enemy["hp"] == 0 else "enemy_hit"
+    revived = locals().get("revived", False)
     session.modified = True
     return jsonify({
-        "status": status, "correct_answer": correct_answer,
+        "status": status, "is_correct": is_correct, "was_timeout": is_timeout,
+        "combat_action": combat_action, "correct_answer": correct_answer,
         "explanation": question.get("explanation", ""), "damage_dealt": damage_dealt,
         "armor_blocked": armor_blocked, "credits_earned": credits_earned,
-        "defeated_enemy": enemy["name"] if enemy["hp"] == 0 else None,
+        "damage_taken": enemy_action["damage_taken"] if enemy_action else 0,
+        "blocked_by": enemy_action["blocked_by"] if enemy_action else None,
+        "destroyed_item": enemy_action["destroyed_item"] if enemy_action else None,
+        "enemy_action": enemy_action, "revived": revived,
+        "phase_changed": phase_changed, "defeated_enemy": defeated_enemy,
         **public_state(state),
     })
 
@@ -796,8 +930,8 @@ def use_item():
         return jsonify({"error": "This item can only be used during combat"}), 400
     result = {"status": "item_used", "effect": item_id}
     if item_id == "packet_sniffer":
-        if "jammer" in state["enemy"]["abilities"]:
-            return jsonify({"error": "The enemy's Signal Jammer blocks Packet Sniffer"}), 400
+        if state["enemy"].get("jammer_turns", 0) > 0:
+            return jsonify({"error": "Packet Sniffer is currently jammed"}), 400
         question = current_question(state)
         correct = question.get("answer") or question.get("correct")
         result["removed"] = random.sample([key for key in question["options"] if key != correct], 2)
@@ -860,6 +994,19 @@ def encyclopedia():
             {
                 "id": key, "name": enemy_catalog[key]["name"], "icon": enemy_catalog[key]["icon"],
                 "kind": enemy_catalog[key].get("kind", "ENEMY"),
+                "description": enemy_catalog[key]["description"],
+                "strategy": enemy_catalog[key]["strategy"],
+                "max_hp": enemy_catalog[key]["max_hp"] if "max_hp" in enemy_catalog[key] else next(
+                    {"EASY": 2, "MEDIUM": 3, "HARD": 4}[tier]
+                    for tier, enemies in NORMAL_ENEMIES.items()
+                    if any(entry["id"] == key for entry in enemies)
+                ),
+                "attack": enemy_catalog[key].get("attack", 1),
+                "abilities": [ability_view(ability) for ability in enemy_catalog[key]["abilities"]],
+                "patterns": [
+                    [intent_view(intent_id) for intent_id in pattern]
+                    for pattern in ENEMY_PATTERNS[key]
+                ],
             }
             for key in progress["unlocked_enemies"]
         ],

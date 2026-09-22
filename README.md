@@ -3,22 +3,35 @@
 **Swinburne Cyber Dungeon** is a cybersecurity quiz roguelite built with
 Python, Flask, HTML, CSS, and vanilla JavaScript.
 
-The player travels through a procedurally varied 15-room run. Correct answers
-damage enemies, wrong answers allow enemies to attack, and each route creates a
-different combination of items, relics, shops, events, elites, and bosses.
+The player travels through a procedurally varied 15-room run. Every question is
+a combat turn: read the enemy's next action, choose Attack, Defend, or Exploit,
+then answer. Each route creates a different combination of items, relics,
+shops, events, elites, and bosses.
 
 The original *Swinburne Millionaire* project remains on the `main` branch.
 The complete roguelite version is developed on `roguelike-v1`.
 
 ## Core game loop
 
-1. Enter a combat room and answer cybersecurity questions.
-2. Correct answers damage enemies and earn credits.
-3. Wrong answers reset the combo and trigger enemy abilities.
+1. Read the enemy's visible next-action intent.
+2. Choose Attack, Defend, or Exploit, then answer the cybersecurity question.
+3. Resolve both the player's action and the enemy's action.
 4. Defeat the enemy and choose one reward.
 5. Select one of two possible routes.
 6. Improve the current build using consumables and relics.
 7. Defeat the bosses in Rooms 5, 10, and 15.
+
+### Combat actions
+
+| Action | Correct answer | Wrong answer |
+|---|---|---|
+| Attack | Deal normal damage; a surviving enemy still acts | Deal no damage; the enemy acts normally |
+| Defend | Cancel the enemy's action without dealing damage | Reduce an incoming attack by 1 damage; special actions still happen |
+| Exploit | Deal double damage and cancel the enemy's action | Deal no damage and take +1 damage from an incoming attack |
+
+Enemies follow readable repeating patterns. Normal enemies now have 2–4 HP,
+elites have 4–6 HP, and the player begins with 7 HP so combat decisions matter
+without making one mistake end a run.
 
 Death ends the current run, but discovered encyclopedia entries and run
 statistics remain available until the player resets all progress.
@@ -61,7 +74,7 @@ The inventory can hold four items. Consumables disappear after use.
 | Firewall | Blocks the next enemy attack |
 | Health Patch | Restores 2 HP |
 | Overclock | Adds 15 seconds to the current question |
-| Sandbox | Prevents HP damage from the next wrong answer |
+| Sandbox | Blocks the next damaging enemy attack |
 | Zero-Day | Immediately deals 2 enemy damage |
 | Backup | Automatically revives the player with 1 HP |
 
@@ -78,7 +91,7 @@ Relics provide passive effects for the remainder of the current run.
 | Tux Kernel | Correct Linux answers deal +1 damage |
 | Wireshark | Networking questions receive 5 extra seconds |
 | Web Proxy | Correct Web Security answers deal +1 damage |
-| Zero Trust | Every fifth incoming attack is blocked |
+| Zero Trust | Blocks the first damaging enemy attack in every battle |
 | Root Access | Bosses begin with 1 HP already removed |
 | Incident Response Plan | Restore 1 HP after defeating a boss |
 | Credit Miner | Correct answers earn 5 additional credits |
@@ -94,22 +107,25 @@ Enemies are no longer cosmetic. Their abilities change the rules of combat.
 |---|---|
 | Hardened Shell | Reduces the first successful attack by 1 |
 | Time Compression | Reduces the question timer to 20 seconds |
-| Signal Jammer | Prevents Packet Sniffer use |
-| Data Leech | Restores enemy HP after a wrong answer |
-| Wallet Drain | Removes credits after a wrong answer |
-| Encryption | Destroys a random inventory item after a wrong answer |
-| Self Repair | Restores enemy HP after a wrong answer |
-| Critical Strike | Deals one additional player damage |
+| Signal Jammer | Can disable Packet Sniffer for two turns |
+| Data Leech | Adds Self Repair to an enemy's turn pattern |
+| Wallet Drain | Adds a turn that steals up to 20 credits |
+| Encryption | Adds a turn that destroys a random inventory item |
+| Self Repair | Adds a turn that restores 1 enemy HP |
+| Critical Strike | Adds more Heavy Attacks to the turn pattern |
 
-Elite enemies combine two abilities. Bosses use fixed ability combinations.
+Enemy intent is shown before the player chooses an action. Enemy actions include
+Attack, Heavy Attack, Fortify, Self Repair, Wallet Drain, Signal Jam, Encrypt,
+and Root Lock. Elite enemies combine two abilities. Bosses change to a more
+aggressive second pattern at half HP.
 
 ## Bosses
 
 | Room | Boss | HP | Abilities |
 |---|---|---:|---|
-| 5 | Phishing King | 4 | Signal Jammer |
-| 10 | Ransomware Overlord | 6 | Encryption and Hardened Shell |
-| 15 | The Root Admin | 8 | Time Compression and Self Repair |
+| 5 | Phishing King | 7 | Signal Jammer; phase-two Heavy Attacks |
+| 10 | Ransomware Overlord | 10 | Encryption and Hardened Shell |
+| 15 | The Root Admin | 14 | Time Compression, Self Repair, and Root Lock |
 
 The Root Admin also deals 2 damage with each successful attack.
 
@@ -125,8 +141,10 @@ The encyclopedia can be opened before a run or during gameplay. It records:
 - enemy abilities
 - runs started, wins, and best room reached
 
-Only discovered entries are visible. Undiscovered entries are displayed only
-as locked totals, preventing the encyclopedia from spoiling future content.
+Only discovered entries are visible. Every unlocked card can be clicked to see
+its full description and rules. Enemy pages also show HP, attack, abilities,
+strategy, and phase-by-phase turn patterns. Undiscovered entries appear only as
+locked totals, preventing the encyclopedia from spoiling future content.
 
 Permanent progress also provides small milestones:
 
@@ -169,9 +187,10 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The automated suite checks combat, damage, combos, question difficulty,
+The 23-test automated suite checks all three combat actions, simultaneous
+damage, enemy intent, Zero Trust, boss phases, combos, question difficulty,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
-timers, encyclopedia locking, progress reset, and browser session size.
+timers, encyclopedia detail data, progress reset, and browser session size.
 
 ## Project structure
 
