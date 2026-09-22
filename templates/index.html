@@ -162,6 +162,7 @@
         let timeLeft = 30;
         let totalQuestionTime = 30;
         let acceptingAnswers = false;
+        let questionLoaded = false;
         let currentState = null;
 
         const audio = id => document.getElementById(id);
@@ -288,8 +289,10 @@
                 const holder = document.createElement('div');
                 holder.className = `inventory-item rarity-${item.rarity.toLowerCase()}`;
                 holder.title = item.description;
+                const combatOnly = ['packet_sniffer', 'overclock', 'zero_day'].includes(item.id);
+                const disabled = combatOnly && !questionLoaded ? 'disabled' : '';
                 holder.innerHTML = `
-                    <button onclick="useItem('${item.id}')"><span>${item.icon}</span>${escapeHtml(item.name)}</button>
+                    <button ${disabled} onclick="useItem('${item.id}')"><span>${item.icon}</span>${escapeHtml(item.name)}</button>
                     <button class="discard-button" onclick="discardItem('${item.id}')" title="Discard">×</button>
                 `;
                 area.appendChild(holder);
@@ -323,21 +326,36 @@
             const response = await fetch('/api/start', { method: 'POST' });
             const data = await response.json();
             if (!response.ok) return showFatalError(data.error || 'The run could not start.');
-            renderState(data);
-            await fetchQuestion();
+            await processGameState(data);
         }
 
         async function continueRun() {
+            acceptingAnswers = false;
+            questionLoaded = false;
             stopTimer();
             document.getElementById('feedback').classList.add('hidden');
             selectedAnswer = null;
             const response = await fetch('/api/state');
             const data = await response.json();
             if (!response.ok) return showFatalError(data.error);
+            await processGameState(data);
+        }
+
+        async function processGameState(data) {
             renderState(data);
-            if (data.game_over) return showEndScreen(data.won, data);
-            if (data.pending) return showPending(data);
-            if (data.enemy) return fetchQuestion();
+            if (data.game_over) {
+                showEndScreen(data.won, data);
+                return;
+            }
+            if (data.pending) {
+                showPending(data);
+                return;
+            }
+            if (data.enemy) {
+                await fetchQuestion();
+                return;
+            }
+            showFatalError('The run reached an unknown state. Start a new run.');
         }
 
         async function fetchQuestion() {
@@ -348,6 +366,7 @@
             const response = await fetch('/api/question');
             const data = await response.json();
             if (!response.ok) return showFatalError(data.error || 'Question could not load.');
+            questionLoaded = true;
             renderState(data);
             renderQuestion(data);
         }
@@ -386,6 +405,7 @@
         async function submitAnswer(answer, timeout) {
             if (!acceptingAnswers) return;
             acceptingAnswers = false;
+            questionLoaded = false;
             stopTimer();
             playSound('snd-final');
             disableCombatButtons();
@@ -461,6 +481,9 @@
         }
 
         function openDecision(eyebrow, title, copy) {
+            acceptingAnswers = false;
+            questionLoaded = false;
+            stopTimer();
             document.getElementById('decision-eyebrow').textContent = eyebrow;
             document.getElementById('decision-title').textContent = title;
             document.getElementById('decision-copy').textContent = copy;
@@ -496,9 +519,7 @@
         async function chooseRoute(roomType) {
             const data = await postJson('/api/route/choose', {room_type: roomType});
             if (!data) return;
-            renderState(data);
-            if (data.pending) showPending(data);
-            else fetchQuestion();
+            await processGameState(data);
         }
 
         function showRewardChoice(data) {
@@ -535,8 +556,7 @@
             const data = await postJson('/api/reward/choose', {reward_id: rewardId});
             if (!data) return;
             closeDecision();
-            renderState(data);
-            showPending(data);
+            await processGameState(data);
         }
 
         function showHealChoice(data) {
@@ -553,8 +573,7 @@
         async function chooseHeal(choice) {
             const data = await postJson('/api/heal/choose', {choice});
             if (!data) return;
-            renderState(data);
-            showPending(data);
+            await processGameState(data);
         }
 
         function showShop(data) {
@@ -582,8 +601,7 @@
         async function leaveShop() {
             const data = await postJson('/api/shop/leave', {});
             if (!data) return;
-            renderState(data);
-            showPending(data);
+            await processGameState(data);
         }
 
         function showEvent(data) {
@@ -600,9 +618,8 @@
         async function chooseEvent(choice) {
             const data = await postJson('/api/event/choose', {choice});
             if (!data) return;
-            renderState(data);
             showToast(data.message, 4500);
-            showPending(data);
+            await processGameState(data);
         }
 
         async function useItem(itemId) {
@@ -626,6 +643,7 @@
             }
             if (data.status === 'enemy_defeated' || data.status === 'won') {
                 acceptingAnswers = false;
+                questionLoaded = false;
                 stopTimer();
                 disableCombatButtons();
                 const feedback = document.getElementById('feedback');
@@ -701,6 +719,8 @@
         }
 
         function showEndScreen(won, data) {
+            acceptingAnswers = false;
+            questionLoaded = false;
             stopAllSounds();
             if (won) playSound('snd-victory');
             const screen = document.getElementById('end-screen');
