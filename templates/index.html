@@ -15,26 +15,58 @@
     <audio id="snd-lifeline" src="{{ url_for('static', filename='lifeline.mp3') }}"></audio>
 
     <section id="title-screen" class="screen-overlay">
-        <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELIKE</p>
+        <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELITE</p>
         <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
         <p class="intro-copy">
-            Fight through 15 rooms. Correct answers damage enemies.
-            Wrong answers damage you. Defeat The Root Admin to escape.
+            Choose your route, build a collection of cyber relics, and defeat
+            The Root Admin across a different 15-room run every time.
         </p>
         <div class="rules">
-            <span>❤️ 5 HP</span>
-            <span>⚔️ Combo attacks</span>
-            <span>👑 3 bosses</span>
+            <span>❤️ Survive</span><span>⚔️ Build combos</span>
+            <span>🎁 Choose loot</span><span>🗺️ Shape your route</span>
         </div>
-        <button class="primary-button" onclick="startGame()">START RUN</button>
+        <div class="title-actions">
+            <button class="primary-button" onclick="startGame()">START RUN</button>
+            <button class="secondary-button" onclick="openEncyclopedia()">ENCYCLOPEDIA</button>
+        </div>
+        <button class="text-button danger-text" onclick="confirmResetProgress()">Reset all progress</button>
     </section>
 
     <section id="end-screen" class="screen-overlay hidden">
         <p class="eyebrow" id="end-eyebrow">RUN OVER</p>
         <h1 id="end-title">SYSTEM FAILURE</h1>
         <p class="intro-copy" id="end-message"></p>
-        <button class="primary-button" onclick="restartGame()">START NEW RUN</button>
+        <div class="summary-grid" id="run-summary"></div>
+        <div class="title-actions">
+            <button class="primary-button" onclick="restartGame()">START NEW RUN</button>
+            <button class="secondary-button" onclick="openEncyclopedia()">ENCYCLOPEDIA</button>
+        </div>
     </section>
+
+    <section id="decision-overlay" class="modal-overlay hidden">
+        <div class="modal-card decision-card">
+            <button class="modal-close hidden" id="decision-close" onclick="closeDecision()">×</button>
+            <p class="eyebrow" id="decision-eyebrow">MAKE A CHOICE</p>
+            <h2 id="decision-title">Choose your route</h2>
+            <p class="modal-copy" id="decision-copy"></p>
+            <div class="choice-grid" id="decision-options"></div>
+            <p class="modal-error hidden" id="decision-error"></p>
+        </div>
+    </section>
+
+    <section id="encyclopedia-overlay" class="modal-overlay hidden">
+        <div class="modal-card encyclopedia-card">
+            <button class="modal-close" onclick="closeEncyclopedia()">×</button>
+            <p class="eyebrow">DISCOVERY DATABASE</p>
+            <h2>CYBER ENCYCLOPEDIA</h2>
+            <div class="progress-stats" id="progress-stats"></div>
+            <p class="modal-copy">Only elements discovered during your runs are visible.</p>
+            <div id="encyclopedia-content"></div>
+            <button class="secondary-button encyclopedia-reset" onclick="confirmResetProgress()">RESET ALL PROGRESS</button>
+        </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
 
     <main class="game-shell">
         <section class="main-panel">
@@ -51,6 +83,7 @@
                     <span class="stat-label">COMBO</span>
                     <strong id="combo">x0</strong>
                 </div>
+                <button class="icon-button" onclick="openEncyclopedia()" title="Encyclopedia">📖</button>
                 <div class="timer" id="timer">30</div>
             </header>
             <div class="timer-track"><div id="timer-bar"></div></div>
@@ -61,11 +94,12 @@
                     <div class="enemy-heading">
                         <div>
                             <span class="enemy-kind" id="enemy-kind">ENEMY</span>
-                            <h2 id="enemy-name">Waiting for enemy...</h2>
+                            <h2 id="enemy-name">Waiting for encounter...</h2>
                         </div>
                         <strong id="enemy-hp-text">0 / 0 HP</strong>
                     </div>
                     <div class="hp-track"><div id="enemy-hp-bar"></div></div>
+                    <div class="ability-list" id="enemy-abilities"></div>
                 </div>
             </section>
 
@@ -74,7 +108,7 @@
                     <span id="domain">DOMAIN: ---</span>
                     <span id="tier" class="tier easy">EASY</span>
                 </div>
-                <h3 id="question">Start a run to receive your first question.</h3>
+                <h3 id="question">Start a run to enter the dungeon.</h3>
                 <div class="options" id="options">
                     <button class="option" disabled>A: ---</button>
                     <button class="option" disabled>B: ---</button>
@@ -86,13 +120,21 @@
             <section class="feedback hidden" id="feedback">
                 <strong id="feedback-title"></strong>
                 <p id="feedback-text"></p>
-                <button class="next-button" id="next-button" onclick="fetchQuestion()">NEXT ENCOUNTER →</button>
+                <button class="next-button" id="next-button" onclick="continueRun()">CONTINUE →</button>
+            </section>
+
+            <section class="build-panel">
+                <div>
+                    <span class="section-label">INVENTORY <b id="inventory-count">0/4</b></span>
+                    <div class="inventory-row" id="inventory"></div>
+                </div>
+                <div>
+                    <span class="section-label">ACTIVE RELICS</span>
+                    <div class="relic-row" id="relics"></div>
+                </div>
             </section>
 
             <div class="actions">
-                <button id="packet-sniffer" onclick="usePacketSniffer()" disabled>
-                    🔍 PACKET SNIFFER <small>Remove 2 wrong choices</small>
-                </button>
                 <button class="attack-button" id="attack-button" onclick="submitSelectedAnswer()" disabled>
                     LOCK IN ATTACK
                 </button>
@@ -103,15 +145,13 @@
             <p class="eyebrow">CURRENT RUN</p>
             <h2>ROOM <span id="current-room">1</span> / 15</h2>
             <div class="path" id="room-path"></div>
-            <div class="legend">
-                <span>⚔ Enemy</span>
-                <span>🎣 Miniboss</span>
-                <span>🦠 Major</span>
-                <span>👑 Final</span>
+            <div class="status-box">
+                <strong>ACTIVE DEFENCES</strong>
+                <div id="active-effects">None</div>
             </div>
             <div class="tip">
-                <strong>COMBO BONUS</strong>
-                <p>Every third correct answer deals 2 damage instead of 1.</p>
+                <strong>RUN TIP</strong>
+                <p>Items disappear after use. Relics remain active until the run ends.</p>
             </div>
         </aside>
     </main>
@@ -119,7 +159,10 @@
     <script>
         let selectedAnswer = null;
         let timerInterval = null;
+        let timeLeft = 30;
+        let totalQuestionTime = 30;
         let acceptingAnswers = false;
+        let currentState = null;
 
         const audio = id => document.getElementById(id);
 
@@ -139,121 +182,193 @@
             sound.play().catch(() => {});
         }
 
-        function stopSound(id) {
-            const sound = audio(id);
-            if (sound) {
-                sound.pause();
-                sound.currentTime = 0;
-            }
-        }
-
-        function buildPath() {
-            const path = document.getElementById('room-path');
-            path.innerHTML = '';
-            for (let room = 1; room <= 15; room++) {
-                const node = document.createElement('div');
-                node.className = 'room-node';
-                node.dataset.room = room;
-                node.innerHTML = `<span>${room}</span><b>${room === 5 ? '🎣' : room === 10 ? '🦠' : room === 15 ? '👑' : '⚔'}</b>`;
-                path.appendChild(node);
-            }
-        }
-
-        function updatePath(currentRoom) {
-            document.getElementById('current-room').textContent = currentRoom;
-            document.querySelectorAll('.room-node').forEach(node => {
-                const room = Number(node.dataset.room);
-                node.classList.toggle('cleared', room < currentRoom);
-                node.classList.toggle('active', room === currentRoom);
-            });
-        }
-
-        function updateHud(data) {
-            const fullHearts = '❤️'.repeat(data.hp);
-            const emptyHearts = '🖤'.repeat(data.max_hp - data.hp);
-            document.getElementById('player-hp').textContent = fullHearts + emptyHearts;
-            document.getElementById('credits').textContent = data.credits;
-            document.getElementById('combo').textContent = `x${data.combo}`;
-            updatePath(data.room);
-
-            const enemy = data.enemy;
-            if (!enemy) return;
-            document.getElementById('enemy-icon').textContent = enemy.icon;
-            document.getElementById('enemy-kind').textContent = enemy.kind;
-            document.getElementById('enemy-name').textContent = enemy.name;
-            document.getElementById('enemy-hp-text').textContent = `${enemy.hp} / ${enemy.max_hp} HP`;
-            document.getElementById('enemy-hp-bar').style.width = `${(enemy.hp / enemy.max_hp) * 100}%`;
-            document.getElementById('enemy-card').classList.toggle('boss', enemy.kind !== 'ENEMY');
-        }
-
-        function startTimer() {
+        function stopTimer() {
             clearInterval(timerInterval);
-            let seconds = 30;
-            acceptingAnswers = true;
-            document.getElementById('timer').textContent = seconds;
-            document.getElementById('timer-bar').style.width = '100%';
-            playSound('snd-ticking', true);
+            const ticking = audio('snd-ticking');
+            if (ticking) {
+                ticking.pause();
+                ticking.currentTime = 0;
+            }
+            document.getElementById('timer').classList.remove('urgent');
+        }
 
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            timeLeft = seconds;
+            totalQuestionTime = seconds;
+            acceptingAnswers = true;
+            updateTimerDisplay();
+            resumeTimer();
+        }
+
+        function resumeTimer() {
+            clearInterval(timerInterval);
+            playSound('snd-ticking', true);
             timerInterval = setInterval(() => {
-                seconds -= 1;
-                document.getElementById('timer').textContent = seconds;
-                document.getElementById('timer-bar').style.width = `${(seconds / 30) * 100}%`;
-                document.getElementById('timer').classList.toggle('urgent', seconds <= 10);
-                if (seconds <= 0) {
+                timeLeft -= 1;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     submitAnswer(null, true);
                 }
             }, 1000);
         }
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-            stopSound('snd-ticking');
-            document.getElementById('timer').classList.remove('urgent');
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = Math.max(0, timeLeft);
+            document.getElementById('timer-bar').style.width =
+                `${Math.max(0, (timeLeft / totalQuestionTime) * 100)}%`;
+            document.getElementById('timer').classList.toggle('urgent', timeLeft <= 10);
+        }
+
+        function buildPath() {
+            const path = document.getElementById('room-path');
+            path.innerHTML = '';
+            for (let room = 1; room <= 15; room++) {
+                const icon = room === 5 ? '🎣' : room === 10 ? '🦠' : room === 15 ? '👑' : '◆';
+                const node = document.createElement('div');
+                node.className = 'room-node';
+                node.dataset.room = room;
+                node.innerHTML = `<span>${room}</span><b>${icon}</b>`;
+                path.appendChild(node);
+            }
+        }
+
+        function updatePath(room) {
+            document.getElementById('current-room').textContent = room;
+            document.querySelectorAll('.room-node').forEach(node => {
+                const number = Number(node.dataset.room);
+                node.classList.toggle('cleared', number < room);
+                node.classList.toggle('active', number === room);
+            });
+        }
+
+        function renderState(data) {
+            currentState = data;
+            const hearts = '❤️'.repeat(data.hp) + '🖤'.repeat(Math.max(0, data.max_hp - data.hp));
+            document.getElementById('player-hp').textContent = hearts;
+            document.getElementById('credits').textContent = data.credits;
+            document.getElementById('combo').textContent = `x${data.combo}`;
+            updatePath(data.room);
+            renderEnemy(data.enemy);
+            renderInventory(data.inventory, data.inventory_limit);
+            renderRelics(data.relics);
+            renderEffects(data.effects);
+        }
+
+        function renderEnemy(enemy) {
+            const card = document.getElementById('enemy-card');
+            if (!enemy) {
+                document.getElementById('enemy-icon').textContent = '🗺️';
+                document.getElementById('enemy-kind').textContent = 'EXPLORING';
+                document.getElementById('enemy-name').textContent = 'Choose your next encounter';
+                document.getElementById('enemy-hp-text').textContent = '';
+                document.getElementById('enemy-hp-bar').style.width = '0%';
+                document.getElementById('enemy-abilities').innerHTML = '';
+                card.classList.remove('boss');
+                return;
+            }
+            document.getElementById('enemy-icon').textContent = enemy.icon;
+            document.getElementById('enemy-kind').textContent = enemy.kind;
+            document.getElementById('enemy-name').textContent = enemy.name;
+            document.getElementById('enemy-hp-text').textContent = `${enemy.hp} / ${enemy.max_hp} HP`;
+            document.getElementById('enemy-hp-bar').style.width = `${(enemy.hp / enemy.max_hp) * 100}%`;
+            document.getElementById('enemy-abilities').innerHTML = enemy.ability_details.map(ability =>
+                `<span title="${escapeHtml(ability.description)}">${ability.icon} ${escapeHtml(ability.name)}</span>`
+            ).join('');
+            card.classList.toggle('boss', enemy.kind !== 'ENEMY');
+        }
+
+        function renderInventory(items, limit) {
+            document.getElementById('inventory-count').textContent = `${items.length}/${limit}`;
+            const area = document.getElementById('inventory');
+            area.innerHTML = '';
+            if (!items.length) area.innerHTML = '<span class="empty-build">Empty</span>';
+            items.forEach(item => {
+                const holder = document.createElement('div');
+                holder.className = `inventory-item rarity-${item.rarity.toLowerCase()}`;
+                holder.title = item.description;
+                holder.innerHTML = `
+                    <button onclick="useItem('${item.id}')"><span>${item.icon}</span>${escapeHtml(item.name)}</button>
+                    <button class="discard-button" onclick="discardItem('${item.id}')" title="Discard">×</button>
+                `;
+                area.appendChild(holder);
+            });
+        }
+
+        function renderRelics(relics) {
+            const area = document.getElementById('relics');
+            area.innerHTML = relics.length ? '' : '<span class="empty-build">None discovered</span>';
+            relics.forEach(relic => {
+                const entry = document.createElement('span');
+                entry.className = 'relic-chip';
+                entry.title = relic.description;
+                entry.textContent = `${relic.icon} ${relic.name}`;
+                area.appendChild(entry);
+            });
+        }
+
+        function renderEffects(effects) {
+            const active = [];
+            if (effects.firewall) active.push(`🛡️ Firewall ×${effects.firewall}`);
+            if (effects.sandbox) active.push(`🧪 Sandbox ×${effects.sandbox}`);
+            document.getElementById('active-effects').textContent = active.join(' • ') || 'None';
         }
 
         async function startGame() {
             stopAllSounds();
+            closeEncyclopedia();
             document.getElementById('title-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.add('hidden');
             const response = await fetch('/api/start', { method: 'POST' });
-            if (!response.ok) return showFatalError('The run could not be started.');
             const data = await response.json();
-            updateHud(data);
+            if (!response.ok) return showFatalError(data.error || 'The run could not start.');
+            renderState(data);
             await fetchQuestion();
         }
 
+        async function continueRun() {
+            stopTimer();
+            document.getElementById('feedback').classList.add('hidden');
+            selectedAnswer = null;
+            const response = await fetch('/api/state');
+            const data = await response.json();
+            if (!response.ok) return showFatalError(data.error);
+            renderState(data);
+            if (data.game_over) return showEndScreen(data.won, data);
+            if (data.pending) return showPending(data);
+            if (data.enemy) return fetchQuestion();
+        }
+
         async function fetchQuestion() {
+            closeDecision();
             document.getElementById('feedback').classList.add('hidden');
             document.getElementById('attack-button').disabled = true;
             selectedAnswer = null;
-
             const response = await fetch('/api/question');
-            if (!response.ok) return showFatalError('The next question could not be loaded.');
             const data = await response.json();
+            if (!response.ok) return showFatalError(data.error || 'Question could not load.');
+            renderState(data);
             renderQuestion(data);
         }
 
         function renderQuestion(data) {
-            updateHud(data);
             document.getElementById('domain').textContent = `DOMAIN: ${data.domain}`;
             const tier = document.getElementById('tier');
             tier.textContent = data.tier;
             tier.className = `tier ${data.tier.toLowerCase()}`;
             document.getElementById('question').textContent = data.question;
-
-            const options = document.getElementById('options');
-            options.innerHTML = '';
+            const area = document.getElementById('options');
+            area.innerHTML = '';
             Object.entries(data.options).forEach(([key, value]) => {
                 const button = document.createElement('button');
                 button.className = 'option';
                 button.id = `option-${key}`;
-                button.innerHTML = `<span>${key}:</span> ${value}`;
+                button.innerHTML = `<span>${key}:</span> ${escapeHtml(value)}`;
                 button.onclick = () => selectAnswer(key);
-                options.appendChild(button);
+                area.appendChild(button);
             });
-
-            document.getElementById('packet-sniffer').disabled = !data.packet_sniffer_available;
-            startTimer();
+            startTimer(data.time_limit);
         }
 
         function selectAnswer(key) {
@@ -273,28 +388,28 @@
             acceptingAnswers = false;
             stopTimer();
             playSound('snd-final');
-            document.querySelectorAll('.option').forEach(button => button.disabled = true);
-            document.getElementById('attack-button').disabled = true;
-            document.getElementById('packet-sniffer').disabled = true;
-
+            disableCombatButtons();
             const response = await fetch('/api/answer', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answer, timeout })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({answer, timeout})
             });
             const data = await response.json();
-            if (!response.ok) return showFatalError(data.error || 'The answer could not be submitted.');
-
+            if (!response.ok) return showFatalError(data.error);
             showAnswerResult(data, answer);
         }
 
-        function showAnswerResult(data, answer) {
-            const correctButton = document.getElementById(`option-${data.correct_answer}`);
-            const selectedButton = answer ? document.getElementById(`option-${answer}`) : null;
-            if (correctButton) correctButton.classList.add('correct');
-            if (selectedButton && answer !== data.correct_answer) selectedButton.classList.add('wrong');
-            updateHud(data);
+        function disableCombatButtons() {
+            document.querySelectorAll('.option').forEach(button => button.disabled = true);
+            document.getElementById('attack-button').disabled = true;
+        }
 
+        function showAnswerResult(data, answer) {
+            const correct = document.getElementById(`option-${data.correct_answer}`);
+            const selected = answer ? document.getElementById(`option-${answer}`) : null;
+            if (correct) correct.classList.add('correct');
+            if (selected && answer !== data.correct_answer) selected.classList.add('wrong');
+            renderState(data);
             const feedback = document.getElementById('feedback');
             const title = document.getElementById('feedback-title');
             const text = document.getElementById('feedback-text');
@@ -302,90 +417,349 @@
 
             if (data.status === 'game_over') {
                 playSound('snd-wrong');
-                title.textContent = `💥 YOU TOOK ${data.damage_taken} DAMAGE`;
-                text.textContent = `Correct answer: ${data.correct_answer}. ${data.explanation}`;
+                title.textContent = '💥 SYSTEM FAILURE';
+                text.textContent = buildWrongMessage(data);
                 feedback.classList.add('bad');
-                document.getElementById('next-button').classList.add('hidden');
-                setTimeout(() => showEndScreen(false, data), 1800);
-                return;
-            }
-
-            if (data.status === 'player_hit') {
+            } else if (data.status === 'player_hit') {
                 playSound('snd-wrong');
-                title.textContent = data.was_timeout
-                    ? `⏱ TIMEOUT — ${data.damage_taken} DAMAGE`
-                    : `🛡 ATTACK BLOCKED — ${data.damage_taken} DAMAGE`;
-                text.textContent = `Correct answer: ${data.correct_answer}. ${data.explanation}`;
+                title.textContent = data.blocked_by
+                    ? `🛡️ ${data.blocked_by.toUpperCase()} BLOCKED THE ATTACK`
+                    : `💥 YOU TOOK ${data.damage_taken} DAMAGE`;
+                text.textContent = buildWrongMessage(data);
                 feedback.classList.add('bad');
             } else if (data.status === 'won') {
                 playSound('snd-victory');
                 title.textContent = '👑 ROOT ADMIN DEFEATED';
                 text.textContent = data.explanation;
                 feedback.classList.add('good');
-                document.getElementById('next-button').classList.add('hidden');
-                setTimeout(() => showEndScreen(true, data), 1800);
-                return;
             } else {
                 playSound('snd-correct');
-                const combatMessage = data.status === 'room_cleared'
-                    ? `⚔ ${data.defeated_enemy} DEFEATED`
+                title.textContent = data.status === 'enemy_defeated'
+                    ? `⚔️ ${data.defeated_enemy} DEFEATED`
                     : `💥 ${data.damage_dealt} DAMAGE DEALT`;
-                title.textContent = combatMessage;
-                text.textContent = `+${data.credits_earned} credits. ${data.explanation}`;
+                const armor = data.armor_blocked ? ' The enemy armour blocked 1 damage.' : '';
+                text.textContent = `+${data.credits_earned} credits. ${data.explanation}${armor}`;
                 feedback.classList.add('good');
             }
-
-            const nextButton = document.getElementById('next-button');
-            nextButton.classList.remove('hidden');
-            nextButton.textContent = data.status === 'room_cleared'
-                ? 'ENTER NEXT ROOM →'
-                : 'NEXT QUESTION →';
         }
 
-        async function usePacketSniffer() {
-            playSound('snd-lifeline');
-            const lifelineSound = audio('snd-lifeline');
-            if (lifelineSound) {
-                lifelineSound.onended = () => {
-                    if (acceptingAnswers) playSound('snd-ticking', true);
-                };
-            }
-            const response = await fetch('/api/powerup/packet-sniffer', { method: 'POST' });
-            const data = await response.json();
-            if (!response.ok) return;
-            data.removed.forEach(key => {
-                const button = document.getElementById(`option-${key}`);
-                if (button) {
-                    button.disabled = true;
-                    button.classList.add('removed');
-                    if (selectedAnswer === key) {
-                        selectedAnswer = null;
-                        document.getElementById('attack-button').disabled = true;
-                    }
-                }
+        function buildWrongMessage(data) {
+            const details = [];
+            details.push(`Correct answer: ${data.correct_answer}. ${data.explanation}`);
+            if (data.destroyed_item) details.push(`Encryption destroyed ${data.destroyed_item.name}.`);
+            if (data.revived) details.push('Backup restored you to 1 HP.');
+            return details.join(' ');
+        }
+
+        function showPending(data) {
+            if (data.pending === 'route') return showRouteChoice(data);
+            if (data.pending === 'reward') return showRewardChoice(data);
+            if (data.pending === 'heal') return showHealChoice(data);
+            if (data.pending === 'shop') return showShop(data);
+            if (data.pending === 'event') return showEvent(data);
+            if (data.pending === 'complete') return showEndScreen(data.won, data);
+        }
+
+        function openDecision(eyebrow, title, copy) {
+            document.getElementById('decision-eyebrow').textContent = eyebrow;
+            document.getElementById('decision-title').textContent = title;
+            document.getElementById('decision-copy').textContent = copy;
+            document.getElementById('decision-options').innerHTML = '';
+            document.getElementById('decision-error').classList.add('hidden');
+            document.getElementById('decision-overlay').classList.remove('hidden');
+        }
+
+        function closeDecision() {
+            document.getElementById('decision-overlay').classList.add('hidden');
+        }
+
+        function choiceButton(entry, callback, extra = '') {
+            const button = document.createElement('button');
+            button.className = 'choice-card';
+            button.innerHTML = `
+                <span class="choice-icon">${entry.icon || ''}</span>
+                <strong>${escapeHtml(entry.name)}</strong>
+                ${extra}
+                <p>${escapeHtml(entry.description || '')}</p>
+            `;
+            button.onclick = callback;
+            return button;
+        }
+
+        function showRouteChoice(data) {
+            stopAllSounds();
+            openDecision('ROUTE SELECTION', `Choose Room ${data.room}`, 'Each path changes the risks and rewards in this run.');
+            const area = document.getElementById('decision-options');
+            data.room_options.forEach(room => area.appendChild(choiceButton(room, () => chooseRoute(room.id))));
+        }
+
+        async function chooseRoute(roomType) {
+            const data = await postJson('/api/route/choose', {room_type: roomType});
+            if (!data) return;
+            renderState(data);
+            if (data.pending) showPending(data);
+            else fetchQuestion();
+        }
+
+        function showRewardChoice(data) {
+            openDecision(
+                data.reward_kind === 'relic' ? 'RELIC DISCOVERED' : 'LOOT CACHE',
+                'Choose one reward',
+                data.reward_kind === 'relic'
+                    ? 'Relics provide passive bonuses for the rest of this run.'
+                    : 'Consumables occupy one inventory slot and disappear after use.'
+            );
+            const area = document.getElementById('decision-options');
+            data.reward_options.forEach(reward => {
+                const rarity = reward.rarity ? `<span class="rarity-label">${reward.rarity}</span>` : '';
+                area.appendChild(choiceButton(reward, () => chooseReward(reward.id), rarity));
             });
-            document.getElementById('packet-sniffer').disabled = true;
+            if (data.inventory.length >= data.inventory_limit && data.reward_kind !== 'relic') {
+                const warning = document.createElement('div');
+                warning.className = 'inventory-warning';
+                warning.innerHTML = '<strong>Inventory full</strong><p>Choose credits or discard an item:</p>';
+                data.inventory.forEach(item => {
+                    const button = document.createElement('button');
+                    button.textContent = `Discard ${item.icon} ${item.name}`;
+                    button.onclick = async () => {
+                        await discardItem(item.id, false);
+                        continueRun();
+                    };
+                    warning.appendChild(button);
+                });
+                area.appendChild(warning);
+            }
+        }
+
+        async function chooseReward(rewardId) {
+            const data = await postJson('/api/reward/choose', {reward_id: rewardId});
+            if (!data) return;
+            closeDecision();
+            renderState(data);
+            showPending(data);
+        }
+
+        function showHealChoice(data) {
+            openDecision('REPAIR STATION', 'Choose a repair', 'Both options are free, but you may choose only one.');
+            const choices = [
+                {id: 'repair', icon: '❤️‍🩹', name: 'Full Repair', description: 'Restore 3 HP.'},
+                {id: 'upgrade', icon: '⬆️', name: 'System Upgrade', description: 'Increase maximum HP by 1 and restore 1 HP.'}
+            ];
+            choices.forEach(choice => document.getElementById('decision-options').appendChild(
+                choiceButton(choice, () => chooseHeal(choice.id))
+            ));
+        }
+
+        async function chooseHeal(choice) {
+            const data = await postJson('/api/heal/choose', {choice});
+            if (!data) return;
+            renderState(data);
+            showPending(data);
+        }
+
+        function showShop(data) {
+            openDecision('DARK WEB MARKET', `Credits: ${data.credits}`, 'Purchase any items you can afford, then leave the market.');
+            const area = document.getElementById('decision-options');
+            data.shop_items.forEach(item => {
+                const price = `<span class="price-label">${item.price} credits</span>`;
+                area.appendChild(choiceButton(item, () => buyItem(item.id), price));
+            });
+            const leave = document.createElement('button');
+            leave.className = 'secondary-button leave-button';
+            leave.textContent = 'LEAVE MARKET';
+            leave.onclick = leaveShop;
+            area.appendChild(leave);
+        }
+
+        async function buyItem(itemId) {
+            const data = await postJson('/api/shop/buy', {item_id: itemId});
+            if (!data) return;
+            renderState(data);
+            showToast('Item purchased');
+            showShop(data);
+        }
+
+        async function leaveShop() {
+            const data = await postJson('/api/shop/leave', {});
+            if (!data) return;
+            renderState(data);
+            showPending(data);
+        }
+
+        function showEvent(data) {
+            const event = data.event;
+            openDecision('RANDOM EVENT', `${event.icon} ${event.name}`, event.text);
+            event.choices.forEach(choice => {
+                const entry = {icon: '◆', name: choice.label, description: choice.description};
+                document.getElementById('decision-options').appendChild(
+                    choiceButton(entry, () => chooseEvent(choice.id))
+                );
+            });
+        }
+
+        async function chooseEvent(choice) {
+            const data = await postJson('/api/event/choose', {choice});
+            if (!data) return;
+            renderState(data);
+            showToast(data.message, 4500);
+            showPending(data);
+        }
+
+        async function useItem(itemId) {
+            const data = await postJson('/api/item/use', {item_id: itemId});
+            if (!data) return;
+            renderState(data);
+            playSound('snd-lifeline');
+            if (data.removed) {
+                data.removed.forEach(key => {
+                    const button = document.getElementById(`option-${key}`);
+                    if (button) {
+                        button.disabled = true;
+                        button.classList.add('removed');
+                    }
+                });
+            }
+            if (data.add_time) {
+                timeLeft += data.add_time;
+                totalQuestionTime += data.add_time;
+                updateTimerDisplay();
+            }
+            if (data.status === 'enemy_defeated' || data.status === 'won') {
+                acceptingAnswers = false;
+                stopTimer();
+                disableCombatButtons();
+                const feedback = document.getElementById('feedback');
+                feedback.classList.remove('hidden', 'bad');
+                feedback.classList.add('good');
+                document.getElementById('feedback-title').textContent = '💉 ZERO-DAY FINISHED THE ENEMY';
+                document.getElementById('feedback-text').textContent = 'The item dealt 2 direct damage.';
+            } else {
+                showToast('Item activated');
+                if (acceptingAnswers) {
+                    const sound = audio('snd-lifeline');
+                    if (sound) sound.onended = () => acceptingAnswers && playSound('snd-ticking', true);
+                }
+            }
+        }
+
+        async function discardItem(itemId, notify = true) {
+            const data = await postJson('/api/item/discard', {item_id: itemId});
+            if (!data) return;
+            renderState(data);
+            if (notify) showToast('Item discarded');
+        }
+
+        async function openEncyclopedia() {
+            stopTimer();
+            const response = await fetch('/api/encyclopedia');
+            const data = await response.json();
+            document.getElementById('encyclopedia-overlay').classList.remove('hidden');
+            document.getElementById('progress-stats').innerHTML = `
+                <span>Runs <b>${data.progress.runs_started}</b></span>
+                <span>Wins <b>${data.progress.runs_completed}</b></span>
+                <span>Best Room <b>${data.progress.best_room}</b></span>
+            `;
+            const area = document.getElementById('encyclopedia-content');
+            area.innerHTML = '';
+            const sections = [
+                ['Mechanics', data.mechanics, data.locked_counts.mechanics],
+                ['Room Types', data.rooms, data.locked_counts.rooms],
+                ['Consumables', data.items, data.locked_counts.items],
+                ['Relics', data.relics, data.locked_counts.relics],
+                ['Enemies', data.enemies, data.locked_counts.enemies],
+                ['Enemy Abilities', data.abilities, data.locked_counts.abilities]
+            ];
+            sections.forEach(([title, entries, locked]) => {
+                const section = document.createElement('section');
+                section.className = 'encyclopedia-section';
+                section.innerHTML = `<h3>${title} <small>${locked} locked</small></h3>`;
+                const grid = document.createElement('div');
+                grid.className = 'encyclopedia-grid';
+                entries.forEach(entry => {
+                    const card = document.createElement('article');
+                    card.innerHTML = `<span>${entry.icon || '📘'}</span><strong>${escapeHtml(entry.name)}</strong><p>${escapeHtml(entry.description || entry.kind || 'Discovered enemy')}</p>`;
+                    grid.appendChild(card);
+                });
+                if (!entries.length) grid.innerHTML = '<p class="locked-message">Continue playing to discover this section.</p>';
+                section.appendChild(grid);
+                area.appendChild(section);
+            });
+        }
+
+        function closeEncyclopedia() {
+            document.getElementById('encyclopedia-overlay').classList.add('hidden');
+            if (acceptingAnswers) resumeTimer();
+        }
+
+        async function confirmResetProgress() {
+            const confirmed = window.confirm('Reset all discoveries, run statistics, and unlocked encyclopedia entries? This cannot be undone.');
+            if (!confirmed) return;
+            const response = await fetch('/api/progress/reset', {method: 'POST'});
+            if (!response.ok) return showToast('Progress could not be reset');
+            stopAllSounds();
+            window.location.reload();
         }
 
         function showEndScreen(won, data) {
+            stopAllSounds();
+            if (won) playSound('snd-victory');
             const screen = document.getElementById('end-screen');
             document.getElementById('end-eyebrow').textContent = won ? 'RUN COMPLETE' : 'RUN OVER';
             document.getElementById('end-title').textContent = won ? 'ACCESS GRANTED' : 'SYSTEM FAILURE';
             document.getElementById('end-message').textContent = won
                 ? `You cleared all 15 rooms and escaped with ${data.credits} credits.`
-                : `You reached room ${data.room} and collected ${data.credits} credits.`;
+                : `You reached Room ${data.room}. Your discoveries remain unlocked for future runs.`;
+            const accuracy = data.stats.questions_answered
+                ? Math.round((data.stats.correct_answers / data.stats.questions_answered) * 100)
+                : 0;
+            document.getElementById('run-summary').innerHTML = `
+                <span><b>${accuracy}%</b> Accuracy</span>
+                <span><b>${data.stats.enemies_defeated}</b> Enemies</span>
+                <span><b>${data.stats.damage_taken}</b> Damage</span>
+                <span><b>${data.stats.items_used}</b> Items Used</span>
+            `;
             screen.classList.remove('hidden');
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        async function postJson(url, body) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                const error = document.getElementById('decision-error');
+                error.textContent = data.error || 'The action could not be completed.';
+                error.classList.remove('hidden');
+                showToast(data.error || 'Action failed');
+                return null;
+            }
+            return data;
+        }
+
+        function showToast(message, duration = 2500) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            clearTimeout(toast.hideTimer);
+            toast.hideTimer = setTimeout(() => toast.classList.add('hidden'), duration);
         }
 
         function showFatalError(message) {
             stopTimer();
             document.getElementById('question').textContent = message;
+            showToast(message, 5000);
         }
 
-        function restartGame() {
-            stopAllSounds();
-            document.getElementById('end-screen').classList.add('hidden');
-            startGame();
+        function escapeHtml(value) {
+            const element = document.createElement('div');
+            element.textContent = value == null ? '' : String(value);
+            return element.innerHTML;
         }
 
         buildPath();
