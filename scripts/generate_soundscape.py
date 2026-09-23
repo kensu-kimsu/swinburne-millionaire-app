@@ -100,11 +100,14 @@ def adventure_theme(chords, melody, bpm=120, intensity=1.0, wave="square"):
             note_number = chord[step % len(chord)] + (12 if step >= 4 else 0)
             add_at(score, tone(midi(note_number), beat * .43, .05 * intensity, wave, release=.08), start + step * beat / 2)
     for step, note_number in enumerate(melody):
-        add_at(score, tone(midi(note_number), beat * .78, .075 * intensity, "saw" if intensity > 1.1 else "sine", release=.12), step * beat)
+            add_at(score, tone(midi(note_number), beat * .78, .1 * intensity, "saw" if intensity > .95 else "square", release=.12), step * beat)
     for step in range(len(chords) * 4):
-        add_at(score, tone(52 if step % 4 == 0 else 65, beat * .22, .12 * intensity, "sine", sweep=-20, release=.12), step * beat)
+        add_at(score, tone(52 if step % 4 == 0 else 65, beat * .25, .19 * intensity, "sine", sweep=-24, release=.12), step * beat)
+        add_at(score, tone(midi(chords[step // 4][0] - 12), beat * .65, .075 * intensity, "saw", release=.1), step * beat)
         if step % 2:
-            add_at(score, noise(beat * .12, .045 * intensity, .08, .5), step * beat)
+            add_at(score, noise(beat * .16, .095 * intensity, .09, .65), step * beat)
+        if step % 4 in {1, 3}:
+            add_at(score, noise(beat * .07, .055 * intensity, .04, .8), step * beat + beat / 2)
     peak = max(1.0, max(abs(value) for value in score) / .86)
     return [value / peak for value in score]
 
@@ -140,18 +143,28 @@ def main():
     write("skill_jam", mix(tone(110, .9, .28, "square", sweep=900), delayed(noise(.7, .45, .2, .7), .1), delayed(tone(70, .5, .3, "saw"), .42)))
     write("skill_encrypt", mix(tone(880, .85, .2, sweep=-620), delayed(tone(1320, .45, .18), .06), delayed(noise(.35, .38, .18, .6), .3)))
     write("skill_root_lock", mix(tone(48, 1.35, .45, "saw", sweep=-15), delayed(tone(96, 1.0, .3, "square"), .15), delayed(noise(.55, .38, .4), .42)))
+    write("shop_open", mix(tone(392, .85, .2, "square", sweep=220), delayed(tone(784, .6, .2), .15), delayed(tone(1175, .35, .16), .38), noise(.15, .08)))
+    write("shop_buy", mix(tone(659, .48, .24, "square"), delayed(tone(988, .4, .22), .09), delayed(tone(1319, .3, .19), .18), delayed(noise(.12, .09), .12)))
+    major_victory = sequence(
+        mix(tone(196, .38, .24, "saw"), tone(294, .38, .17)),
+        mix(tone(247, .38, .25, "saw"), tone(370, .38, .18)),
+        mix(tone(294, .45, .27, "saw"), tone(440, .45, .2), noise(.15, .12)),
+        mix(tone(392, 1.3, .26, "saw"), tone(494, 1.3, .2), tone(587, 1.3, .18), delayed(tone(784, .8, .14), .18)),
+    )
+    write("major_boss_victory", major_victory)
 
     # Adaptive grand-adventure score. Tracks share a motif but gain tempo,
     # percussion and dissonance as the dungeon becomes more dangerous.
-    write("music_menu", adventure_theme([(48, 55, 60), (46, 53, 58), (43, 50, 55), (47, 54, 59)], [60, 62, 63, 67, 65, 63, 62, 60, 55, 58, 60, 62, 63, 62, 60, 55], 88, .72, "sine"))
-    write("music_explore", adventure_theme([(50, 57, 62), (48, 55, 60), (53, 60, 65), (45, 52, 57)], [62, 64, 65, 69, 67, 65, 64, 62, 57, 60, 62, 64, 65, 64, 62, 57], 104, .78))
-    write("music_easy", adventure_theme([(50, 57, 62), (48, 55, 60), (53, 60, 65), (45, 52, 57)], [62, 65, 69, 67, 65, 64, 62, 57, 62, 64, 65, 69, 67, 65, 64, 62], 118, .86))
+    write("music_menu", adventure_theme([(48, 55, 60), (46, 53, 58), (43, 50, 55), (47, 54, 59)], [60, 62, 63, 67, 70, 67, 65, 63, 60, 63, 67, 72, 70, 67, 65, 63], 112, 1.0, "square"))
+    write("music_explore", adventure_theme([(50, 57, 62), (48, 55, 60), (53, 60, 65), (45, 52, 57)], [62, 65, 69, 74, 72, 69, 67, 65, 62, 67, 69, 74, 76, 74, 72, 69], 126, 1.02, "square"))
+    write("music_easy", adventure_theme([(50, 57, 62), (48, 55, 60), (53, 60, 65), (45, 52, 57)], [62, 65, 69, 74, 72, 69, 65, 62, 67, 69, 72, 77, 76, 72, 69, 67], 136, 1.1, "saw"))
     write("music_medium", adventure_theme([(48, 55, 60), (46, 53, 58), (51, 58, 63), (43, 50, 55)], [60, 63, 67, 65, 63, 62, 60, 55, 60, 62, 63, 67, 70, 67, 65, 63], 128, .98))
     write("music_hard", adventure_theme([(45, 52, 57), (43, 50, 55), (46, 53, 58), (41, 48, 53)], [57, 60, 64, 63, 60, 58, 57, 52, 57, 58, 60, 64, 65, 64, 60, 58], 138, 1.08, "saw"))
     write("music_elite", adventure_theme([(43, 50, 55), (44, 51, 56), (41, 48, 53), (46, 53, 58)], [55, 58, 62, 61, 58, 55, 53, 50, 55, 58, 61, 65, 63, 61, 58, 55], 145, 1.18, "saw"))
     write("music_boss", adventure_theme([(41, 48, 53), (42, 49, 54), (38, 45, 50), (43, 50, 55)], [53, 56, 60, 59, 56, 53, 51, 48, 53, 56, 59, 63, 62, 59, 56, 53], 150, 1.25, "saw"))
     write("music_major_boss", adventure_theme([(38, 45, 50), (39, 46, 51), (36, 43, 48), (41, 48, 53)], [50, 53, 57, 56, 53, 51, 50, 45, 50, 53, 56, 60, 62, 60, 57, 53], 158, 1.35, "saw"))
     write("music_final_boss", adventure_theme([(36, 43, 48), (37, 44, 49), (33, 40, 45), (38, 45, 50)], [48, 51, 55, 54, 51, 48, 46, 43, 48, 51, 54, 58, 60, 58, 55, 51], 168, 1.5, "saw"))
+    write("music_shop", adventure_theme([(53, 60, 65), (55, 62, 67), (52, 59, 64), (57, 64, 69)], [65, 69, 72, 76, 74, 72, 69, 67, 65, 67, 69, 72, 76, 74, 72, 69], 116, .92, "square"))
     pulse = []
     for _ in range(4):
         pulse += mix(tone(55, .55, .12, release=.3), delayed(tone(110, .3, .06), .05)) + silence(.95)

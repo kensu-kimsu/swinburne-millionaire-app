@@ -439,7 +439,6 @@ class RoguelikeGameTests(unittest.TestCase):
         page = self.client.get("/").get_data(as_text=True)
         expected_assets = [
             "assets/backgrounds/cyber-dungeon.webp",
-            "assets/enemies/spam_bot.webp",
             "assets/ui/game-icons.svg",
             "assets/audio/dungeon_pulse.wav",
             "assets/audio/player_attack.wav",
@@ -449,6 +448,10 @@ class RoguelikeGameTests(unittest.TestCase):
             "assets/audio/music_menu.wav",
             "assets/audio/music_easy.wav",
             "assets/audio/music_final_boss.wav",
+            "assets/audio/music_shop.wav",
+            "assets/audio/shop_open.wav",
+            "assets/audio/shop_buy.wav",
+            "assets/audio/major_boss_victory.wav",
             "assets/audio/victory.wav",
             "assets/audio/defeat.wav",
         ]
@@ -464,6 +467,16 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertIn('id="mobile-current-room"', page)
         self.assertIn('id="ui-credits"', (project_root / "static/assets/ui/game-icons.svg").read_text())
         self.assertIn("beginAutoContinue()", page)
+        self.assertIn("const delaySeconds = 8", page)
+        self.assertIn("CIPHER'S RELIC EMPORIUM", page)
+        for enemy_id in (
+            "spam_bot", "phishing_email", "adware_bug", "botnet_node",
+            "credential_thief", "malware_loader", "ransomware",
+            "insider_threat", "zero_day_exploit", "phishing_king",
+            "ransomware_overlord", "root_admin",
+        ):
+            self.assertTrue((project_root / "static/assets/enemies" / f"{enemy_id}.webp").is_file())
+        self.assertTrue((project_root / "static/assets/npcs/cipher_merchant.webp").is_file())
 
 
 if __name__ == "__main__":

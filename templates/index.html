@@ -31,6 +31,9 @@
     <audio id="snd-skill-jam" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_jam.wav') }}"></audio>
     <audio id="snd-skill-encrypt" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_encrypt.wav') }}"></audio>
     <audio id="snd-skill-root" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_root_lock.wav') }}"></audio>
+    <audio id="snd-shop-open" class="sfx" src="{{ url_for('static', filename='assets/audio/shop_open.wav') }}"></audio>
+    <audio id="snd-shop-buy" class="sfx" src="{{ url_for('static', filename='assets/audio/shop_buy.wav') }}"></audio>
+    <audio id="snd-major-victory" class="sfx" src="{{ url_for('static', filename='assets/audio/major_boss_victory.wav') }}"></audio>
     <audio id="music-menu" class="music" src="{{ url_for('static', filename='assets/audio/music_menu.wav') }}" loop preload="none"></audio>
     <audio id="music-explore" class="music" src="{{ url_for('static', filename='assets/audio/music_explore.wav') }}" loop preload="none"></audio>
     <audio id="music-easy" class="music" src="{{ url_for('static', filename='assets/audio/music_easy.wav') }}" loop preload="none"></audio>
@@ -40,6 +43,7 @@
     <audio id="music-boss" class="music" src="{{ url_for('static', filename='assets/audio/music_boss.wav') }}" loop preload="none"></audio>
     <audio id="music-major-boss" class="music" src="{{ url_for('static', filename='assets/audio/music_major_boss.wav') }}" loop preload="none"></audio>
     <audio id="music-final-boss" class="music" src="{{ url_for('static', filename='assets/audio/music_final_boss.wav') }}" loop preload="none"></audio>
+    <audio id="music-shop" class="music" src="{{ url_for('static', filename='assets/audio/music_shop.wav') }}" loop preload="none"></audio>
 
     <section id="title-screen" class="screen-overlay">
         <div class="menu-sigil" aria-hidden="true"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#enemy-root_admin"></use></svg></div>
@@ -82,6 +86,24 @@
             <p class="modal-copy" id="decision-copy"></p>
             <div class="choice-grid" id="decision-options"></div>
             <p class="modal-error hidden" id="decision-error"></p>
+        </div>
+    </section>
+
+    <section id="shop-overlay" class="modal-overlay shop-overlay hidden">
+        <div class="modal-card shop-card">
+            <div class="shop-aurora" aria-hidden="true"></div>
+            <header class="merchant-intro">
+                <img src="{{ url_for('static', filename='assets/npcs/cipher_merchant.webp') }}" alt="Cipher the Relic Merchant">
+                <div>
+                    <p class="eyebrow">THE DARK WEB MARKET</p>
+                    <h2>CIPHER'S RELIC EMPORIUM</h2>
+                    <p>“Choose carefully, adventurer. The right tool can rewrite your fate.”</p>
+                    <strong class="shop-wallet">YOUR CREDITS: <b id="shop-credits">0</b></strong>
+                </div>
+            </header>
+            <div class="shop-divider"><span>ENCHANTED STOCK</span></div>
+            <div class="choice-grid shop-inventory" id="shop-items"></div>
+            <button class="secondary-button leave-button shop-leave" onclick="leaveShop()">LEAVE THE EMPORIUM</button>
         </div>
     </section>
 
@@ -227,7 +249,12 @@
         let isContinuing = false;
         let currentMusic = null;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
-        const SPAM_BOT_ART = "{{ url_for('static', filename='assets/enemies/spam_bot.webp') }}";
+        const ENEMY_ART_BASE = "{{ url_for('static', filename='assets/enemies/') }}";
+        const ILLUSTRATED_ENEMIES = new Set([
+            'spam_bot', 'phishing_email', 'adware_bug', 'botnet_node',
+            'credential_thief', 'malware_loader', 'ransomware', 'insider_threat',
+            'zero_day_exploit', 'phishing_king', 'ransomware_overlord', 'root_admin'
+        ]);
 
         const audio = id => document.getElementById(id);
 
@@ -304,8 +331,8 @@
         }
 
         function gameAsset(kind, id, className = '') {
-            if (kind === 'enemy' && id === 'spam_bot') {
-                return `<img class="game-asset ${className}" src="${SPAM_BOT_ART}" alt="">`;
+            if (kind === 'enemy' && ILLUSTRATED_ENEMIES.has(id)) {
+                return `<img class="game-asset ${className}" src="${ENEMY_ART_BASE}${id}.webp" alt="">`;
             }
             return `<svg class="game-asset ${className}" aria-hidden="true"><use href="${ICON_SPRITE}#${kind}-${id}"></use></svg>`;
         }
@@ -474,6 +501,7 @@
             setMusic('music-explore');
             playEffect('snd-confirm');
             closeEncyclopedia();
+            closeShop();
             document.getElementById('title-screen').classList.add('hidden');
             document.getElementById('end-screen').classList.add('hidden');
             const response = await fetch('/api/start', { method: 'POST' });
@@ -645,22 +673,22 @@
             playCombatAudio(data);
             if (data.status === 'game_over') {
                 title.textContent = 'SYSTEM FAILURE';
-                text.textContent = buildTurnMessage(data);
+                text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('bad');
             } else if (!data.is_correct) {
                 title.textContent = data.was_timeout ? 'TIME EXPIRED' : 'INCORRECT';
-                text.textContent = buildTurnMessage(data);
+                text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('bad');
             } else if (data.status === 'won') {
                 title.textContent = 'ROOT ADMIN DEFEATED';
-                text.textContent = data.explanation;
+                text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('good');
             } else {
                 title.textContent = data.status === 'enemy_defeated'
                     ? `${data.defeated_enemy} DEFEATED`
                     : data.combat_action === 'defend' ? 'INTENT BLOCKED'
                     : `${data.damage_dealt} DAMAGE DEALT`;
-                text.textContent = buildTurnMessage(data);
+                text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('good');
             }
             beginAutoContinue();
@@ -676,17 +704,18 @@
         function beginAutoContinue() {
             cancelAutoContinue();
             const button = document.getElementById('next-button');
-            let seconds = 5;
+            const delaySeconds = 8;
+            let seconds = delaySeconds;
             const update = () => {
                 button.textContent = `CONTINUE (${seconds}) →`;
-                button.style.setProperty('--auto-progress', `${((5 - seconds) / 5) * 100}%`);
+                button.style.setProperty('--auto-progress', `${((delaySeconds - seconds) / delaySeconds) * 100}%`);
             };
             update();
             continueTicker = setInterval(() => {
                 seconds -= 1;
                 update();
             }, 1000);
-            continueTimer = setTimeout(continueRun, 5000);
+            continueTimer = setTimeout(continueRun, delaySeconds * 1000);
         }
 
         function playCombatAudio(data) {
@@ -709,20 +738,27 @@
             if (skillSound && !data.enemy_action?.canceled) scheduleEffect(skillSound, 260);
             scheduleEffect(data.is_correct ? 'snd-correct' : 'snd-wrong', 360);
             if (data.recovered_hp) scheduleEffect('snd-heal', 540);
+            if (data.defeated_enemy === 'Ransomware Overlord') scheduleEffect('snd-major-victory', 720);
         }
 
         function buildTurnMessage(data) {
             const details = [];
-            if (!data.is_correct) details.push(`Correct answer: ${data.correct_answer}.`);
-            details.push(data.explanation);
-            if (data.armor_blocked) details.push(`Enemy armor blocked ${data.armor_blocked} damage.`);
-            if (data.enemy_action) details.push(data.enemy_action.message);
-            if (data.blocked_by) details.push(`${data.blocked_by} prevented the damage.`);
-            if (data.destroyed_item) details.push(`Encryption destroyed ${data.destroyed_item.name}.`);
-            if (data.revived) details.push('Backup restored you to 1 HP.');
-            if (data.phase_changed) details.push('The boss entered phase two and changed its pattern!');
-            if (data.recovered_hp) details.push(`Combat Recovery restored ${data.recovered_hp} HP.`);
-            if (data.credits_earned) details.push(`+${data.credits_earned} credits.`);
+            const actionName = escapeHtml((data.combat_action || 'attack').toUpperCase());
+            details.push(`<span class="turn-highlight action-highlight">YOU USED ${actionName}</span>`);
+            if (data.damage_dealt) details.push(`<span class="turn-highlight damage-highlight">${data.damage_dealt} DAMAGE DEALT</span>`);
+            if (!data.is_correct) details.push(`Correct answer: <strong>${escapeHtml(data.correct_answer)}</strong>.`);
+            if (data.explanation) details.push(escapeHtml(data.explanation));
+            if (data.armor_blocked) details.push(`<span class="turn-highlight guard-highlight">${data.armor_blocked} DAMAGE BLOCKED</span>`);
+            if (data.enemy_action) {
+                const skillName = escapeHtml(data.enemy_action.name);
+                details.push(`<span class="turn-highlight skill-highlight">ENEMY SKILL: ${skillName}${data.enemy_action.canceled ? ' — INTERRUPTED' : ''}</span> ${escapeHtml(data.enemy_action.message)}`);
+            }
+            if (data.blocked_by) details.push(`<span class="turn-highlight guard-highlight">${escapeHtml(data.blocked_by)} PREVENTED DAMAGE</span>`);
+            if (data.destroyed_item) details.push(`<span class="turn-highlight danger-highlight">ENCRYPTED: ${escapeHtml(data.destroyed_item.name)}</span>`);
+            if (data.revived) details.push('<span class="turn-highlight heal-highlight">BACKUP RESTORED 1 HP</span>');
+            if (data.phase_changed) details.push('<span class="turn-highlight phase-highlight">BOSS PHASE TWO AWAKENED</span>');
+            if (data.recovered_hp) details.push(`<span class="turn-highlight heal-highlight">+${data.recovered_hp} HP RECOVERED</span>`);
+            if (data.credits_earned) details.push(`<span class="turn-highlight credit-highlight">+${data.credits_earned} CREDITS</span>`);
             return details.join(' ');
         }
 
@@ -930,31 +966,45 @@
             await processGameState(data);
         }
 
-        function showShop(data) {
-            openDecision('DARK WEB MARKET', `Credits: ${data.credits}`, 'Purchase any items you can afford, then leave the market.');
-            const area = document.getElementById('decision-options');
+        function showShop(data, announce = true) {
+            closeDecision();
+            document.getElementById('shop-overlay').classList.remove('hidden');
+            document.getElementById('shop-credits').textContent = data.credits;
+            setMusic('music-shop');
+            if (announce) playEffect('snd-shop-open');
+            const area = document.getElementById('shop-items');
+            area.innerHTML = '';
             data.shop_items.forEach(item => {
                 const price = `<span class="price-label">${item.price} credits</span>`;
-                area.appendChild(choiceButton(item, () => buyItem(item.id), price, 'item'));
+                const card = choiceButton(item, () => buyItem(item.id), price, 'item');
+                card.classList.add('shop-item-card', `shop-rarity-${item.rarity.toLowerCase()}`);
+                if (item.price > data.credits) {
+                    card.classList.add('cannot-afford');
+                    card.title = 'Not enough credits';
+                    card.disabled = true;
+                }
+                area.appendChild(card);
             });
-            const leave = document.createElement('button');
-            leave.className = 'secondary-button leave-button';
-            leave.textContent = 'LEAVE MARKET';
-            leave.onclick = leaveShop;
-            area.appendChild(leave);
+        }
+
+        function closeShop() {
+            document.getElementById('shop-overlay')?.classList.add('hidden');
         }
 
         async function buyItem(itemId) {
             const data = await postJson('/api/shop/buy', {item_id: itemId});
             if (!data) return;
             renderState(data);
+            playEffect('snd-shop-buy');
             showToast('Item purchased');
-            showShop(data);
+            showShop(data, false);
         }
 
         async function leaveShop() {
+            playEffect('snd-confirm');
             const data = await postJson('/api/shop/leave', {});
             if (!data) return;
+            closeShop();
             await processGameState(data);
         }
 

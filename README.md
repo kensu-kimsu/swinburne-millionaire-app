@@ -60,8 +60,12 @@ collapse unused controls. Gameplay therefore stays visible without scrolling;
 long-form encyclopedia and decision overlays scroll independently.
 
 Answer, action, and reward selections provide immediate sound feedback. After a
-turn resolves, the Continue button displays a five-second countdown and advances
+turn resolves, the Continue button displays an eight-second countdown and advances
 automatically if the player does not press it.
+
+Combat summaries use color-coded highlights for the selected action, damage,
+enemy skill, blocked damage, healing, boss phase changes, and credits earned so
+the important result can be understood at a glance.
 
 Every defeated enemy activates Combat Recovery and restores 1 HP. Additional
 healing remains available from Health Patches, Repair Stations, Backup, and the
@@ -102,6 +106,11 @@ characters. Standard battles allow 45 seconds; Time Compression allows 30.
 Only defeated enemies advance the 15-stage run. After taking a support room,
 the next route offers Combat and Elite choices so support rooms cannot be
 farmed repeatedly or skip a boss.
+
+The Dark Web Market is a dedicated NPC scene hosted by **Cipher the Relic
+Merchant**, with its own upbeat theme, entrance and purchase sounds, dialogue,
+wallet display, rarity glows, and enchanted item presentation. It is visually
+distinct from route and reward selection.
 
 ## Consumable items
 
@@ -245,7 +254,8 @@ templates/index.html      Game interface and browser logic
 static/style.css          Responsive roguelite design
 static/assets/audio/      Original generated adventure sound set
 static/assets/backgrounds/ Illustrated cyber-dungeon menu backdrop
-static/assets/enemies/    Animated enemy portrait artwork
+static/assets/enemies/    Illustrated animated enemy character artwork
+static/assets/npcs/       Shopkeeper and future non-player characters
 static/assets/ui/         Custom enemy, item, relic, room, and menu symbols
 scripts/generate_soundscape.py  Rebuild the original WAV sound set
 test_app.py               Automated game-system tests
@@ -254,10 +264,11 @@ test_app.py               Automated game-system tests
 ## Art and audio
 
 The interface uses a custom cyber-fantasy visual language rather than emoji
-placeholders. The generated Spam Bot portrait is paired with an original SVG
-atlas containing the remaining enemies, every consumable and relic, room
-symbols, combat actions, menu marks, and encyclopedia artwork. CSS motion keeps
-these lightweight assets animated without requiring video downloads.
+placeholders. Every enemy has a full illustrated transparent character render
+in a consistent obsidian, gold, cyan, and crimson cyber-fantasy style. The SVG
+atlas contains every consumable and relic, room symbols, combat actions, menu
+marks, and encyclopedia artwork. CSS motion keeps these assets animated without
+requiring video downloads.
 
 All music cues and sound effects are original, dependency-free synthesized
 audio generated specifically for the game. To rebuild them:
