@@ -444,6 +444,11 @@ class RoguelikeGameTests(unittest.TestCase):
             "assets/audio/dungeon_pulse.wav",
             "assets/audio/player_attack.wav",
             "assets/audio/enemy_attack.wav",
+            "assets/audio/ui_select.wav",
+            "assets/audio/skill_root_lock.wav",
+            "assets/audio/music_menu.wav",
+            "assets/audio/music_easy.wav",
+            "assets/audio/music_final_boss.wav",
             "assets/audio/victory.wav",
             "assets/audio/defeat.wav",
         ]
@@ -457,6 +462,8 @@ class RoguelikeGameTests(unittest.TestCase):
         stylesheet = (project_root / "static/style.css").read_text()
         self.assertIn("height: 100dvh", stylesheet)
         self.assertIn('id="mobile-current-room"', page)
+        self.assertIn('id="ui-credits"', (project_root / "static/assets/ui/game-icons.svg").read_text())
+        self.assertIn("beginAutoContinue()", page)
 
 
 if __name__ == "__main__":

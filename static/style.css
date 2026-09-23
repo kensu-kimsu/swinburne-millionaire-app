@@ -166,6 +166,9 @@ button { font: inherit; }
 }
 
 .danger-text:hover { color: #ff726b; }
+.sound-hint { margin-top: 14px; color: #88e9ff; font-size: .58rem; font-weight: 900; letter-spacing: .16em; animation: sound-hint-pulse 1.4s ease-in-out infinite alternate; transition: .3s; }
+.sound-hint.sound-awake { opacity: 0; transform: translateY(-5px); }
+@keyframes sound-hint-pulse { to { color: white; text-shadow: 0 0 12px #42dfff; } }
 
 .game-shell {
     width: min(1200px, 100%);
@@ -488,6 +491,114 @@ button { font: inherit; }
 .enemy-action-fx { top: 22%; color: var(--gold); }
 .heal-fx { top: 8%; color: var(--green); }
 
+.battle-cinematic {
+    --fx-color: #5ee8ff;
+    --fx-secondary: #ffffff;
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    overflow: hidden;
+    animation: cinematic-fade 1.1s ease-out forwards;
+}
+.battle-cinematic strong {
+    position: absolute;
+    z-index: 6;
+    top: 18%;
+    left: 50%;
+    padding: 6px 13px;
+    border: 1px solid var(--fx-color);
+    border-radius: 99px;
+    background: rgba(4, 7, 13, .82);
+    color: white;
+    box-shadow: 0 0 25px color-mix(in srgb, var(--fx-color) 65%, transparent);
+    font-size: clamp(.68rem, 1.8vw, .92rem);
+    letter-spacing: .16em;
+    text-shadow: 0 0 10px var(--fx-color);
+    transform: translateX(-50%);
+    animation: cinematic-title 1s ease-out forwards;
+    white-space: nowrap;
+}
+.cinematic-vignette { position: absolute; inset: 0; background: radial-gradient(circle at 50% 26%, color-mix(in srgb, var(--fx-color) 28%, transparent), rgba(0, 0, 0, .72)); animation: vignette-flash .75s ease-out forwards; }
+.element-core, .element-ring, .slash-trail, .shield-dome, .smoke { position: absolute; left: 50%; top: 27%; transform: translate(-50%, -50%); }
+.element-core { width: 34px; height: 34px; z-index: 3; border-radius: 50%; background: white; box-shadow: 0 0 18px 7px var(--fx-color), 0 0 70px 25px var(--fx-color); animation: core-burst .75s ease-out forwards; }
+.element-ring { width: 45px; height: 45px; z-index: 2; border: 4px solid var(--fx-color); border-radius: 50%; box-shadow: inset 0 0 18px var(--fx-color), 0 0 22px var(--fx-color); animation: ring-burst .85s ease-out forwards; }
+.slash-trail { display: none; width: min(72%, 620px); height: 9px; z-index: 4; border-radius: 50%; background: linear-gradient(90deg, transparent, white 35%, var(--fx-color) 62%, transparent); box-shadow: 0 0 18px 6px var(--fx-color); transform: translate(-50%, -50%) rotate(-16deg); animation: slash-strike .65s ease-out forwards; }
+.shield-dome { display: none; width: 190px; height: 130px; z-index: 3; border: 7px solid var(--fx-color); border-bottom-color: transparent; border-radius: 50% 50% 42% 42%; box-shadow: inset 0 0 28px var(--fx-color), 0 0 35px var(--fx-color); animation: shield-rise .95s ease-out forwards; }
+.smoke { width: 58px; height: 58px; z-index: 1; border-radius: 50%; background: rgba(95, 105, 124, .65); filter: blur(9px); opacity: 0; }
+.smoke-a { margin-left: -45px; animation: smoke-left 1.1s .18s ease-out forwards; }
+.smoke-b { margin-left: 40px; animation: smoke-right 1.2s .12s ease-out forwards; }
+.smoke-c { margin-top: 20px; animation: smoke-up 1.15s .2s ease-out forwards; }
+.magic-particle, .ember {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    top: 27%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--fx-secondary);
+    box-shadow: 0 0 9px 3px var(--fx-color);
+    animation: magic-scatter .8s var(--particle-delay) cubic-bezier(.12,.7,.22,1) forwards;
+}
+.ember { width: 9px; height: 3px; border-radius: 0; background: #ffcb68; }
+
+.action-attack { --fx-color: #ff4c45; --fx-secondary: #ffd773; }
+.action-attack .slash-trail { display: block; }
+.action-defend { --fx-color: #4cb9ff; --fx-secondary: #d8f7ff; }
+.action-defend .element-core, .action-defend .element-ring { display: none; }
+.action-defend .shield-dome { display: block; }
+.action-exploit { --fx-color: #a855ff; --fx-secondary: #ffe071; z-index: 5; animation-duration: 1.5s; }
+.action-exploit .element-core { width: 70px; height: 70px; background: radial-gradient(circle, #fff 0 18%, #ffe071 28%, #a855ff 62%, transparent 70%); box-shadow: 0 0 32px 18px #a855ff, 0 0 110px 55px rgba(255, 62, 42, .78); animation: exploit-detonation 1.15s ease-out forwards; }
+.action-exploit .element-ring { width: 90px; height: 90px; border-width: 8px; border-color: #ffe071; animation: exploit-ring 1.25s ease-out forwards; }
+.action-exploit .slash-trail { display: block; height: 16px; background: linear-gradient(90deg, transparent, #fff, #ffe071 42%, #a855ff 66%, transparent); transform: translate(-50%, -50%) rotate(-24deg); animation-duration: .8s; }
+.action-exploit .cinematic-vignette { background: radial-gradient(circle at 50% 27%, rgba(255, 217, 92, .75), rgba(139, 47, 255, .5) 25%, rgba(20, 2, 32, .82) 68%); }
+.action-failed { filter: grayscale(.75); opacity: .55; }
+.action-failed .element-core { animation-name: failed-fizzle; }
+
+.skill-attack { --fx-color: #ff4f48; }
+.skill-attack .slash-trail, .skill-heavy_attack .slash-trail { display: block; transform: translate(-50%, -50%) rotate(18deg); }
+.skill-heavy_attack { --fx-color: #ff5a25; --fx-secondary: #ffd05b; }
+.skill-heavy_attack .element-core { width: 64px; height: 64px; background: #fff3a1; box-shadow: 0 0 32px 17px #ff6a23, 0 0 95px 45px rgba(224, 25, 12, .75); }
+.skill-defend { --fx-color: #5cdcff; }
+.skill-defend .element-core, .skill-defend .element-ring { display: none; }
+.skill-defend .shield-dome { display: block; }
+.skill-heal { --fx-color: #35e5a0; --fx-secondary: #e0ff9a; }
+.skill-heal .magic-particle { animation-name: healing-rise; }
+.skill-credit_drain { --fx-color: #ffd25c; --fx-secondary: #ff8f35; }
+.skill-credit_drain .magic-particle { width: 10px; height: 10px; border: 2px solid #fff1a3; background: #b46d0b; animation-name: drain-spiral; }
+.skill-jammer { --fx-color: #ff42e6; --fx-secondary: #4ef4ff; }
+.skill-jammer .cinematic-vignette { background: repeating-linear-gradient(0deg, rgba(255, 50, 222, .2) 0 3px, transparent 3px 8px); animation: glitch-field .7s steps(2) forwards; }
+.skill-jammer .slash-trail { display: block; height: 4px; transform: translate(-50%, -50%); animation: jammer-scan .7s steps(4) forwards; }
+.skill-encrypt { --fx-color: #61d9ff; --fx-secondary: #e9fbff; }
+.skill-encrypt .magic-particle { width: 9px; height: 15px; border-radius: 0 80% 0 80%; transform: rotate(45deg); }
+.skill-root_lock { --fx-color: #a14dff; --fx-secondary: #ff414d; }
+.skill-root_lock .element-core { background: #05000a; box-shadow: 0 0 30px 14px #a14dff, 0 0 100px 42px rgba(255, 30, 61, .55); animation: root-vortex 1s ease-in forwards; }
+.skill-root_lock .element-ring { border-style: dashed; animation: root-spin 1s linear forwards; }
+.skill-canceled { opacity: .65; filter: saturate(.45); }
+.skill-canceled .element-ring, .skill-canceled .shield-dome { border-style: dashed; animation: shield-shatter .7s ease-out forwards; }
+
+@keyframes cinematic-fade { 0%, 72% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cinematic-title { 0% { opacity: 0; transform: translate(-50%, 14px) scale(.65); } 25%, 72% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -12px); } }
+@keyframes vignette-flash { from { opacity: .95; } to { opacity: 0; } }
+@keyframes core-burst { 0% { transform: translate(-50%, -50%) scale(.1); } 45% { transform: translate(-50%, -50%) scale(1.5); } 100% { transform: translate(-50%, -50%) scale(.15); opacity: 0; } }
+@keyframes ring-burst { from { transform: translate(-50%, -50%) scale(.15); opacity: 1; } to { transform: translate(-50%, -50%) scale(7); opacity: 0; } }
+@keyframes slash-strike { 0% { opacity: 0; transform: translate(-85%, -50%) rotate(-16deg) scaleX(.15); } 28% { opacity: 1; } 100% { opacity: 0; transform: translate(-20%, -50%) rotate(-16deg) scaleX(1.25); } }
+@keyframes shield-rise { 0% { opacity: 0; transform: translate(-50%, 30%) scale(.25); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -62%) scale(1.35); } }
+@keyframes shield-shatter { 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.6) rotate(25deg); opacity: 0; filter: blur(5px); } }
+@keyframes magic-scatter { from { opacity: 1; transform: rotate(var(--particle-angle)) translateX(4px) scale(1.3); } to { opacity: 0; transform: rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(.1); } }
+@keyframes healing-rise { from { opacity: 1; transform: translate(0, 35px) scale(.5); } to { opacity: 0; transform: translate(calc(cos(var(--particle-angle)) * 70px), -110px) scale(1.4); } }
+@keyframes drain-spiral { from { opacity: 1; transform: rotate(var(--particle-angle)) translateX(var(--particle-distance)); } to { opacity: 0; transform: rotate(calc(var(--particle-angle) + 260deg)) translateX(4px) scale(.2); } }
+@keyframes exploit-detonation { 0% { transform: translate(-50%, -50%) scale(.05); } 32% { transform: translate(-50%, -50%) scale(1.9); } 55% { transform: translate(-50%, -50%) scale(.8); } 100% { transform: translate(-50%, -50%) scale(5); opacity: 0; } }
+@keyframes exploit-ring { from { transform: translate(-50%, -50%) scale(.1) rotate(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(8) rotate(180deg); opacity: 0; } }
+@keyframes failed-fizzle { 0% { transform: translate(-50%, -50%) scale(.3); } 60% { transform: translate(-50%, -50%) scale(.7); opacity: .6; } 100% { transform: translate(-50%, 30%) scale(.15); opacity: 0; } }
+@keyframes root-vortex { from { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(.2) rotate(240deg); opacity: 1; } }
+@keyframes root-spin { to { transform: translate(-50%, -50%) scale(5) rotate(360deg); opacity: 0; } }
+@keyframes glitch-field { 0% { transform: translateX(-8px); opacity: .8; } 35% { transform: translateX(10px); } 70% { transform: translateX(-4px); } 100% { opacity: 0; } }
+@keyframes jammer-scan { from { opacity: 1; top: 8%; } to { opacity: 0; top: 55%; } }
+@keyframes smoke-left { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 35% { opacity: .7; } 100% { opacity: 0; transform: translate(-190%, -145%) scale(2.4); } }
+@keyframes smoke-right { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 35% { opacity: .7; } 100% { opacity: 0; transform: translate(95%, -120%) scale(2.7); } }
+@keyframes smoke-up { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 35% { opacity: .65; } 100% { opacity: 0; transform: translate(-50%, -210%) scale(2.3); } }
+
 .question-card {
     margin: 0 16px;
     padding: 17px;
@@ -554,7 +665,16 @@ button { font: inherit; }
 .feedback.good { border-color: rgba(38, 210, 148, .5); background: rgba(38, 210, 148, .07); }
 .feedback.bad { border-color: rgba(220, 37, 28, .5); background: rgba(220, 37, 28, .07); }
 .feedback p { margin-top: 5px; color: #cbd2dd; font-size: .86rem; line-height: 1.5; }
-.next-button { margin-top: 9px; min-height: 34px; padding: 6px 12px; font-size: .72rem; }
+.next-button { position: relative; isolation: isolate; overflow: hidden; margin-top: 9px; min-height: 34px; padding: 6px 12px; font-size: .72rem; }
+.next-button::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0 auto 0 0;
+    width: var(--auto-progress, 0%);
+    background: rgba(255, 255, 255, .22);
+    transition: width 1s linear;
+}
 
 .build-panel {
     display: grid;

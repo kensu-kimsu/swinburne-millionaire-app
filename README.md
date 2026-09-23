@@ -45,11 +45,23 @@ turns have distinct particles, flashes, motion, and sound cues. Sound playback
 is centrally controlled, so warnings pause the dungeon pulse and starting a new
 run immediately stops victory or defeat audio from the previous run.
 
+The score adapts to the encounter: menu and exploration themes transition into
+separate Easy, Medium, Hard, Elite, miniboss, major-boss, and final-boss music.
+Every enemy technique has a distinct audio/visual signature, including fire and
+impact for Heavy Attack, a shield dome for Fortify, green recovery particles,
+gold drain spirals, jammer glitches, encryption shards, and a Root Lock vortex.
+Exploit is presented as an ultimate attack with a beam, elemental detonation,
+smoke, expanding rings, and a large particle burst.
+
 On phones, combat uses a dedicated single-screen layout sized with the dynamic
 mobile viewport. The stage map becomes a compact HUD counter, answers remain in
 a two-by-two grid, items use a horizontal quick-access bar, and resolved turns
 collapse unused controls. Gameplay therefore stays visible without scrolling;
 long-form encyclopedia and decision overlays scroll independently.
+
+Answer, action, and reward selections provide immediate sound feedback. After a
+turn resolves, the Continue button displays a five-second countdown and advances
+automatically if the player does not press it.
 
 Every defeated enemy activates Combat Recovery and restores 1 HP. Additional
 healing remains available from Health Patches, Repair Stations, Backup, and the
@@ -254,8 +266,9 @@ audio generated specifically for the game. To rebuild them:
 python scripts/generate_soundscape.py
 ```
 
-This recreates the dungeon pulse, warnings, attacks, defend and exploit cues,
-healing, loot, UI confirmation, victory, defeat, and answer feedback sounds.
+This recreates the adaptive music suite, dungeon pulse, warnings, attacks,
+individual enemy skills, defend and exploit cues, healing, loot, selection and
+confirmation feedback, victory, defeat, and answer feedback sounds.
 
 ## Technology
 

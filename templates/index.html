@@ -23,6 +23,23 @@
     <audio id="snd-heal" class="sfx" src="{{ url_for('static', filename='assets/audio/heal.wav') }}"></audio>
     <audio id="snd-loot" class="sfx" src="{{ url_for('static', filename='assets/audio/loot.wav') }}"></audio>
     <audio id="snd-confirm" class="sfx" src="{{ url_for('static', filename='assets/audio/ui_confirm.wav') }}"></audio>
+    <audio id="snd-select" class="sfx" src="{{ url_for('static', filename='assets/audio/ui_select.wav') }}"></audio>
+    <audio id="snd-skill-heavy" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_heavy.wav') }}"></audio>
+    <audio id="snd-skill-fortify" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_fortify.wav') }}"></audio>
+    <audio id="snd-skill-heal" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_heal.wav') }}"></audio>
+    <audio id="snd-skill-drain" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_drain.wav') }}"></audio>
+    <audio id="snd-skill-jam" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_jam.wav') }}"></audio>
+    <audio id="snd-skill-encrypt" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_encrypt.wav') }}"></audio>
+    <audio id="snd-skill-root" class="sfx" src="{{ url_for('static', filename='assets/audio/skill_root_lock.wav') }}"></audio>
+    <audio id="music-menu" class="music" src="{{ url_for('static', filename='assets/audio/music_menu.wav') }}" loop preload="none"></audio>
+    <audio id="music-explore" class="music" src="{{ url_for('static', filename='assets/audio/music_explore.wav') }}" loop preload="none"></audio>
+    <audio id="music-easy" class="music" src="{{ url_for('static', filename='assets/audio/music_easy.wav') }}" loop preload="none"></audio>
+    <audio id="music-medium" class="music" src="{{ url_for('static', filename='assets/audio/music_medium.wav') }}" loop preload="none"></audio>
+    <audio id="music-hard" class="music" src="{{ url_for('static', filename='assets/audio/music_hard.wav') }}" loop preload="none"></audio>
+    <audio id="music-elite" class="music" src="{{ url_for('static', filename='assets/audio/music_elite.wav') }}" loop preload="none"></audio>
+    <audio id="music-boss" class="music" src="{{ url_for('static', filename='assets/audio/music_boss.wav') }}" loop preload="none"></audio>
+    <audio id="music-major-boss" class="music" src="{{ url_for('static', filename='assets/audio/music_major_boss.wav') }}" loop preload="none"></audio>
+    <audio id="music-final-boss" class="music" src="{{ url_for('static', filename='assets/audio/music_final_boss.wav') }}" loop preload="none"></audio>
 
     <section id="title-screen" class="screen-overlay">
         <div class="menu-sigil" aria-hidden="true"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#enemy-root_admin"></use></svg></div>
@@ -42,6 +59,7 @@
             <button class="primary-button" onclick="startGame()">START RUN</button>
             <button class="secondary-button" onclick="openEncyclopedia()">ENCYCLOPEDIA</button>
         </div>
+        <p class="sound-hint" id="sound-hint">TAP ANYWHERE TO AWAKEN THE SOUNDTRACK</p>
         <button class="text-button danger-text" onclick="confirmResetProgress()">Reset all progress</button>
     </section>
 
@@ -204,6 +222,10 @@
         let questionLoaded = false;
         let currentState = null;
         let soundTimeouts = [];
+        let continueTimer = null;
+        let continueTicker = null;
+        let isContinuing = false;
+        let currentMusic = null;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
         const SPAM_BOT_ART = "{{ url_for('static', filename='assets/enemies/spam_bot.webp') }}";
 
@@ -217,12 +239,23 @@
                 sound.currentTime = 0;
                 sound.onended = null;
             });
+            currentMusic = null;
+        }
+
+        function stopTransientSounds() {
+            soundTimeouts.forEach(clearTimeout);
+            soundTimeouts = [];
+            document.querySelectorAll('audio:not(.music)').forEach(sound => {
+                sound.pause();
+                sound.currentTime = 0;
+                sound.onended = null;
+            });
         }
 
         function playSound(id, loop = false) {
             const sound = audio(id);
             if (!sound) return;
-            stopAllSounds();
+            stopTransientSounds();
             sound.loop = loop;
             sound.play().catch(() => {});
         }
@@ -239,6 +272,35 @@
         function scheduleEffect(id, delay = 0, exclusive = false) {
             const timeout = setTimeout(() => exclusive ? playSound(id) : playEffect(id), delay);
             soundTimeouts.push(timeout);
+        }
+
+        function setMusic(id) {
+            if (currentMusic === id && !audio(id)?.paused) return;
+            document.querySelectorAll('audio.music').forEach(track => {
+                if (track.id !== id) {
+                    track.pause();
+                    track.currentTime = 0;
+                }
+            });
+            const track = audio(id);
+            if (!track) return;
+            track.volume = id === 'music-final-boss' ? .34 : .25;
+            track.loop = true;
+            currentMusic = id;
+            track.play().catch(() => {});
+        }
+
+        function syncMusic(data) {
+            if (!data || data.game_over) return;
+            const enemy = data.enemy;
+            if (!enemy) return setMusic('music-explore');
+            if (enemy.kind === 'FINAL BOSS') return setMusic('music-final-boss');
+            if (enemy.kind === 'MAJOR BOSS') return setMusic('music-major-boss');
+            if (enemy.kind === 'MINIBOSS') return setMusic('music-boss');
+            if (enemy.kind === 'ELITE') return setMusic('music-elite');
+            if (data.room <= 5) return setMusic('music-easy');
+            if (data.room <= 10) return setMusic('music-medium');
+            setMusic('music-hard');
         }
 
         function gameAsset(kind, id, className = '') {
@@ -409,6 +471,8 @@
 
         async function startGame() {
             stopAllSounds();
+            setMusic('music-explore');
+            playEffect('snd-confirm');
             closeEncyclopedia();
             document.getElementById('title-screen').classList.add('hidden');
             document.getElementById('end-screen').classList.add('hidden');
@@ -419,6 +483,9 @@
         }
 
         async function continueRun() {
+            if (isContinuing) return;
+            isContinuing = true;
+            cancelAutoContinue();
             acceptingAnswers = false;
             questionLoaded = false;
             stopTimer();
@@ -427,12 +494,17 @@
             selectedCombatAction = null;
             const response = await fetch('/api/state');
             const data = await response.json();
-            if (!response.ok) return showFatalError(data.error);
+            if (!response.ok) {
+                isContinuing = false;
+                return showFatalError(data.error);
+            }
             await processGameState(data);
+            isContinuing = false;
         }
 
         async function processGameState(data) {
             renderState(data);
+            syncMusic(data);
             if (data.game_over) {
                 showEndScreen(data.won, data);
                 return;
@@ -449,6 +521,7 @@
         }
 
         async function fetchQuestion() {
+            cancelAutoContinue();
             closeDecision();
             document.querySelector('.main-panel').classList.remove('turn-resolved');
             document.getElementById('feedback').classList.add('hidden');
@@ -488,6 +561,7 @@
 
         function selectAnswer(key) {
             if (!acceptingAnswers) return;
+            playEffect('snd-select');
             selectedAnswer = key;
             document.querySelectorAll('.option').forEach(button => button.classList.remove('selected'));
             document.getElementById(`option-${key}`).classList.add('selected');
@@ -500,6 +574,7 @@
                 showToast('Exploit needs 2 Focus. Build Focus with Attack.');
                 return;
             }
+            playEffect('snd-select');
             selectedCombatAction = action;
             document.querySelectorAll('.combat-actions button').forEach(button =>
                 button.classList.toggle('selected', button.dataset.action === action)
@@ -588,6 +663,30 @@
                 text.textContent = buildTurnMessage(data);
                 feedback.classList.add('good');
             }
+            beginAutoContinue();
+        }
+
+        function cancelAutoContinue() {
+            clearTimeout(continueTimer);
+            clearInterval(continueTicker);
+            continueTimer = null;
+            continueTicker = null;
+        }
+
+        function beginAutoContinue() {
+            cancelAutoContinue();
+            const button = document.getElementById('next-button');
+            let seconds = 5;
+            const update = () => {
+                button.textContent = `CONTINUE (${seconds}) →`;
+                button.style.setProperty('--auto-progress', `${((5 - seconds) / 5) * 100}%`);
+            };
+            update();
+            continueTicker = setInterval(() => {
+                seconds -= 1;
+                update();
+            }, 1000);
+            continueTimer = setTimeout(continueRun, 5000);
         }
 
         function playCombatAudio(data) {
@@ -597,11 +696,19 @@
                 exploit: 'snd-exploit'
             }[data.combat_action] || 'snd-attack';
             playEffect(actionSound);
-            if (data.enemy_action && !data.enemy_action.canceled) scheduleEffect('snd-enemy', 210);
+            const skillSound = {
+                attack: 'snd-enemy',
+                heavy_attack: 'snd-skill-heavy',
+                defend: 'snd-skill-fortify',
+                heal: 'snd-skill-heal',
+                credit_drain: 'snd-skill-drain',
+                jammer: 'snd-skill-jam',
+                encrypt: 'snd-skill-encrypt',
+                root_lock: 'snd-skill-root'
+            }[data.enemy_action?.id];
+            if (skillSound && !data.enemy_action?.canceled) scheduleEffect(skillSound, 260);
             scheduleEffect(data.is_correct ? 'snd-correct' : 'snd-wrong', 360);
             if (data.recovered_hp) scheduleEffect('snd-heal', 540);
-            if (data.status === 'won') scheduleEffect('snd-victory', 700, true);
-            if (data.status === 'game_over') scheduleEffect('snd-defeat', 650, true);
         }
 
         function buildTurnMessage(data) {
@@ -624,6 +731,10 @@
             const playerHud = document.querySelector('.player-hud');
             const shell = document.querySelector('.main-panel');
             const action = data.combat_action;
+            spawnActionCinematic(action, data.is_correct);
+            if (data.enemy_action) {
+                setTimeout(() => spawnSkillCinematic(data.enemy_action), 260);
+            }
             if (data.enemy_action && !data.enemy_action.canceled) {
                 enemyCard.classList.remove('enemy-attacking');
                 void enemyCard.offsetWidth;
@@ -655,6 +766,42 @@
                 playerHud.classList.remove('player-hit');
                 shell.classList.remove('screen-shake', 'exploit-flash', 'defend-flash');
             }, 850);
+        }
+
+        function spawnActionCinematic(action, succeeded) {
+            const labels = {attack: 'BLADE STRIKE', defend: 'AEGIS GUARD', exploit: 'ULTIMATE EXPLOIT'};
+            spawnBattleCinematic(`action-${action}${succeeded ? '' : ' action-failed'}`, labels[action] || 'ACTION');
+        }
+
+        function spawnSkillCinematic(enemyAction) {
+            const skill = enemyAction.id || 'attack';
+            const canceled = enemyAction.canceled ? ' skill-canceled' : '';
+            spawnBattleCinematic(`skill-${skill}${canceled}`, enemyAction.canceled ? `${enemyAction.name} SHATTERED` : enemyAction.name);
+        }
+
+        function spawnBattleCinematic(effectClass, label) {
+            const layer = document.getElementById('combat-fx-layer');
+            const scene = document.createElement('div');
+            scene.className = `battle-cinematic ${effectClass}`;
+            scene.innerHTML = `
+                <div class="cinematic-vignette"></div>
+                <div class="element-ring"></div>
+                <div class="element-core"></div>
+                <div class="slash-trail"></div>
+                <div class="shield-dome"></div>
+                <div class="smoke smoke-a"></div><div class="smoke smoke-b"></div><div class="smoke smoke-c"></div>
+                <strong>${escapeHtml(label)}</strong>
+            `;
+            for (let index = 0; index < 22; index++) {
+                const particle = document.createElement('i');
+                particle.className = index % 4 === 0 ? 'ember' : 'magic-particle';
+                particle.style.setProperty('--particle-angle', `${index * 16.36}deg`);
+                particle.style.setProperty('--particle-distance', `${65 + (index % 6) * 18}px`);
+                particle.style.setProperty('--particle-delay', `${(index % 5) * 35}ms`);
+                scene.appendChild(particle);
+            }
+            layer.appendChild(scene);
+            setTimeout(() => scene.remove(), effectClass.includes('action-exploit') ? 1500 : 1150);
         }
 
         function spawnCombatFx(label, className, kind, id) {
@@ -705,12 +852,16 @@
                 ${extra}
                 <p>${escapeHtml(entry.description || '')}</p>
             `;
-            button.onclick = callback;
+            button.onclick = () => {
+                playEffect('snd-confirm');
+                callback();
+            };
             return button;
         }
 
         function showRouteChoice(data) {
-            stopAllSounds();
+            stopTransientSounds();
+            setMusic('music-explore');
             openDecision('ROUTE SELECTION', `Prepare for Stage ${data.room}`, 'Support rooms happen between fights and do not advance the 15-stage run.');
             const area = document.getElementById('decision-options');
             data.room_options.forEach(room => area.appendChild(choiceButton(room, () => chooseRoute(room.id), '', 'ui')));
@@ -734,8 +885,8 @@
             playEffect('snd-loot');
             data.reward_options.forEach(reward => {
                 const rarity = reward.rarity ? `<span class="rarity-label">${reward.rarity}</span>` : '';
-                const kind = reward.id === 'credits' ? 'relic' : data.reward_kind === 'relic' ? 'relic' : 'item';
-                const id = reward.id === 'credits' ? 'credit_miner' : reward.id;
+                const kind = reward.type === 'credits' ? 'ui' : data.reward_kind === 'relic' ? 'relic' : 'item';
+                const id = reward.type === 'credits' ? 'credits' : reward.id;
                 area.appendChild(choiceButton(reward, () => chooseReward(reward.id), rarity, kind, id));
             });
             if (data.inventory.length >= data.inventory_limit && data.reward_kind !== 'relic') {
@@ -855,6 +1006,7 @@
                 feedback.classList.add('good');
                 document.getElementById('feedback-title').textContent = 'ZERO-DAY FINISHED THE ENEMY';
                 document.getElementById('feedback-text').textContent = 'The item dealt 2 direct damage.';
+                beginAutoContinue();
             } else {
                 showToast('Item activated');
                 if (acceptingAnswers) {
@@ -872,6 +1024,7 @@
         }
 
         async function openEncyclopedia() {
+            playEffect('snd-confirm');
             stopTimer();
             const response = await fetch('/api/encyclopedia');
             const data = await response.json();
@@ -965,6 +1118,7 @@
         function showEndScreen(won, data) {
             acceptingAnswers = false;
             questionLoaded = false;
+            cancelAutoContinue();
             stopAllSounds();
             playSound(won ? 'snd-victory' : 'snd-defeat');
             const screen = document.getElementById('end-screen');
@@ -1028,6 +1182,11 @@
 
         buildPath();
         updatePath(1);
+        setMusic('music-menu');
+        document.addEventListener('pointerdown', () => {
+            document.getElementById('sound-hint')?.classList.add('sound-awake');
+            if (!document.getElementById('title-screen').classList.contains('hidden')) setMusic('music-menu');
+        }, {once: true});
     </script>
 </body>
 </html>
