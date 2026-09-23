@@ -368,11 +368,13 @@ def advance_enemy_intent(enemy):
     return enemy.get("phase", 1) != previous_phase
 
 
-def create_enemy(room, elite=False, relics=None):
-    if room in BOSSES and not elite:
+def create_enemy(room, elite=False, relics=None, enemy_id=None):
+    if room in BOSSES and not elite and (enemy_id is None or enemy_id == BOSSES[room]["id"]):
         enemy = BOSSES[room].copy()
     else:
-        template = random.choice(NORMAL_ENEMIES[get_tier(room)])
+        candidates = NORMAL_ENEMIES[get_tier(room)]
+        template = next((entry for entry in candidates if entry["id"] == enemy_id), None)
+        template = template or random.choice(candidates)
         base_hp = {"EASY": 3, "MEDIUM": 4, "HARD": 5}[get_tier(room)]
         enemy = {
             **template,
@@ -398,6 +400,129 @@ def create_enemy(room, elite=False, relics=None):
     for ability in enemy["abilities"]:
         discover("abilities", ability)
     return enemy
+
+
+def _maze_floor(width=9, height=7):
+    """Create a compact connected dungeon using randomized depth-first carving."""
+    grid = [["#" for _ in range(width)] for _ in range(height)]
+    stack = [(1, 1)]
+    grid[1][1] = "."
+    while stack:
+        x, y = stack[-1]
+        directions = [(2, 0), (-2, 0), (0, 2), (0, -2)]
+        random.shuffle(directions)
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 < nx < width - 1 and 0 < ny < height - 1 and grid[ny][nx] == "#":
+                grid[y + dy // 2][x + dx // 2] = "."
+                grid[ny][nx] = "."
+                stack.append((nx, ny))
+                break
+        else:
+            stack.pop()
+    return ["".join(row) for row in grid]
+
+
+def _floor_distances(tiles, start):
+    queue = [start]
+    distances = {start: 0}
+    for x, y in queue:
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            point = (x + dx, y + dy)
+            if point not in distances and tiles[point[1]][point[0]] == ".":
+                distances[point] = distances[(x, y)] + 1
+                queue.append(point)
+    return distances
+
+
+def create_dungeon_floor(state):
+    tiles = _maze_floor()
+    start = (1, 1)
+    distances = _floor_distances(tiles, start)
+    exit_point = max(distances, key=distances.get)
+    available = [point for point, distance in distances.items() if distance >= 3 and point != exit_point]
+    random.shuffle(available)
+    stage = state["current_room"]
+    markers = []
+    normal_count = 2
+    for index in range(normal_count):
+        template = random.choice(NORMAL_ENEMIES[get_tier(stage)])
+        elite = random.random() < ELITE_SPAWN_CHANCE
+        x, y = available.pop()
+        markers.append({
+            "uid": f"s{stage}-e{index}", "x": x, "y": y,
+            "enemy_id": template["id"], "name": template["name"],
+            "elite": elite, "kind": "ELITE" if elite else "ENEMY", "defeated": False,
+        })
+    if stage in BOSSES:
+        boss = BOSSES[stage]
+        x, y = available.pop()
+        markers.append({
+            "uid": f"s{stage}-boss", "x": x, "y": y,
+            "enemy_id": boss["id"], "name": boss["name"],
+            "elite": False, "kind": boss["kind"], "defeated": False,
+        })
+    feature_point = available.pop() if available else start
+    state["dungeon"] = {
+        "width": len(tiles[0]), "height": len(tiles), "tiles": tiles,
+        "player": {"x": start[0], "y": start[1]},
+        "exit": {"x": exit_point[0], "y": exit_point[1]},
+        "enemies": markers,
+        "feature": {"x": feature_point[0], "y": feature_point[1], "type": random.choice(["shop", "heal", "event"]), "used": False},
+    }
+    state["enemy"] = None
+    state["current_enemy_uid"] = None
+    state["pending"] = "dungeon"
+    state["return_to_dungeon_after_reward"] = False
+    state["room_options"] = []
+    discover("rooms", "combat")
+
+
+def dungeon_view(state):
+    dungeon = state.get("dungeon")
+    if not dungeon:
+        return None
+    remaining = sum(not enemy["defeated"] for enemy in dungeon["enemies"])
+    return {**dungeon, "remaining": remaining, "exit_unlocked": remaining == 0}
+
+
+def return_to_dungeon(state):
+    state["enemy"] = None
+    state["current_enemy_uid"] = None
+    state["pending"] = "dungeon"
+    state["reward_options"] = []
+    state["shop_items"] = []
+    state["event"] = None
+    state["advance_after_reward"] = False
+    state["return_to_dungeon_after_reward"] = False
+
+
+def advance_dungeon_floor(state):
+    state["current_room"] += 1
+    record_room(state["current_room"])
+    state["reward_options"] = []
+    state["shop_items"] = []
+    state["event"] = None
+    state["support_used"] = False
+    state["advance_after_reward"] = False
+    create_dungeon_floor(state)
+
+
+def activate_dungeon_feature(state, feature):
+    feature["used"] = True
+    feature_type = feature["type"]
+    discover("rooms", feature_type)
+    if feature_type == "shop":
+        state["pending"] = "shop"
+        state["shop_items"] = build_shop()
+        discover("mechanics", "shops")
+    elif feature_type == "heal":
+        state["pending"] = "heal"
+    else:
+        state["pending"] = "event"
+        event_id = random.choice(list(EVENTS))
+        state["event"] = {"id": event_id, **EVENTS[event_id]}
+        discover("mechanics", "events")
 
 
 def shuffled_question_orders():
@@ -488,6 +613,7 @@ def public_state(state):
         "won": state.get("won", False),
         "answer_lock": state.get("answer_lock", 0),
         "answer_lock_source": state.get("answer_lock_source"),
+        "dungeon": dungeon_view(state),
     }
 
 
@@ -599,11 +725,19 @@ def remove_random_item(state):
 
 def complete_combat(state):
     enemy = state["enemy"]
+    defeated_kind = enemy["kind"]
     state["stats"]["enemies_defeated"] += 1
     state["hp"] = min(state["max_hp"], state["hp"] + 1)
     discover("mechanics", "recovery")
+    dungeon = state.get("dungeon")
+    encounter_uid = state.get("current_enemy_uid")
+    if dungeon and encounter_uid:
+        marker = next((entry for entry in dungeon["enemies"] if entry["uid"] == encounter_uid), None)
+        if marker:
+            marker["defeated"] = True
     state["enemy"] = None
-    if state["current_room"] == TOTAL_ROOMS:
+    remaining = sum(not entry["defeated"] for entry in dungeon["enemies"]) if dungeon else 0
+    if state["current_room"] == TOTAL_ROOMS and (not dungeon or not encounter_uid or remaining == 0):
         state["game_over"] = True
         state["won"] = True
         state["pending"] = "complete"
@@ -612,17 +746,19 @@ def complete_combat(state):
         record_room(TOTAL_ROOMS)
         return "won"
 
-    if enemy["kind"] in {"MINIBOSS", "MAJOR BOSS"}:
+    if defeated_kind in {"MINIBOSS", "MAJOR BOSS", "FINAL BOSS"}:
         if "incident_response" in state["relics"]:
             state["hp"] = min(state["max_hp"], state["hp"] + 1)
-        set_reward(state, "relic", advance_after=True)
-    elif enemy["kind"] == "ELITE":
+        set_reward(state, "relic", advance_after=not bool(dungeon))
+    elif defeated_kind == "ELITE":
         if random.random() < 0.4:
-            set_reward(state, "relic", advance_after=True)
+            set_reward(state, "relic", advance_after=not bool(dungeon))
         else:
-            set_reward(state, "item", advance_after=True)
+            set_reward(state, "item", advance_after=not bool(dungeon))
     else:
-        set_reward(state, "item", advance_after=True)
+        set_reward(state, "item", advance_after=not bool(dungeon))
+    if dungeon:
+        state["return_to_dungeon_after_reward"] = True
     return "enemy_defeated"
 
 
@@ -763,6 +899,9 @@ def start_game():
         "event": None,
         "support_used": False,
         "advance_after_reward": False,
+        "return_to_dungeon_after_reward": False,
+        "current_enemy_uid": None,
+        "dungeon": None,
         "game_over": False,
         "won": False,
         "stats": {
@@ -771,7 +910,7 @@ def start_game():
         },
     }
     state = session["game_state"]
-    state["enemy"] = create_enemy(1, relics=state["relics"])
+    create_dungeon_floor(state)
     record_room(1)
     session.modified = True
     return jsonify({"status": "started", **public_state(state)})
@@ -783,6 +922,59 @@ def get_state():
     if not state:
         return jsonify({"error": "No active run"}), 400
     return jsonify(public_state(state))
+
+
+@app.route("/api/dungeon/move", methods=["POST"])
+def move_in_dungeon():
+    state = session.get("game_state")
+    data = request.get_json() or {}
+    direction = data.get("direction")
+    vectors = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
+    if not state or state.get("pending") != "dungeon" or direction not in vectors:
+        return jsonify({"error": "The dungeon cannot be moved through right now."}), 400
+    dungeon = state.get("dungeon")
+    if not dungeon:
+        return jsonify({"error": "No dungeon floor is active."}), 400
+    dx, dy = vectors[direction]
+    target_x = dungeon["player"]["x"] + dx
+    target_y = dungeon["player"]["y"] + dy
+    if not (0 <= target_x < dungeon["width"] and 0 <= target_y < dungeon["height"]):
+        return jsonify({"status": "blocked", "message": "The void blocks that path.", **public_state(state)})
+    if dungeon["tiles"][target_y][target_x] == "#":
+        return jsonify({"status": "blocked", "message": "A dungeon wall blocks the path.", **public_state(state)})
+
+    dungeon["player"] = {"x": target_x, "y": target_y}
+    marker = next((entry for entry in dungeon["enemies"] if not entry["defeated"] and entry["x"] == target_x and entry["y"] == target_y), None)
+    if marker:
+        state["current_enemy_uid"] = marker["uid"]
+        state["enemy"] = create_enemy(
+            state["current_room"], elite=marker["elite"], relics=state["relics"], enemy_id=marker["enemy_id"]
+        )
+        state["pending"] = None
+        if marker["elite"]:
+            discover("mechanics", "elites")
+        session.modified = True
+        return jsonify({"status": "encounter_started", **public_state(state)})
+
+    feature = dungeon.get("feature")
+    if feature and not feature["used"] and feature["x"] == target_x and feature["y"] == target_y:
+        activate_dungeon_feature(state, feature)
+        session.modified = True
+        return jsonify({"status": "feature_found", **public_state(state)})
+
+    exit_point = dungeon["exit"]
+    if exit_point["x"] == target_x and exit_point["y"] == target_y:
+        remaining = sum(not entry["defeated"] for entry in dungeon["enemies"])
+        if remaining:
+            session.modified = True
+            return jsonify({"status": "exit_locked", "message": f"Defeat {remaining} remaining enemies to unlock the gate.", **public_state(state)})
+        if state["current_room"] < TOTAL_ROOMS:
+            advance_dungeon_floor(state)
+            session.modified = True
+            return jsonify({"status": "floor_advanced", **public_state(state)})
+
+    session.modified = True
+    return jsonify({"status": "moved", **public_state(state)})
 
 
 @app.route("/api/question", methods=["GET"])
@@ -865,6 +1057,8 @@ def submit_answer():
         state["combo"] = 0
 
     defeated_enemy = enemy["name"] if enemy["hp"] == 0 else None
+    defeated_enemy_kind = enemy["kind"] if enemy["hp"] == 0 else None
+    defeated_enemy_id = enemy["id"] if enemy["hp"] == 0 else None
     if enemy["hp"] == 0:
         hp_before_recovery = state["hp"]
         status = complete_combat(state)
@@ -892,6 +1086,7 @@ def submit_answer():
         "destroyed_item": enemy_action["destroyed_item"] if enemy_action else None,
         "enemy_action": enemy_action, "revived": revived,
         "phase_changed": phase_changed, "defeated_enemy": defeated_enemy,
+        "defeated_enemy_kind": defeated_enemy_kind, "defeated_enemy_id": defeated_enemy_id,
         "recovered_hp": recovered_hp,
         **public_state(state),
     })
@@ -928,7 +1123,9 @@ def choose_reward():
         discover("relics", reward_id)
     else:
         state["credits"] += 50
-    if state.get("advance_after_reward"):
+    if state.get("return_to_dungeon_after_reward"):
+        return_to_dungeon(state)
+    elif state.get("advance_after_reward"):
         advance_stage(state)
     else:
         return_to_stage_route(state)
@@ -947,7 +1144,10 @@ def choose_heal():
     else:
         state["max_hp"] += 1
         state["hp"] = min(state["max_hp"], state["hp"] + 1)
-    return_to_stage_route(state)
+    if state.get("dungeon"):
+        return_to_dungeon(state)
+    else:
+        return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "repaired", **public_state(state)})
 
@@ -977,7 +1177,10 @@ def leave_shop():
     state = session.get("game_state")
     if not state or state.get("pending") != "shop":
         return jsonify({"error": "No active shop"}), 400
-    return_to_stage_route(state)
+    if state.get("dungeon"):
+        return_to_dungeon(state)
+    else:
+        return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "shop_left", **public_state(state)})
 
@@ -1037,7 +1240,10 @@ def choose_event():
         else:
             state["hp"] = max(1, state["hp"] - 2)
             message = "The exploit backfired. You lost 2 HP."
-    return_to_stage_route(state)
+    if state.get("dungeon"):
+        return_to_dungeon(state)
+    else:
+        return_to_stage_route(state)
     session.modified = True
     return jsonify({"status": "event_resolved", "message": message, **public_state(state)})
 
@@ -1073,6 +1279,9 @@ def use_item():
         enemy["hp"] = max(0, enemy["hp"] - 2)
         result["damage_dealt"] = 2
         if enemy["hp"] == 0:
+            result["defeated_enemy"] = enemy["name"]
+            result["defeated_enemy_kind"] = enemy["kind"]
+            result["defeated_enemy_id"] = enemy["id"]
             hp_before_recovery = state["hp"]
             result["status"] = complete_combat(state)
             result["recovered_hp"] = state["hp"] - hp_before_recovery

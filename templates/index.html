@@ -50,8 +50,8 @@
         <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELITE</p>
         <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
         <p class="intro-copy">
-            Choose your route, build a collection of cyber relics, and defeat
-            The Root Dragon across a different 15-room run every time.
+            Explore a changing dungeon, hunt every roaming cyber-monster, and
+            defeat The Root Dragon across 15 procedural floors.
         </p>
         <div class="rules">
             <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-heal"></use></svg>Survive</span>
@@ -124,6 +124,31 @@
             <button class="secondary-button encyclopedia-reset" onclick="confirmResetProgress()">RESET ALL PROGRESS</button>
         </div>
     </section>
+
+    <section id="dungeon-screen" class="dungeon-screen hidden" aria-label="Dungeon exploration">
+        <header class="dungeon-hud">
+            <div><span>FLOOR</span><strong id="dungeon-floor">1 / 15</strong></div>
+            <div><span>HP</span><strong id="dungeon-hp">12 / 12</strong></div>
+            <div><span>ENEMIES</span><strong id="dungeon-remaining">0</strong></div>
+            <button class="icon-button" onclick="openEncyclopedia()" aria-label="Open encyclopedia"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-encyclopedia"></use></svg></button>
+        </header>
+        <div class="dungeon-title">
+            <p class="eyebrow">PROCEDURAL CYBER CATACOMBS</p>
+            <h2 id="dungeon-status">HUNT EVERY ENEMY</h2>
+        </div>
+        <div class="dungeon-map-wrap">
+            <div id="dungeon-map" class="dungeon-map"></div>
+        </div>
+        <p id="dungeon-message" class="dungeon-message">Use the controls to explore. The exit opens when all enemies are defeated.</p>
+        <div class="dungeon-controls" aria-label="Movement controls">
+            <button onclick="moveDungeon('up')" aria-label="Move up">▲</button>
+            <button onclick="moveDungeon('left')" aria-label="Move left">◀</button>
+            <button onclick="moveDungeon('down')" aria-label="Move down">▼</button>
+            <button onclick="moveDungeon('right')" aria-label="Move right">▶</button>
+        </div>
+    </section>
+
+    <div id="battle-transition" class="battle-transition hidden" aria-hidden="true"><strong>ENCOUNTER!</strong></div>
 
     <div id="toast" class="toast hidden"></div>
 
@@ -248,6 +273,7 @@
         let continueTicker = null;
         let answerLockTimer = null;
         let answerLocked = false;
+        let dungeonMoving = false;
         let isContinuing = false;
         let currentMusic = null;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
@@ -559,10 +585,100 @@
                 return;
             }
             if (data.enemy) {
+                showBattleScene();
                 await fetchQuestion();
                 return;
             }
             showFatalError('The run reached an unknown state. Start a new run.');
+        }
+
+        function showBattleScene() {
+            document.getElementById('dungeon-screen').classList.add('hidden');
+            const shell = document.querySelector('.game-shell');
+            shell.classList.remove('hidden');
+            shell.classList.add('battle-active');
+        }
+
+        function renderDungeon(data) {
+            const dungeon = data.dungeon;
+            if (!dungeon) return showFatalError('The dungeon floor could not be generated.');
+            closeDecision();
+            closeShop();
+            document.querySelector('.game-shell').classList.add('hidden');
+            document.querySelector('.game-shell').classList.remove('battle-active');
+            const screen = document.getElementById('dungeon-screen');
+            screen.classList.remove('hidden');
+            document.getElementById('dungeon-floor').textContent = `${data.room} / ${data.total_rooms}`;
+            document.getElementById('dungeon-hp').textContent = `${data.hp} / ${data.max_hp}`;
+            document.getElementById('dungeon-remaining').textContent = dungeon.remaining;
+            document.getElementById('dungeon-status').textContent = dungeon.exit_unlocked ? 'THE EXIT IS OPEN' : 'HUNT EVERY ENEMY';
+            const map = document.getElementById('dungeon-map');
+            map.style.setProperty('--dungeon-columns', dungeon.width);
+            map.style.setProperty('--dungeon-rows', dungeon.height);
+            map.innerHTML = '';
+            const enemies = new Map(dungeon.enemies.filter(enemy => !enemy.defeated).map(enemy => [`${enemy.x},${enemy.y}`, enemy]));
+            for (let y = 0; y < dungeon.height; y++) {
+                for (let x = 0; x < dungeon.width; x++) {
+                    const tile = document.createElement('div');
+                    tile.className = dungeon.tiles[y][x] === '#' ? 'dungeon-tile wall' : 'dungeon-tile floor';
+                    const key = `${x},${y}`;
+                    const enemy = enemies.get(key);
+                    if (enemy) {
+                        tile.classList.add('enemy-spawn', enemy.elite ? 'elite-spawn' : '', enemy.kind.includes('BOSS') ? 'boss-spawn' : '');
+                        tile.innerHTML = gameAsset('enemy', enemy.enemy_id, 'map-enemy');
+                        tile.title = enemy.name;
+                    }
+                    if (dungeon.feature && !dungeon.feature.used && dungeon.feature.x === x && dungeon.feature.y === y) {
+                        tile.classList.add('feature-spawn');
+                        tile.innerHTML = gameAsset('ui', dungeon.feature.type, 'map-feature');
+                    }
+                    if (dungeon.exit.x === x && dungeon.exit.y === y) {
+                        tile.classList.add('dungeon-exit', dungeon.exit_unlocked ? 'unlocked' : 'locked');
+                        tile.innerHTML = dungeon.exit_unlocked ? '⇧' : '🔒';
+                    }
+                    if (dungeon.player.x === x && dungeon.player.y === y) {
+                        tile.classList.add('player-tile');
+                        tile.innerHTML = `<span class="dungeon-player">⚔</span>`;
+                    }
+                    map.appendChild(tile);
+                }
+            }
+            setMusic('music-explore');
+        }
+
+        async function moveDungeon(direction) {
+            if (dungeonMoving || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
+            dungeonMoving = true;
+            playEffect('snd-select');
+            const data = await postJson('/api/dungeon/move', {direction});
+            dungeonMoving = false;
+            if (!data) return;
+            if (data.message) {
+                document.getElementById('dungeon-message').textContent = data.message;
+                if (data.status === 'blocked' || data.status === 'exit_locked') playEffect('snd-wrong');
+            }
+            if (data.status === 'encounter_started') {
+                await playBattleTransition();
+                await processGameState(data);
+                return;
+            }
+            if (data.status === 'floor_advanced') {
+                playEffect('snd-major-victory');
+                document.getElementById('dungeon-message').textContent = 'A deeper floor materializes around you.';
+            }
+            await processGameState(data);
+        }
+
+        function playBattleTransition() {
+            return new Promise(resolve => {
+                const transition = document.getElementById('battle-transition');
+                transition.classList.remove('hidden');
+                playEffect('snd-warning');
+                setTimeout(() => {
+                    transition.classList.add('hidden');
+                    resolve();
+                }, 720);
+            });
         }
 
         async function fetchQuestion() {
@@ -797,7 +913,25 @@
             if (skillSound && !data.enemy_action?.canceled) scheduleEffect(skillSound, 260);
             scheduleEffect(data.is_correct ? 'snd-correct' : 'snd-wrong', 360);
             if (data.recovered_hp) scheduleEffect('snd-heal', 540);
-            if (data.defeated_enemy === 'Death Protocol') scheduleEffect('snd-major-victory', 720);
+            if (data.defeated_enemy) {
+                const bossKinds = ['MINIBOSS', 'MAJOR BOSS', 'FINAL BOSS'];
+                const fanfare = bossKinds.includes(data.defeated_enemy_kind) ? 'snd-major-victory' : 'snd-victory';
+                const timeout = setTimeout(() => playVictoryFanfare(fanfare), 650);
+                soundTimeouts.push(timeout);
+            }
+        }
+
+        function playVictoryFanfare(soundId) {
+            document.querySelectorAll('audio.music').forEach(track => { track.volume = .06; });
+            playSound(soundId);
+            const fanfare = audio(soundId);
+            if (!fanfare) return;
+            fanfare.volume = 1;
+            fanfare.onended = () => {
+                document.querySelectorAll('audio.music').forEach(track => {
+                    track.volume = track.id === 'music-final-boss' ? .34 : .25;
+                });
+            };
         }
 
         function buildTurnMessage(data) {
@@ -819,6 +953,7 @@
             if (data.phase_changed) details.push('<span class="turn-highlight phase-highlight">BOSS PHASE TWO AWAKENED</span>');
             if (data.recovered_hp) details.push(`<span class="turn-highlight heal-highlight">+${data.recovered_hp} HP RECOVERED</span>`);
             if (data.credits_earned) details.push(`<span class="turn-highlight credit-highlight">+${data.credits_earned} CREDITS</span>`);
+            if (data.defeated_enemy && data.dungeon?.exit_unlocked) details.push('<span class="turn-highlight phase-highlight">FLOOR CLEARED — EXIT UNLOCKED</span>');
             return details.join(' ');
         }
 
@@ -916,6 +1051,7 @@
         }
 
         function showPending(data) {
+            if (data.pending === 'dungeon') return renderDungeon(data);
             if (data.pending === 'route') return showRouteChoice(data);
             if (data.pending === 'reward') return showRewardChoice(data);
             if (data.pending === 'heal') return showHealChoice(data);
@@ -1117,6 +1253,7 @@
                 feedback.classList.add('good');
                 document.getElementById('feedback-title').textContent = 'ZERO-DAY FINISHED THE ENEMY';
                 document.getElementById('feedback-text').textContent = 'The item dealt 2 direct damage.';
+                playVictoryFanfare(['MINIBOSS', 'MAJOR BOSS', 'FINAL BOSS'].includes(data.defeated_enemy_kind) ? 'snd-major-victory' : 'snd-victory');
                 beginAutoContinue();
             } else {
                 showToast('Item activated');
@@ -1231,7 +1368,7 @@
             questionLoaded = false;
             cancelAutoContinue();
             stopAllSounds();
-            playSound(won ? 'snd-victory' : 'snd-defeat');
+            playSound(won ? 'snd-major-victory' : 'snd-defeat');
             const screen = document.getElementById('end-screen');
             document.getElementById('end-eyebrow').textContent = won ? 'RUN COMPLETE' : 'RUN OVER';
             document.getElementById('end-title').textContent = won ? 'ACCESS GRANTED' : 'SYSTEM FAILURE';
@@ -1298,6 +1435,19 @@
             document.getElementById('sound-hint')?.classList.add('sound-awake');
             if (!document.getElementById('title-screen').classList.contains('hidden')) setMusic('music-menu');
         }, {once: true});
+        document.addEventListener('keydown', event => {
+            if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement?.tagName)) return;
+            const directions = {
+                ArrowUp: 'up', w: 'up', W: 'up',
+                ArrowDown: 'down', s: 'down', S: 'down',
+                ArrowLeft: 'left', a: 'left', A: 'left',
+                ArrowRight: 'right', d: 'right', D: 'right'
+            };
+            if (directions[event.key]) {
+                event.preventDefault();
+                moveDungeon(directions[event.key]);
+            }
+        });
     </script>
 </body>
 </html>

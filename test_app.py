@@ -10,6 +10,22 @@ class RoguelikeGameTests(unittest.TestCase):
         app.config.update(TESTING=True, SECRET_KEY="test-secret")
         self.client = app.test_client()
         self.client.post("/api/start")
+        # Most combat unit tests enter a direct isolated encounter. Dedicated
+        # dungeon-flow tests below exercise the exploration layer end to end.
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["dungeon"] = None
+            state["pending"] = None
+            state["enemy"] = create_enemy(1)
+            state["current_enemy_uid"] = None
+            flask_session["game_state"] = state
+            progress = flask_session["meta_progress"]
+            if state["enemy"]["id"] not in progress["unlocked_enemies"]:
+                progress["unlocked_enemies"].append(state["enemy"]["id"])
+            for ability in state["enemy"]["abilities"]:
+                if ability not in progress["unlocked_abilities"]:
+                    progress["unlocked_abilities"].append(ability)
+            flask_session["meta_progress"] = progress
 
     def answer_for_current_question(self):
         with self.client.session_transaction() as flask_session:
@@ -40,6 +56,97 @@ class RoguelikeGameTests(unittest.TestCase):
         response = self.client.post("/api/start")
         cookie = response.headers.get("Set-Cookie", "")
         self.assertLess(len(cookie), 4093)
+
+    def test_new_run_opens_a_random_dungeon_floor(self):
+        data = self.client.post("/api/start").get_json()
+
+        self.assertEqual(data["pending"], "dungeon")
+        self.assertIsNone(data["enemy"])
+        self.assertEqual(data["dungeon"]["width"], 9)
+        self.assertEqual(data["dungeon"]["height"], 7)
+        self.assertEqual(data["dungeon"]["remaining"], 2)
+        self.assertFalse(data["dungeon"]["exit_unlocked"])
+
+    def test_touching_a_dungeon_enemy_starts_its_battle(self):
+        self.client.post("/api/start")
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            marker = state["dungeon"]["enemies"][0]
+            marker.update({"x": 2, "y": 1, "enemy_id": "spam_bot", "elite": False})
+            state["dungeon"]["tiles"] = [
+                "#########", "#.......#", "#.......#", "#.......#",
+                "#.......#", "#.......#", "#########",
+            ]
+            state["dungeon"]["player"] = {"x": 1, "y": 1}
+            flask_session["game_state"] = state
+
+        data = self.client.post("/api/dungeon/move", json={"direction": "right"}).get_json()
+
+        self.assertEqual(data["status"], "encounter_started")
+        self.assertEqual(data["enemy"]["id"], "spam_bot")
+        self.assertIsNone(data["pending"])
+
+    def test_dungeon_exit_requires_every_enemy_and_advances_floor(self):
+        self.client.post("/api/start")
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["dungeon"]["tiles"] = [
+                "#########", "#.......#", "#.......#", "#.......#",
+                "#.......#", "#.......#", "#########",
+            ]
+            state["dungeon"]["player"] = {"x": 1, "y": 1}
+            state["dungeon"]["exit"] = {"x": 2, "y": 1}
+            flask_session["game_state"] = state
+        locked = self.client.post("/api/dungeon/move", json={"direction": "right"}).get_json()
+        self.assertEqual(locked["status"], "exit_locked")
+
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["dungeon"]["player"] = {"x": 1, "y": 1}
+            for enemy in state["dungeon"]["enemies"]:
+                enemy["defeated"] = True
+            flask_session["game_state"] = state
+        advanced = self.client.post("/api/dungeon/move", json={"direction": "right"}).get_json()
+
+        self.assertEqual(advanced["status"], "floor_advanced")
+        self.assertEqual(advanced["room"], 2)
+        self.assertEqual(advanced["pending"], "dungeon")
+
+    def test_dungeon_victory_reward_returns_to_the_same_floor(self):
+        self.client.post("/api/start")
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            marker = state["dungeon"]["enemies"][0]
+            marker.update({"x": 2, "y": 1, "enemy_id": "spam_bot", "elite": False})
+            state["dungeon"]["tiles"] = [
+                "#########", "#.......#", "#.......#", "#.......#",
+                "#.......#", "#.......#", "#########",
+            ]
+            state["dungeon"]["player"] = {"x": 1, "y": 1}
+            flask_session["game_state"] = state
+
+        encounter = self.client.post("/api/dungeon/move", json={"direction": "right"}).get_json()
+        self.assertEqual(encounter["status"], "encounter_started")
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["enemy"]["hp"] = 1
+            flask_session["game_state"] = state
+
+        defeated = self.client.post(
+            "/api/answer",
+            json={"answer": self.answer_for_current_question(), "combat_action": "attack"},
+        ).get_json()
+        self.assertEqual(defeated["status"], "enemy_defeated")
+        self.assertEqual(defeated["pending"], "reward")
+        reward = next(entry for entry in defeated["reward_options"] if entry["type"] == "credits")
+        returned = self.client.post(
+            "/api/reward/choose", json={"reward_id": reward["id"]}
+        ).get_json()
+
+        self.assertEqual(returned["pending"], "dungeon")
+        self.assertEqual(returned["room"], 1)
+        self.assertEqual(returned["dungeon"]["remaining"], 1)
+        self.assertTrue(returned["dungeon"]["enemies"][0]["defeated"])
 
     def test_wrong_answer_removes_hp_but_run_continues(self):
         correct_answer = self.answer_for_current_question()
@@ -411,6 +518,8 @@ class RoguelikeGameTests(unittest.TestCase):
                 state["current_room"] = room
                 state["enemy"] = create_enemy(room)
                 state["enemy"]["intent"] = intent
+                state["pending"] = None
+                state["dungeon"] = None
                 flask_session["game_state"] = state
             correct = self.answer_for_current_question()
             wrong = next(key for key in "ABCD" if key != correct)

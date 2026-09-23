@@ -1,25 +1,26 @@
 # Swinburne Cyber Dungeon
 
-**Swinburne Cyber Dungeon** is a cybersecurity quiz roguelite built with
+**Swinburne Cyber Dungeon** is a cybersecurity adventure RPG dungeon crawler built with
 Python, Flask, HTML, CSS, and vanilla JavaScript.
 
-The player fights through 15 combat stages. Every question is a combat turn:
-choose Attack, Defend, or Exploit without knowing the enemy's next action, then
-answer. Shops, repairs, caches, and events occur between fights and do not
-advance the stage counter.
+The player explores 15 procedurally generated dungeon floors with direct
+keyboard or touch controls. Each floor creates a new maze, random enemies, an
+optional support encounter, and a locked exit. Touching a monster launches a
+dedicated turn-based battle; every monster on the map must be defeated before
+the gate to the next floor opens.
 
 The original *Swinburne Millionaire* project remains on the `main` branch.
 The complete roguelite version is developed on `roguelike-v1`.
 
 ## Core game loop
 
-1. Choose Attack, Defend, or Exploit while the enemy action remains hidden.
-2. Answer a concise cybersecurity question within 45 seconds.
-3. Resolve both the player's action and the enemy's action.
-4. Defeat the enemy and choose one reward.
-5. Choose a combat path or take one optional support-room detour.
-6. Improve the current build using consumables and relics.
-7. Defeat the bosses at Stages 5, 10, and 15.
+1. Explore a newly generated maze with WASD, arrow keys, or the mobile D-pad.
+2. Touch a roaming-map monster to enter its dedicated battle scene.
+3. Choose Attack, Defend, or Exploit while the enemy action remains hidden.
+4. Answer a concise cybersecurity question within 45 seconds.
+5. Resolve both combatants' actions, claim a reward, and return to the map.
+6. Defeat every enemy to unlock the exit and descend to the next floor.
+7. Overcome the bosses and their guards on Floors 5, 10, and 15.
 
 ### Combat actions
 
@@ -58,11 +59,12 @@ gold drain spirals, jammer glitches, encryption shards, and a Root Lock vortex.
 Exploit is presented as an ultimate attack with a beam, elemental detonation,
 smoke, expanding rings, and a large particle burst.
 
-On phones, combat uses a dedicated single-screen layout sized with the dynamic
-mobile viewport. The stage map becomes a compact HUD counter, answers remain in
-a two-by-two grid, items use a horizontal quick-access bar, and resolved turns
-collapse unused controls. Gameplay therefore stays visible without scrolling;
-long-form encyclopedia and decision overlays scroll independently.
+On phones, exploration and combat each use a dedicated single-screen layout
+sized with the dynamic mobile viewport. The dungeon has an on-screen D-pad,
+enemy portraits are enlarged, answers remain in a legible two-by-two grid, and
+items use a horizontal quick-access bar. Resolved-turn summaries open as a
+fully opaque bottom sheet with their own scroll area, so the battlefield cannot
+show through the text.
 
 Answer, action, and reward selections provide immediate sound feedback. After a
 turn resolves, the Continue button displays an eight-second countdown and advances
@@ -71,6 +73,10 @@ automatically if the player does not press it.
 Combat summaries use color-coded highlights for the selected action, damage,
 enemy skill, blocked damage, healing, boss phase changes, and credits earned so
 the important result can be understood at a glance.
+
+Every defeated enemy plays a victory fanfare. Floor bosses use a separate,
+larger boss-victory fanfare, while the exploration and battle scores resume
+only after the cue finishes.
 
 Every defeated enemy activates Combat Recovery and restores 1 HP. Additional
 healing remains available from Health Patches, Repair Stations, Backup, and the
@@ -96,22 +102,27 @@ The game contains 300 questions:
 All prompts are capped at 100 characters and every answer choice at 60
 characters. Standard battles allow 45 seconds; Time Compression allows 30.
 
-## Room types
+## Dungeon floors and encounters
+
+Each floor is a connected random maze with two standard enemy spawns. Elite
+status is rolled independently at a 22% chance, changing the monster to a
+menacing ultraviolet palette and increasing its power. Floors 5, 10, and 15
+also place their fixed boss somewhere in the maze. The exit remains sealed
+until every enemy marker—including the boss and its guards—is defeated.
+
+A single optional support encounter also appears at a random reachable tile:
 
 | Room | Purpose |
 |---|---|
-| Combat | Fight a normal enemy and receive loot |
-| Elite Ambush | A normal combat route has a 22% chance to become a stronger purple-corrupted elite |
-| Data Cache | Choose a consumable or credits between stages |
-| Repair Station | Restore or increase HP between stages |
-| Dark Web Market | Spend credits between stages |
-| Unknown Signal | Choose an event risk or reward between stages |
-| Boss | Fight a fixed enemy at Stages 5, 10, and 15 |
+| Random enemy | Starts a standard battle and grants a reward when defeated |
+| Elite enemy | A random purple-corrupted upgrade with more HP and abilities |
+| Repair shrine | Restore HP or improve maximum HP once on that floor |
+| Dark Web Market | Spend credits once on that floor |
+| Unknown Signal | Choose one risk or reward once on that floor |
+| Boss | A required signature encounter on Floors 5, 10, and 15 |
 
-Only defeated enemies advance the 15-stage run. Elites cannot be selected from
-the route menu; they appear unpredictably during Combat. After taking a support
-room, the next route forces Combat so support rooms cannot be farmed repeatedly
-or used to skip a boss.
+Support encounters never remove an enemy or unlock the exit, so they cannot be
+used to skip the dungeon's combat objective.
 
 The Dark Web Market is a dedicated NPC scene hosted by **Cipher the Relic
 Merchant**, with its own upbeat theme, entrance and purchase sounds, dialogue,
@@ -181,7 +192,7 @@ add bespoke wave, stone, meteor, and frozen-time cinematics.
 
 ## Bosses
 
-| Room | Boss | HP | Abilities |
+| Floor | Boss | HP | Abilities |
 |---|---|---:|---|
 | 5 | Cyber Leviathan | 7 | Abyssal Tsunami, Tidal Prison, Signal Jammer |
 | 10 | Death Protocol | 10 | Petrifying Gaze, Encryption, Hardened Shell |
@@ -247,8 +258,9 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The 31-test automated suite checks Focus requirements, hidden intentions,
-danger and lethal warnings, post-fight healing, support-room stage rules,
+The 35-test automated suite checks procedural map creation, map collision,
+locked exits, battle-to-map return, Focus requirements, hidden intentions,
+danger and lethal warnings, post-fight healing, support encounter rules,
 question-length limits, all three combat actions, simultaneous damage, Zero
 Trust, boss phases, combos, question difficulty,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
@@ -259,12 +271,12 @@ bundle.
 ## Project structure
 
 ```text
-app.py                    Flask routes, catalogues, combat and progression
+app.py                    Flask routes, procedural dungeons, combat and progression
 questions.json            100 Easy questions
 questions_medium.json     100 Medium questions
 questions_hard.json       100 Hard questions
 templates/index.html      Game interface and browser logic
-static/style.css          Responsive roguelite design
+static/style.css          Responsive exploration and battle design
 static/assets/audio/      Original generated adventure sound set
 static/assets/backgrounds/ Illustrated cyber-dungeon menu backdrop
 static/assets/enemies/    Illustrated animated enemy character artwork
