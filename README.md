@@ -78,9 +78,9 @@ statistics remain available until the player resets all progress.
 
 | Stages | Area | Questions | Boss |
 |---|---|---|---|
-| 1–5 | Network Perimeter | Easy | Phishing King |
-| 6–10 | Internal Network | Medium | Ransomware Overlord |
-| 11–15 | Root Layer | Hard | The Root Admin |
+| 1–5 | Network Perimeter | Easy | Cyber Leviathan |
+| 6–10 | Internal Network | Medium | Death Protocol |
+| 11–15 | Root Layer | Hard | The Root Dragon |
 
 The game contains 300 questions:
 
@@ -171,11 +171,11 @@ aggressive second pattern at half HP.
 
 | Room | Boss | HP | Abilities |
 |---|---|---:|---|
-| 5 | Phishing King | 7 | Signal Jammer; phase-two Heavy Attacks |
-| 10 | Ransomware Overlord | 10 | Encryption and Hardened Shell |
-| 15 | The Root Admin | 14 | Time Compression, Self Repair, and Root Lock |
+| 5 | Cyber Leviathan | 7 | Signal Jammer; phase-two Heavy Attacks |
+| 10 | Death Protocol | 10 | Encryption and Hardened Shell |
+| 15 | The Root Dragon | 14 | Time Compression, Self Repair, and Root Lock |
 
-The Root Admin also deals 2 damage with each successful attack.
+The Root Dragon also deals 2 damage with each successful attack.
 
 ## Encyclopedia and progression
 
@@ -264,8 +264,11 @@ test_app.py               Automated game-system tests
 ## Art and audio
 
 The interface uses a custom cyber-fantasy visual language rather than emoji
-placeholders. Every enemy has a full illustrated transparent character render
-in a consistent obsidian, gold, cyan, and crimson cyber-fantasy style. The SVG
+placeholders. Every enemy has a distinct illustrated fantasy species and
+silhouette fused with cyber technology—from goblins, scarabs, golems, panthers,
+ogres, liches, and werewolves to a hydra, leviathan, reaper, and final dragon.
+Elite encounters receive a separate ultraviolet corruption palette and aura.
+The SVG
 atlas contains every consumable and relic, room symbols, combat actions, menu
 marks, and encyclopedia artwork. CSS motion keeps these assets animated without
 requiring video downloads.

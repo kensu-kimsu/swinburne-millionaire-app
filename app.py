@@ -132,40 +132,40 @@ INTENTS = {
 
 NORMAL_ENEMIES = {
     "EASY": [
-        {"id": "spam_bot", "name": "Spam Bot", "icon": "🤖", "abilities": ["credit_drain"], "description": "A noisy automated sender that tries to empty your wallet.", "strategy": "Exploit its Wallet Drain turn or defend when an attack is coming."},
-        {"id": "phishing_email", "name": "Phishing Email", "icon": "📧", "abilities": ["jammer"], "description": "A deceptive message that disrupts your investigation tools.", "strategy": "Use Packet Sniffer before Signal Jam, or interrupt the jam with Exploit."},
-        {"id": "adware_bug", "name": "Adware Bug", "icon": "🐛", "abilities": ["leech"], "description": "Persistent nuisance software that repairs itself between attacks.", "strategy": "Interrupt Self Repair or use Exploit to outpace its healing."},
+        {"id": "spam_bot", "name": "Spam Bot", "icon": "🤖", "abilities": ["credit_drain"], "description": "A manic cyber-goblin courier whose dish-pack floods the dungeon with junk messages.", "strategy": "Exploit its Wallet Drain turn or defend when an attack is coming."},
+        {"id": "phishing_email", "name": "Phishing Mimic", "icon": "📧", "abilities": ["jammer"], "description": "A cursed envelope mimic that lures travellers with false login lights.", "strategy": "Use Packet Sniffer before Signal Jam, or interrupt the jam with Exploit."},
+        {"id": "adware_bug", "name": "Adware Scarab", "icon": "🐛", "abilities": ["leech"], "description": "A chrome scarab covered in intrusive illusion-panels that continually repairs its shell.", "strategy": "Interrupt Self Repair or use Exploit to outpace its healing."},
     ],
     "MEDIUM": [
-        {"id": "botnet_node", "name": "Botnet Node", "icon": "🧟", "abilities": ["shielded"], "description": "A hardened member of a larger compromised network.", "strategy": "Break its starting armor, then interrupt Fortify before it rebuilds defenses."},
-        {"id": "credential_thief", "name": "Credential Thief", "icon": "🔓", "abilities": ["credit_drain"], "description": "A quick attacker that steals credits and follows with heavy damage.", "strategy": "Exploit Wallet Drain and defend against the following Heavy Attack."},
-        {"id": "malware_loader", "name": "Malware Loader", "icon": "👾", "abilities": ["haste"], "description": "A fast payload installer that shortens every decision window.", "strategy": "Plan your action before reading the answers; its questions only allow 20 seconds."},
+        {"id": "botnet_node", "name": "Botnet Golem", "icon": "🧟", "abilities": ["shielded"], "description": "An undead network golem whose server-heart commands a swarm of cable-bound skulls.", "strategy": "Break its starting armor, then interrupt Fortify before it rebuilds defenses."},
+        {"id": "credential_thief", "name": "Credential Panther", "icon": "🔓", "abilities": ["credit_drain"], "description": "A masked shadow panther that stalks access keys and vanishes into corrupted smoke.", "strategy": "Exploit Wallet Drain and defend against the following Heavy Attack."},
+        {"id": "malware_loader", "name": "Payload Ogre", "icon": "👾", "abilities": ["haste"], "description": "A furnace-bellied cyber-ogre carrying cursed payload cores and an infernal launcher.", "strategy": "Plan your action before reading the answers; its questions only allow 20 seconds."},
     ],
     "HARD": [
-        {"id": "ransomware", "name": "Ransomware", "icon": "💀", "abilities": ["encryptor"], "description": "Destructive malware that targets both your health and inventory.", "strategy": "Interrupt Encrypt whenever you carry an important consumable."},
-        {"id": "insider_threat", "name": "Insider Threat", "icon": "🕵️", "abilities": ["brutal"], "description": "A trusted user turned hostile, capable of repeated critical strikes.", "strategy": "Defend against Heavy Attacks and Exploit its Fortify turns."},
-        {"id": "zero_day_exploit", "name": "Zero-Day Exploit", "icon": "🐉", "abilities": ["regenerate"], "description": "An unknown vulnerability that attacks hard and repairs itself.", "strategy": "Use Exploit on Self Repair and save defenses for Heavy Attacks."},
+        {"id": "ransomware", "name": "Ransom Lich", "icon": "💀", "abilities": ["encryptor"], "description": "A chained cyber-lich fused to a mechanical spider body that seals relics in red data-fire.", "strategy": "Interrupt Encrypt whenever you carry an important consumable."},
+        {"id": "insider_threat", "name": "Insider Werewolf", "icon": "🕵️", "abilities": ["brutal"], "description": "A corrupted werewolf knight wearing the shattered armor of a trusted guardian.", "strategy": "Defend against Heavy Attacks and Exploit its Fortify turns."},
+        {"id": "zero_day_exploit", "name": "Zero-Day Hydra", "icon": "🐉", "abilities": ["regenerate"], "description": "A three-headed void hydra whose fragmented body rewrites itself faster than it can be studied.", "strategy": "Use Exploit on Self Repair and save defenses for Heavy Attacks."},
     ],
 }
 
 BOSSES = {
     5: {
-        "id": "phishing_king", "name": "Phishing King", "icon": "🎣",
+        "id": "phishing_king", "name": "Cyber Leviathan", "icon": "🐋",
         "kind": "MINIBOSS", "max_hp": 7, "attack": 1, "abilities": ["jammer"],
-        "description": "The ruler of deceptive messages, backed by an aggressive signal jammer.",
+        "description": "An abyssal sea-dragon fused with submarine armor, sonar arrays, and cable tentacles.",
         "strategy": "At half HP it chains jams and heavy attacks. Interrupt the jam before using tools.",
     },
     10: {
-        "id": "ransomware_overlord", "name": "Ransomware Overlord", "icon": "🦠",
+        "id": "ransomware_overlord", "name": "Death Protocol", "icon": "☠️",
         "kind": "MAJOR BOSS", "max_hp": 10, "attack": 1, "abilities": ["encryptor", "shielded"],
-        "description": "An armored extortion engine that repeatedly threatens your inventory.",
+        "description": "Death itself reborn as a cybernetic reaper, wielding a violet plasma scythe against your inventory.",
         "strategy": "Remove its armor early. In phase two, prioritize interrupting Encrypt.",
     },
     15: {
-        "id": "root_admin", "name": "The Root Admin", "icon": "👑",
+        "id": "root_admin", "name": "The Root Dragon", "icon": "🐉",
         "kind": "FINAL BOSS", "max_hp": 14, "attack": 2,
         "abilities": ["haste", "regenerate"],
-        "description": "The system's ultimate administrator, combining speed, damage, and recovery.",
+        "description": "An ancient obsidian dragon crowned in root-access circuitry—the apex intelligence of the dungeon.",
         "strategy": "Watch every intent. Phase two adds Root Lock, so alternate Defend and Exploit carefully.",
     },
 }

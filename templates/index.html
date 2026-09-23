@@ -51,7 +51,7 @@
         <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
         <p class="intro-copy">
             Choose your route, build a collection of cyber relics, and defeat
-            The Root Admin across a different 15-room run every time.
+            The Root Dragon across a different 15-room run every time.
         </p>
         <div class="rules">
             <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-heal"></use></svg>Survive</span>
@@ -425,7 +425,7 @@
                 document.getElementById('enemy-abilities').innerHTML = '';
                 document.getElementById('enemy-intent').textContent = '—';
                 document.getElementById('enemy-intent-description').textContent = 'No active threat.';
-                card.classList.remove('boss');
+                card.classList.remove('boss', 'elite');
                 return;
             }
             document.getElementById('enemy-icon').innerHTML = gameAsset('enemy', enemy.id, 'enemy-portrait');
@@ -438,7 +438,8 @@
             ).join('');
             document.getElementById('enemy-intent').textContent = 'ACTION HIDDEN';
             document.getElementById('enemy-intent-description').textContent = 'Commit your action to reveal the enemy turn.';
-            card.classList.toggle('boss', enemy.kind !== 'ENEMY');
+            card.classList.toggle('boss', ['MINIBOSS', 'MAJOR BOSS', 'FINAL BOSS'].includes(enemy.kind));
+            card.classList.toggle('elite', enemy.kind === 'ELITE');
         }
 
         function renderThreatWarning(warning) {
@@ -738,7 +739,7 @@
             if (skillSound && !data.enemy_action?.canceled) scheduleEffect(skillSound, 260);
             scheduleEffect(data.is_correct ? 'snd-correct' : 'snd-wrong', 360);
             if (data.recovered_hp) scheduleEffect('snd-heal', 540);
-            if (data.defeated_enemy === 'Ransomware Overlord') scheduleEffect('snd-major-victory', 720);
+            if (data.defeated_enemy === 'Death Protocol') scheduleEffect('snd-major-victory', 720);
         }
 
         function buildTurnMessage(data) {

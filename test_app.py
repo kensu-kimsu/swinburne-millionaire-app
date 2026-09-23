@@ -189,6 +189,7 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(boss_state["room"], 5)
         self.assertIsNone(boss_state["pending"])
         self.assertEqual(boss_state["enemy"]["id"], "phishing_king")
+        self.assertEqual(boss_state["enemy"]["name"], "Cyber Leviathan")
         self.assertEqual(self.client.get("/api/question").status_code, 200)
 
     def test_boss_timeout_returns_to_a_valid_question(self):
@@ -469,6 +470,10 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertIn("beginAutoContinue()", page)
         self.assertIn("const delaySeconds = 8", page)
         self.assertIn("CIPHER'S RELIC EMPORIUM", page)
+        self.assertIn("card.classList.toggle('elite'", page)
+        self.assertIn(".enemy-card.elite", stylesheet)
+        self.assertEqual(create_enemy(10)["name"], "Death Protocol")
+        self.assertEqual(create_enemy(15)["name"], "The Root Dragon")
         for enemy_id in (
             "spam_bot", "phishing_email", "adware_bug", "botnet_node",
             "credential_thief", "malware_loader", "ransomware",
