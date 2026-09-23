@@ -381,7 +381,44 @@ class RoguelikeGameTests(unittest.TestCase):
 
         self.assertEqual(repaired["room"], 1)
         self.assertEqual(repaired["pending"], "route")
-        self.assertEqual({entry["id"] for entry in repaired["room_options"]}, {"combat", "elite"})
+        self.assertEqual([entry["id"] for entry in repaired["room_options"]], ["combat"])
+
+    def test_elite_enemy_is_a_random_combat_ambush(self):
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            state["enemy"] = None
+            state["pending"] = "route"
+            state["room_options"] = ["combat"]
+            flask_session["game_state"] = state
+
+        with patch("app.random.random", return_value=0.0):
+            result = self.client.post("/api/route/choose", json={"room_type": "combat"}).get_json()
+
+        self.assertEqual(result["enemy"]["kind"], "ELITE")
+        self.assertEqual(result["enemy"]["attack"], 2)
+
+    def test_boss_spells_lock_the_next_answer_grid(self):
+        cases = [
+            (5, "tsunami", 2, 3),
+            (10, "petrify", 0, 5),
+            (15, "meteor", 6, 3),
+            (15, "time_stop", 0, 6),
+        ]
+        for room, intent, expected_damage, expected_lock in cases:
+            self.client.post("/api/start")
+            with self.client.session_transaction() as flask_session:
+                state = flask_session["game_state"]
+                state["current_room"] = room
+                state["enemy"] = create_enemy(room)
+                state["enemy"]["intent"] = intent
+                flask_session["game_state"] = state
+            correct = self.answer_for_current_question()
+            wrong = next(key for key in "ABCD" if key != correct)
+            result = self.client.post("/api/answer", json={"answer": wrong}).get_json()
+
+            self.assertEqual(result["damage_taken"], expected_damage)
+            self.assertEqual(result["enemy_action"]["answer_lock_seconds"], expected_lock)
+            self.assertEqual(self.client.get("/api/question").get_json()["answer_lock"], expected_lock)
 
     def test_boss_enters_phase_two_at_half_hp(self):
         with self.client.session_transaction() as flask_session:
@@ -471,6 +508,10 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertIn("const delaySeconds = 8", page)
         self.assertIn("CIPHER'S RELIC EMPORIUM", page)
         self.assertIn("card.classList.toggle('elite'", page)
+        self.assertIn("applyAnswerLock(data.answer_lock", page)
+        self.assertIn("skill-tsunami", stylesheet)
+        self.assertIn("skill-meteor", stylesheet)
+        self.assertIn("answer-lock-overlay", stylesheet)
         self.assertIn(".enemy-card.elite", stylesheet)
         self.assertEqual(create_enemy(10)["name"], "Death Protocol")
         self.assertEqual(create_enemy(15)["name"], "The Root Dragon")

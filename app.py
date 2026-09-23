@@ -11,6 +11,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 TOTAL_ROOMS = 15
 INVENTORY_LIMIT = 4
 PLAYER_MAX_HP = 12
+ELITE_SPAWN_CHANCE = 0.22
 
 QUESTION_FILES = {
     "EASY": "questions.json",
@@ -91,7 +92,7 @@ ABILITIES = {
     },
     "haste": {
         "name": "Time Compression", "icon": "⏳",
-        "description": "Questions begin with only 20 seconds.",
+        "description": "Questions begin with only 30 seconds.",
     },
     "jammer": {
         "name": "Signal Jammer", "icon": "📵",
@@ -117,6 +118,22 @@ ABILITIES = {
         "name": "Critical Strike", "icon": "💥",
         "description": "Uses more Heavy Attacks that deal additional damage.",
     },
+    "tidal_prison": {
+        "name": "Tidal Prison", "icon": "🌊",
+        "description": "Abyssal magic damages you and submerges the answers for 3 seconds.",
+    },
+    "petrify": {
+        "name": "Petrification", "icon": "🗿",
+        "description": "Death turns the answer grid to stone for 5 seconds.",
+    },
+    "inferno": {
+        "name": "Dragon Inferno", "icon": "☄️",
+        "description": "A devastating meteor strike deals heavy damage and scorches the answers.",
+    },
+    "time_stop": {
+        "name": "Time Stop", "icon": "⌛",
+        "description": "Root magic freezes the answer grid for 6 seconds while the timer continues.",
+    },
 }
 
 INTENTS = {
@@ -128,6 +145,10 @@ INTENTS = {
     "jammer": {"name": "Signal Jam", "icon": "📵", "description": "Disable Packet Sniffer for two turns."},
     "encrypt": {"name": "Encrypt", "icon": "🔒", "description": "Destroy one random inventory item."},
     "root_lock": {"name": "Root Lock", "icon": "👑", "description": "Reset combo and weaken the next player attack."},
+    "tsunami": {"name": "Abyssal Tsunami", "icon": "🌊", "description": "Deal boss damage and submerge the next answer grid."},
+    "petrify": {"name": "Petrifying Gaze", "icon": "🗿", "description": "Turn the next answer grid to stone."},
+    "meteor": {"name": "Root Meteor", "icon": "☄️", "description": "Deal catastrophic dragon damage and scorch the next answer grid."},
+    "time_stop": {"name": "Time Stop", "icon": "⌛", "description": "Freeze the next answer grid while its timer continues."},
 }
 
 NORMAL_ENEMIES = {
@@ -139,7 +160,7 @@ NORMAL_ENEMIES = {
     "MEDIUM": [
         {"id": "botnet_node", "name": "Botnet Golem", "icon": "🧟", "abilities": ["shielded"], "description": "An undead network golem whose server-heart commands a swarm of cable-bound skulls.", "strategy": "Break its starting armor, then interrupt Fortify before it rebuilds defenses."},
         {"id": "credential_thief", "name": "Credential Panther", "icon": "🔓", "abilities": ["credit_drain"], "description": "A masked shadow panther that stalks access keys and vanishes into corrupted smoke.", "strategy": "Exploit Wallet Drain and defend against the following Heavy Attack."},
-        {"id": "malware_loader", "name": "Payload Ogre", "icon": "👾", "abilities": ["haste"], "description": "A furnace-bellied cyber-ogre carrying cursed payload cores and an infernal launcher.", "strategy": "Plan your action before reading the answers; its questions only allow 20 seconds."},
+        {"id": "malware_loader", "name": "Payload Ogre", "icon": "👾", "abilities": ["haste"], "description": "A furnace-bellied cyber-ogre carrying cursed payload cores and an infernal launcher.", "strategy": "Plan your action before reading the answers; its questions only allow 30 seconds."},
     ],
     "HARD": [
         {"id": "ransomware", "name": "Ransom Lich", "icon": "💀", "abilities": ["encryptor"], "description": "A chained cyber-lich fused to a mechanical spider body that seals relics in red data-fire.", "strategy": "Interrupt Encrypt whenever you carry an important consumable."},
@@ -151,22 +172,22 @@ NORMAL_ENEMIES = {
 BOSSES = {
     5: {
         "id": "phishing_king", "name": "Cyber Leviathan", "icon": "🐋",
-        "kind": "MINIBOSS", "max_hp": 7, "attack": 1, "abilities": ["jammer"],
+        "kind": "MINIBOSS", "max_hp": 7, "attack": 2, "abilities": ["tidal_prison", "jammer"],
         "description": "An abyssal sea-dragon fused with submarine armor, sonar arrays, and cable tentacles.",
-        "strategy": "At half HP it chains jams and heavy attacks. Interrupt the jam before using tools.",
+        "strategy": "Its Tsunami damages you and hides the next answers. Defend or Exploit when danger is telegraphed.",
     },
     10: {
         "id": "ransomware_overlord", "name": "Death Protocol", "icon": "☠️",
-        "kind": "MAJOR BOSS", "max_hp": 10, "attack": 1, "abilities": ["encryptor", "shielded"],
+        "kind": "MAJOR BOSS", "max_hp": 10, "attack": 3, "abilities": ["petrify", "encryptor", "shielded"],
         "description": "Death itself reborn as a cybernetic reaper, wielding a violet plasma scythe against your inventory.",
-        "strategy": "Remove its armor early. In phase two, prioritize interrupting Encrypt.",
+        "strategy": "Remove its armor early. Interrupt Petrifying Gaze or lose five seconds of answering time.",
     },
     15: {
         "id": "root_admin", "name": "The Root Dragon", "icon": "🐉",
-        "kind": "FINAL BOSS", "max_hp": 14, "attack": 2,
-        "abilities": ["haste", "regenerate"],
+        "kind": "FINAL BOSS", "max_hp": 14, "attack": 4,
+        "abilities": ["inferno", "time_stop", "haste", "regenerate"],
         "description": "An ancient obsidian dragon crowned in root-access circuitry—the apex intelligence of the dungeon.",
-        "strategy": "Watch every intent. Phase two adds Root Lock, so alternate Defend and Exploit carefully.",
+        "strategy": "Meteor can deal 6 damage and Time Stop steals six seconds. Save Focus for dangerous warnings.",
     },
 }
 
@@ -180,14 +201,14 @@ ENEMY_PATTERNS = {
     "ransomware": [["attack", "encrypt", "heavy_attack"]],
     "insider_threat": [["attack", "heavy_attack", "defend"]],
     "zero_day_exploit": [["attack", "heal", "heavy_attack"]],
-    "phishing_king": [["attack", "jammer", "attack"], ["heavy_attack", "jammer", "heavy_attack"]],
-    "ransomware_overlord": [["attack", "encrypt", "defend"], ["encrypt", "heavy_attack", "defend"]],
-    "root_admin": [["attack", "defend", "heal"], ["heavy_attack", "root_lock", "heal"]],
+    "phishing_king": [["attack", "tsunami", "heavy_attack"], ["tsunami", "heavy_attack", "jammer"]],
+    "ransomware_overlord": [["attack", "petrify", "defend"], ["petrify", "heavy_attack", "encrypt"]],
+    "root_admin": [["meteor", "defend", "heal"], ["heavy_attack", "time_stop", "meteor"]],
 }
 
 ROOMS = {
     "combat": {"name": "Combat", "icon": "⚔️", "description": "Fight a normal enemy."},
-    "elite": {"name": "Elite", "icon": "💀", "description": "Fight a stronger enemy for improved rewards."},
+    "elite": {"name": "Elite Ambush", "icon": "💀", "description": "A 22% surprise upgrade to a Combat encounter, with more HP, damage, and abilities."},
     "loot": {"name": "Data Cache", "icon": "🎁", "description": "Choose a free consumable or credits without advancing the stage."},
     "heal": {"name": "Repair Station", "icon": "❤️", "description": "Restore or improve HP without advancing the stage."},
     "shop": {"name": "Dark Web Market", "icon": "🛒", "description": "Buy consumables between combat stages."},
@@ -357,7 +378,7 @@ def create_enemy(room, elite=False, relics=None):
             **template,
             "kind": "ELITE" if elite else "ENEMY",
             "max_hp": base_hp + 2 if elite else base_hp,
-            "attack": 1,
+            "attack": 2 if elite else 1,
         }
         if elite:
             extra = random.choice([ability for ability in ABILITIES if ability not in enemy["abilities"]])
@@ -416,19 +437,20 @@ def threat_warning(state):
     if not enemy:
         return None
     intent_id = enemy["intent"]
-    if intent_id in {"attack", "heavy_attack"}:
-        damage = enemy["attack"] + (1 if intent_id == "heavy_attack" else 0)
+    if intent_id in {"attack", "heavy_attack", "tsunami", "meteor"}:
+        bonus = 1 if intent_id == "heavy_attack" else 2 if intent_id == "meteor" else 0
+        damage = enemy["attack"] + bonus
         if damage >= state["hp"]:
             return {
                 "level": "fatal", "label": "LETHAL THREAT",
                 "description": "The next enemy action could defeat you. Defend or Exploit.",
             }
-        if intent_id == "heavy_attack":
+        if intent_id in {"heavy_attack", "tsunami", "meteor"}:
             return {
                 "level": "danger", "label": "MENACING ATTACK",
-                "description": "A powerful strike is being prepared. Defend or Exploit to interrupt it.",
+                "description": "A powerful attack or spell is being prepared. Defend or Exploit to interrupt it.",
             }
-    if intent_id in {"encrypt", "root_lock"}:
+    if intent_id in {"encrypt", "root_lock", "petrify", "time_stop"}:
         return {
             "level": "danger", "label": "DANGEROUS TECHNIQUE",
             "description": "The enemy is preparing a major special action.",
@@ -464,6 +486,8 @@ def public_state(state):
         "stats": state["stats"],
         "game_over": state["game_over"],
         "won": state.get("won", False),
+        "answer_lock": state.get("answer_lock", 0),
+        "answer_lock_source": state.get("answer_lock_source"),
     }
 
 
@@ -496,10 +520,9 @@ def set_reward(state, kind, advance_after=False):
 
 def generate_room_options(support_used=False):
     if support_used:
-        choices = ["combat", "elite"]
+        choices = ["combat"]
     else:
-        choices = [random.choice(["combat", "combat", "elite"]), random.choice(["loot", "heal", "shop", "event"])]
-        random.shuffle(choices)
+        choices = ["combat", random.choice(["loot", "heal", "shop", "event"])]
     for room_type in choices:
         discover("rooms", room_type)
     return choices
@@ -548,10 +571,10 @@ def start_room(state, room_type):
     state["enemy"] = None
     discover("rooms", room_type)
     if room_type == "combat":
-        state["enemy"] = create_enemy(state["current_room"], relics=state["relics"])
-    elif room_type == "elite":
-        state["enemy"] = create_enemy(state["current_room"], elite=True, relics=state["relics"])
-        discover("mechanics", "elites")
+        elite = random.random() < ELITE_SPAWN_CHANCE
+        state["enemy"] = create_enemy(state["current_room"], elite=elite, relics=state["relics"])
+        if elite:
+            discover("mechanics", "elites")
     elif room_type == "loot":
         set_reward(state, "item", advance_after=False)
     elif room_type == "heal":
@@ -623,15 +646,16 @@ def resolve_enemy_intent(state, combat_action, canceled=False):
     detail = intent_view(intent_id, enemy)
     result = {
         "id": intent_id, "name": detail["name"], "icon": detail["icon"],
+        "enemy_id": enemy["id"],
         "canceled": canceled, "damage_taken": 0, "blocked_by": None,
-        "destroyed_item": None,
+        "destroyed_item": None, "answer_lock_seconds": 0,
     }
     if canceled:
         result["message"] = f"{detail['name']} was interrupted."
         return result
 
-    if intent_id in {"attack", "heavy_attack"}:
-        damage = enemy["attack"] + (1 if intent_id == "heavy_attack" else 0)
+    def apply_incoming_damage(base_damage):
+        damage = base_damage
         if combat_action == "defend":
             damage = max(0, damage - 1)
         elif combat_action == "exploit":
@@ -651,7 +675,33 @@ def resolve_enemy_intent(state, combat_action, canceled=False):
         state["hp"] = max(0, state["hp"] - damage)
         state["stats"]["damage_taken"] += damage
         result["damage_taken"] = damage
+        return damage
+
+    if intent_id in {"attack", "heavy_attack"}:
+        damage = apply_incoming_damage(enemy["attack"] + (1 if intent_id == "heavy_attack" else 0))
         result["message"] = f"{detail['name']} dealt {damage} damage."
+    elif intent_id == "tsunami":
+        damage = apply_incoming_damage(enemy["attack"])
+        state["answer_lock"] = 3
+        state["answer_lock_source"] = "SUBMERGED BY THE LEVIATHAN"
+        result["answer_lock_seconds"] = 3
+        result["message"] = f"The tsunami dealt {damage} damage and submerged the next answers for 3 seconds."
+    elif intent_id == "petrify":
+        state["answer_lock"] = 5
+        state["answer_lock_source"] = "PETRIFIED BY DEATH"
+        result["answer_lock_seconds"] = 5
+        result["message"] = "Death's gaze petrified the next answer grid for 5 seconds."
+    elif intent_id == "meteor":
+        damage = apply_incoming_damage(enemy["attack"] + 2)
+        state["answer_lock"] = 3
+        state["answer_lock_source"] = "SCORCHED BY ROOT METEOR"
+        result["answer_lock_seconds"] = 3
+        result["message"] = f"Root Meteor dealt {damage} damage and scorched the next answers for 3 seconds."
+    elif intent_id == "time_stop":
+        state["answer_lock"] = 6
+        state["answer_lock_source"] = "TIME FROZEN BY THE ROOT DRAGON"
+        result["answer_lock_seconds"] = 6
+        result["message"] = "The Root Dragon stopped time around the next answer grid for 6 seconds."
     elif intent_id == "defend":
         enemy["armor"] = min(2, enemy.get("armor", 0) + 1)
         result["message"] = "The enemy gained 1 armor."
@@ -702,6 +752,8 @@ def start_game():
         "inventory": ["packet_sniffer"],
         "relics": [],
         "effects": {"firewall": 0, "sandbox": 0, "root_lock": 0},
+        "answer_lock": 0,
+        "answer_lock_source": None,
         "enemy": None,
         "pending": None,
         "room_options": [],
@@ -768,6 +820,8 @@ def submit_answer():
         return jsonify({"error": "Choose Attack, Defend, or Exploit"}), 400
     if combat_action == "exploit" and state["focus"] < 2:
         return jsonify({"error": "Exploit requires 2 Focus. Use Attack to build it."}), 400
+    state["answer_lock"] = 0
+    state["answer_lock_source"] = None
     question = current_question(state)
     correct_answer = question.get("answer") or question.get("correct")
     tier = get_tier(state["current_room"])

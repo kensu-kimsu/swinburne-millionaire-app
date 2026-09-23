@@ -34,6 +34,11 @@ Enemy actions are revealed only after the turn resolves. Normal enemies have
 powerful finisher, but it must first be charged through Attack. Defend remains
 the safe choice when survival matters, but cannot charge Exploit.
 
+Boss damage scales far beyond normal enemies: the Cyber Leviathan attacks for
+2, Death Protocol for 3, and the Root Dragon for 4 before Heavy Attack bonuses.
+Their signature spells can temporarily seal the answer grid while the question
+timer continues, making boss warnings important even for expert players.
+
 Powerful actions display a pulsing warning and play an alert sound without
 revealing the exact move. A separate lethal warning appears when the incoming
 attack could reduce the player to 0 HP. This gives Defend a clear tactical use
@@ -96,16 +101,17 @@ characters. Standard battles allow 45 seconds; Time Compression allows 30.
 | Room | Purpose |
 |---|---|
 | Combat | Fight a normal enemy and receive loot |
-| Elite | Fight a stronger multi-ability enemy for better rewards |
+| Elite Ambush | A normal combat route has a 22% chance to become a stronger purple-corrupted elite |
 | Data Cache | Choose a consumable or credits between stages |
 | Repair Station | Restore or increase HP between stages |
 | Dark Web Market | Spend credits between stages |
 | Unknown Signal | Choose an event risk or reward between stages |
 | Boss | Fight a fixed enemy at Stages 5, 10, and 15 |
 
-Only defeated enemies advance the 15-stage run. After taking a support room,
-the next route offers Combat and Elite choices so support rooms cannot be
-farmed repeatedly or skip a boss.
+Only defeated enemies advance the 15-stage run. Elites cannot be selected from
+the route menu; they appear unpredictably during Combat. After taking a support
+room, the next route forces Combat so support rooms cannot be farmed repeatedly
+or used to skip a boss.
 
 The Dark Web Market is a dedicated NPC scene hosted by **Cipher the Relic
 Merchant**, with its own upbeat theme, entrance and purchase sounds, dialogue,
@@ -161,21 +167,27 @@ Enemies are no longer cosmetic. Their abilities change the rules of combat.
 | Encryption | Adds a turn that destroys a random inventory item |
 | Self Repair | Adds a turn that restores 1 enemy HP |
 | Critical Strike | Adds more Heavy Attacks to the turn pattern |
+| Tidal Prison | Leviathan's Tsunami deals damage and submerges answers for 3 seconds |
+| Petrification | Death Protocol seals answers for 5 seconds |
+| Dragon Inferno | Root Meteor deals 6 base damage and scorches answers for 3 seconds |
+| Time Stop | The Root Dragon seals answers for 6 seconds while the timer runs |
 
 Enemy intent is hidden until the turn resolves. Enemy actions include
 Attack, Heavy Attack, Fortify, Self Repair, Wallet Drain, Signal Jam, Encrypt,
-and Root Lock. Elite enemies combine two abilities. Bosses change to a more
-aggressive second pattern at half HP.
+Tsunami, Petrifying Gaze, Root Meteor, and Time Stop. Elite enemies combine two
+abilities. Bosses change to a more aggressive second pattern at half HP. Every
+monster family has its own attack palette and particle treatment; boss spells
+add bespoke wave, stone, meteor, and frozen-time cinematics.
 
 ## Bosses
 
 | Room | Boss | HP | Abilities |
 |---|---|---:|---|
-| 5 | Cyber Leviathan | 7 | Signal Jammer; phase-two Heavy Attacks |
-| 10 | Death Protocol | 10 | Encryption and Hardened Shell |
-| 15 | The Root Dragon | 14 | Time Compression, Self Repair, and Root Lock |
+| 5 | Cyber Leviathan | 7 | Abyssal Tsunami, Tidal Prison, Signal Jammer |
+| 10 | Death Protocol | 10 | Petrifying Gaze, Encryption, Hardened Shell |
+| 15 | The Root Dragon | 14 | Root Meteor, Time Stop, Time Compression, Self Repair |
 
-The Root Dragon also deals 2 damage with each successful attack.
+The Root Dragon deals 4 normal damage; Root Meteor deals 6 before defences.
 
 ## Encyclopedia and progression
 
@@ -235,13 +247,14 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The 29-test automated suite checks Focus requirements, hidden intentions,
+The 31-test automated suite checks Focus requirements, hidden intentions,
 danger and lethal warnings, post-fight healing, support-room stage rules,
 question-length limits, all three combat actions, simultaneous damage, Zero
 Trust, boss phases, combos, question difficulty,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
-timers, encyclopedia detail data, progress reset, browser session size, and the
-custom audiovisual asset bundle.
+timers, random elite ambushes, boss crowd-control spells, encyclopedia detail
+data, progress reset, browser session size, and the custom audiovisual asset
+bundle.
 
 ## Project structure
 

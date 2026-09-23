@@ -246,6 +246,8 @@
         let soundTimeouts = [];
         let continueTimer = null;
         let continueTicker = null;
+        let answerLockTimer = null;
+        let answerLocked = false;
         let isContinuing = false;
         let currentMusic = null;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
@@ -339,6 +341,7 @@
 
         function stopTimer() {
             clearInterval(timerInterval);
+            clearAnswerLock();
             const ticking = audio('snd-ticking');
             if (ticking) {
                 ticking.pause();
@@ -347,13 +350,16 @@
             document.getElementById('timer').classList.remove('urgent');
         }
 
-        function startTimer(seconds, threatLevel = 'hidden') {
+        function startTimer(seconds, threatLevel = 'hidden', onTimerStarted = null) {
             clearInterval(timerInterval);
             timeLeft = seconds;
             totalQuestionTime = seconds;
             acceptingAnswers = true;
             updateTimerDisplay();
-            if (!playThreatWarning(threatLevel)) resumeTimer();
+            if (!playThreatWarning(threatLevel, onTimerStarted)) {
+                resumeTimer();
+                if (onTimerStarted) onTimerStarted();
+            }
         }
 
         function resumeTimer() {
@@ -451,11 +457,21 @@
             if (warning.level === 'danger' || warning.level === 'fatal') panel.classList.add(warning.level);
         }
 
-        function playThreatWarning(level) {
+        function playThreatWarning(level, onTimerStarted = null) {
             if (!['danger', 'fatal'].includes(level)) return false;
             const sound = audio(level === 'fatal' ? 'snd-fatal' : 'snd-warning');
             playSound(sound.id);
-            sound.onended = () => acceptingAnswers && resumeTimer();
+            let released = false;
+            const releaseTimer = () => {
+                if (released) return;
+                released = true;
+                if (!acceptingAnswers) return;
+                resumeTimer();
+                if (onTimerStarted) onTimerStarted();
+            };
+            sound.onended = releaseTimer;
+            const fallback = setTimeout(releaseTimer, 1200);
+            soundTimeouts.push(fallback);
             return true;
         }
 
@@ -585,11 +601,49 @@
                 button.onclick = () => selectAnswer(key);
                 area.appendChild(button);
             });
-            startTimer(data.time_limit, data.threat_warning?.level);
+            startTimer(data.time_limit, data.threat_warning?.level, () =>
+                applyAnswerLock(data.answer_lock, data.answer_lock_source)
+            );
+        }
+
+        function clearAnswerLock() {
+            clearInterval(answerLockTimer);
+            answerLockTimer = null;
+            answerLocked = false;
+            const area = document.getElementById('options');
+            area?.classList.remove('answer-locked');
+            document.getElementById('answer-lock-overlay')?.remove();
+        }
+
+        function applyAnswerLock(seconds, source) {
+            clearAnswerLock();
+            if (!seconds) return;
+            answerLocked = true;
+            const area = document.getElementById('options');
+            area.classList.add('answer-locked');
+            area.querySelectorAll('.option').forEach(button => button.disabled = true);
+            const overlay = document.createElement('div');
+            overlay.id = 'answer-lock-overlay';
+            overlay.className = 'answer-lock-overlay';
+            let remaining = seconds;
+            const draw = () => overlay.innerHTML = `<strong>${escapeHtml(source || 'ANSWERS SEALED')}</strong><span>UNLOCKING IN ${remaining}</span>`;
+            draw();
+            area.appendChild(overlay);
+            playEffect('snd-skill-root');
+            answerLockTimer = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearAnswerLock();
+                    document.querySelectorAll('.option').forEach(button => button.disabled = false);
+                    playEffect('snd-confirm');
+                    return;
+                }
+                draw();
+            }, 1000);
         }
 
         function selectAnswer(key) {
-            if (!acceptingAnswers) return;
+            if (!acceptingAnswers || answerLocked) return;
             playEffect('snd-select');
             selectedAnswer = key;
             document.querySelectorAll('.option').forEach(button => button.classList.remove('selected'));
@@ -681,7 +735,7 @@
                 text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('bad');
             } else if (data.status === 'won') {
-                title.textContent = 'ROOT ADMIN DEFEATED';
+                title.textContent = 'ROOT DRAGON DEFEATED';
                 text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('good');
             } else {
@@ -734,7 +788,11 @@
                 credit_drain: 'snd-skill-drain',
                 jammer: 'snd-skill-jam',
                 encrypt: 'snd-skill-encrypt',
-                root_lock: 'snd-skill-root'
+                root_lock: 'snd-skill-root',
+                tsunami: 'snd-skill-jam',
+                petrify: 'snd-skill-root',
+                meteor: 'snd-skill-heavy',
+                time_stop: 'snd-fatal'
             }[data.enemy_action?.id];
             if (skillSound && !data.enemy_action?.canceled) scheduleEffect(skillSound, 260);
             scheduleEffect(data.is_correct ? 'snd-correct' : 'snd-wrong', 360);
@@ -753,6 +811,7 @@
             if (data.enemy_action) {
                 const skillName = escapeHtml(data.enemy_action.name);
                 details.push(`<span class="turn-highlight skill-highlight">ENEMY SKILL: ${skillName}${data.enemy_action.canceled ? ' — INTERRUPTED' : ''}</span> ${escapeHtml(data.enemy_action.message)}`);
+                if (data.enemy_action.answer_lock_seconds) details.push(`<span class="turn-highlight lock-highlight">ANSWERS LOCKED: ${data.enemy_action.answer_lock_seconds} SECONDS</span>`);
             }
             if (data.blocked_by) details.push(`<span class="turn-highlight guard-highlight">${escapeHtml(data.blocked_by)} PREVENTED DAMAGE</span>`);
             if (data.destroyed_item) details.push(`<span class="turn-highlight danger-highlight">ENCRYPTED: ${escapeHtml(data.destroyed_item.name)}</span>`);
@@ -812,8 +871,9 @@
 
         function spawnSkillCinematic(enemyAction) {
             const skill = enemyAction.id || 'attack';
+            const enemyClass = enemyAction.enemy_id ? ` enemy-${enemyAction.enemy_id}` : '';
             const canceled = enemyAction.canceled ? ' skill-canceled' : '';
-            spawnBattleCinematic(`skill-${skill}${canceled}`, enemyAction.canceled ? `${enemyAction.name} SHATTERED` : enemyAction.name);
+            spawnBattleCinematic(`skill-${skill}${enemyClass}${canceled}`, enemyAction.canceled ? `${enemyAction.name} SHATTERED` : enemyAction.name);
         }
 
         function spawnBattleCinematic(effectClass, label) {
