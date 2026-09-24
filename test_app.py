@@ -62,8 +62,8 @@ class RoguelikeGameTests(unittest.TestCase):
 
         self.assertEqual(data["pending"], "dungeon")
         self.assertIsNone(data["enemy"])
-        self.assertEqual(data["dungeon"]["width"], 9)
-        self.assertEqual(data["dungeon"]["height"], 7)
+        self.assertEqual(data["dungeon"]["width"], 18)
+        self.assertEqual(data["dungeon"]["height"], 11)
         self.assertEqual(data["dungeon"]["remaining"], 3)
         self.assertNotIn("tiles", data["dungeon"])
         self.assertFalse(data["dungeon"]["exit_unlocked"])
@@ -123,7 +123,7 @@ class RoguelikeGameTests(unittest.TestCase):
             self.assertEqual(dungeon["theme"], theme)
             self.assertEqual(len(dungeon["enemies"]), 1)
             self.assertEqual(dungeon["enemies"][0]["enemy_id"], boss)
-            self.assertEqual((dungeon["enemies"][0]["x"], dungeon["enemies"][0]["y"]), (4.5, 3.35))
+            self.assertEqual((dungeon["enemies"][0]["x"], dungeon["enemies"][0]["y"]), (9, 5.5))
             self.assertIsNone(dungeon["feature"])
 
     def test_open_arena_movement_is_continuous_and_bounded(self):
@@ -151,13 +151,15 @@ class RoguelikeGameTests(unittest.TestCase):
             for enemy in state["dungeon"]["enemies"]:
                 enemy["defeated"] = True
             flask_session["game_state"] = state
-        advanced = self.client.post("/api/dungeon/move", json={"x": 1.1, "y": 3}).get_json()
+        from unittest.mock import patch
+        with patch('app.random.random', return_value=.9):
+            advanced = self.client.post("/api/dungeon/move", json={"x": 1.1, "y": 3}).get_json()
 
         self.assertEqual(advanced["status"], "floor_advanced")
         self.assertEqual(advanced["room"], 2)
         self.assertEqual(advanced["pending"], "dungeon")
 
-    def test_dungeon_victory_reward_returns_to_the_same_floor(self):
+    def test_dungeon_victory_returns_to_the_same_floor_without_loot(self):
         self.client.post("/api/start")
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
@@ -179,16 +181,103 @@ class RoguelikeGameTests(unittest.TestCase):
             json={"answer": self.answer_for_current_question(), "combat_action": "attack"},
         ).get_json()
         self.assertEqual(defeated["status"], "enemy_defeated")
-        self.assertEqual(defeated["pending"], "reward")
-        reward = next(entry for entry in defeated["reward_options"] if entry["type"] == "credits")
-        returned = self.client.post(
-            "/api/reward/choose", json={"reward_id": reward["id"]}
-        ).get_json()
+        self.assertEqual(defeated["pending"], "dungeon")
+        returned = defeated
 
         self.assertEqual(returned["pending"], "dungeon")
         self.assertEqual(returned["room"], 1)
         self.assertEqual(returned["dungeon"]["remaining"], 2)
         self.assertTrue(returned["dungeon"]["enemies"][0]["defeated"])
+
+    def test_fifteen_authored_maps_have_reachable_exits_and_distinct_layouts(self):
+        from app import LEVEL_LAYOUTS, create_dungeon_floor, walkable
+        self.assertEqual(len(LEVEL_LAYOUTS), 15)
+        self.assertEqual(len({tuple(layout) for layout in LEVEL_LAYOUTS}), 15)
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            for stage in range(1, 16):
+                state['current_room'] = stage
+                create_dungeon_floor(state)
+                dungeon = state['dungeon']
+                self.assertEqual(dungeon['layout_id'], stage)
+                self.assertTrue(walkable(dungeon, **dungeon['player']))
+                self.assertTrue(walkable(dungeon, **dungeon['exit']))
+                for enemy in dungeon['enemies']:
+                    self.assertTrue(walkable(dungeon, enemy['x'], enemy['y']), stage)
+                    if stage % 5:
+                        self.assertTrue(any(not walkable(dungeon,
+                            1.5 + (enemy['x']-1.5)*step/32,
+                            9.5 + (enemy['y']-9.5)*step/32)
+                            for step in range(1,32)), stage)
+                self.assertEqual(len(dungeon['enemies']), 1 if stage % 5 == 0 else 3)
+                self.assertEqual(dungeon['theme'],
+                    {5:'atlantis',10:'graveyard',15:'inferno'}.get(stage,
+                    ('catacomb','temple','foundry')[(stage-1)//5]))
+            flask_session['game_state'] = state
+
+    def test_obstacles_stop_player_and_enemies(self):
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['player'] = {'x':3.5,'y':3.5}
+            state['dungeon']['obstacles'] = ((4,3,2,3),)
+            flask_session['game_state'] = state
+        moved = self.client.post('/api/dungeon/move', json={'x':4.1,'y':3.5}).get_json()
+        self.assertEqual(moved['dungeon']['player']['x'], 3.5)
+
+    def test_chest_loot_and_market_interlude_do_not_skip_a_level(self):
+        from unittest.mock import patch
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['chests'] = [{'x':1.4,'y':9.5,'opened':False}]
+            flask_session['game_state'] = state
+        found = self.client.post('/api/dungeon/move', json={'x':1.5,'y':9.5}).get_json()
+        self.assertEqual(found['status'], 'chest_opened')
+        self.assertTrue(found['dungeon']['chests'][0]['opened'])
+        self.assertEqual(found['pending'], 'reward')
+        reward = found['reward_options'][0]
+        resumed = self.client.post('/api/reward/choose',json={'reward_id':reward['id']}).get_json()
+        self.assertEqual(resumed['room'], 1)
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            for enemy in state['dungeon']['enemies']: enemy['defeated'] = True
+            state['dungeon']['player'] = {'x':16.5,'y':1.5}
+            flask_session['game_state'] = state
+        with patch('app.random.random', return_value=0):
+            market = self.client.post('/api/dungeon/move',json={'x':16.5,'y':1.5}).get_json()
+        self.assertEqual(market['room'], 1)
+        self.assertEqual(market['dungeon']['mode'], 'market')
+        self.assertEqual(market['dungeon']['remaining'], 0)
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['player'] = {'x':15,'y':3}
+            flask_session['game_state'] = state
+        merchant = self.client.post('/api/dungeon/move',json={'x':15,'y':3}).get_json()
+        self.assertEqual(merchant['pending'], 'shop')
+        self.assertEqual(merchant['room'], 1)
+        closed = self.client.post('/api/shop/leave').get_json()
+        self.assertEqual(closed['dungeon']['mode'], 'market')
+        self.assertEqual(closed['room'], 1)
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['player'] = {'x':16.5,'y':1.5}
+            flask_session['game_state'] = state
+        next_floor = self.client.post('/api/dungeon/move',json={'x':16.5,'y':1.5}).get_json()
+        self.assertEqual(next_floor['room'], 2)
+        self.assertEqual(next_floor['dungeon']['mode'], 'combat')
+
+    def test_portal_and_battle_art_share_map_enemies(self):
+        from pathlib import Path
+        root = Path(__file__).parent
+        page = (root/'templates/index.html').read_text()
+        self.assertIn("actorNode(dungeon.exit, 'exit', '/static/assets/dungeon/portal-arch.webp'",page)
+        self.assertIn('src="/static/assets/dungeon/run-${id}-0.webp"',page)
+        self.assertGreater((root/'static/assets/dungeon/portal-arch.webp').stat().st_size,1000)
+        for enemy in ('spam_bot','insider_threat','zero_day_exploit'):
+            for frame in range(4):
+                self.assertGreater((root/f'static/assets/dungeon/run-{enemy}-{frame}.webp').stat().st_size,1000)
 
     def test_wrong_answer_removes_hp_but_run_continues(self):
         correct_answer = self.answer_for_current_question()

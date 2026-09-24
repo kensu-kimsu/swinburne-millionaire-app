@@ -1588,6 +1588,14 @@ button { font: inherit; }
 .arena-actor.exit .arena-label { fill: #8af9db; }
 .arena-actor.feature .arena-label { fill: #ffdd8d; font-size: 31px; }
 .arena-actor.boss .boss-aura { fill: #ff5388; }
+.arena-actor.exit image { filter: drop-shadow(0 0 9px #45d8fb); animation: portal-breathe 2.3s ease-in-out infinite alternate; }
+.arena-actor.exit.locked image { filter: grayscale(.8) brightness(.58) drop-shadow(0 0 3px #84969e); }
+.arena-actor.exit .portal-light { fill:#609dff; opacity:.36; filter:blur(10px); animation:portal-breathe 1.5s ease-in-out infinite alternate; }
+.arena-actor.exit.locked .portal-light, .arena-actor.exit.locked .portal-spark { opacity:.06; }
+.portal-spark { fill:#c6fbff; filter:drop-shadow(0 0 5px #36c7ff); animation:portal-spark 1.7s ease-in-out infinite; }
+.arena-actor.exit .portal-label { fill:#b9f5ff; font-size:13px; }
+@keyframes portal-breathe { from { opacity:.72; transform:scale(.98); } to { opacity:1; transform:scale(1.04); } }
+@keyframes portal-spark { from { opacity:0; transform:translateY(9px); } 45% { opacity:1; } to { opacity:0; transform:translateY(-18px); } }
 .environment-fire { color: #ffbd5b; fill: #ffc44e; filter: drop-shadow(0 0 8px orange); }
 .environment-mist { color: #adceef; fill: #adcffa; opacity: .22; filter: blur(7px); }
 .environment-rune { color: #8cf3ff; fill: #97e8ff; filter: drop-shadow(0 0 5px cyan); }
@@ -1602,4 +1610,4 @@ button { font: inherit; }
 .movement-stick span { display: block; width: 46px; height: 46px; border: 2px solid #a2f8ff; border-radius: 50%; background: #2e809ca8; box-shadow: 0 0 12px #76d9ee; pointer-events: none; }
 .dungeon-controls { display: none !important; }
 @media (max-width: 580px) { .dungeon-map { max-height: min(100%, 60dvh); } .movement-stick { width: 92px; height: 92px; flex-basis: 92px; margin: 3px auto; } }
-@media (prefers-reduced-motion: reduce) { .arena-actor image, .boss-aura { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .arena-actor image, .boss-aura, .portal-spark, .portal-light { animation: none !important; } }

@@ -4,7 +4,7 @@
 Python, Flask, HTML, CSS, and vanilla JavaScript.
 
 The player explores 15 illustrated open arenas with pointer and touch joystick movement. Each floor creates a distinct scene, random enemies, an
-optional support encounter, and a locked exit. Touching a monster launches a
+chance-based supply chest, and a locked exit. Touching a monster launches a
 dedicated turn-based battle; every monster on the map must be defeated before
 the gate to the next floor opens.
 
@@ -17,7 +17,7 @@ The complete roguelite version is developed on `roguelike-v1`.
 2. Touch a roaming-map monster to enter its dedicated battle scene.
 3. Choose Attack, Defend, or Exploit while the enemy action remains hidden.
 4. Answer a concise cybersecurity question within 45 seconds.
-5. Resolve both combatants' actions, claim a reward, and return to the map.
+5. Resolve both combatants' actions and return to the map; optional chests contain loot.
 6. Defeat every enemy to unlock the exit and descend to the next floor.
 7. Overcome the lone boss waiting in the center of Floors 5, 10, and 15.
 
@@ -108,24 +108,18 @@ Elite status is rolled independently at a 22% chance. Floors 5, 10, and 15
 contain only the centered boss, with no ordinary monsters or support encounters.
 The exit remains sealed until every encounter on the floor is defeated.
 
-A single optional support encounter appears on normal floors:
+All fifteen levels have fixed obstacle layouts in an 18 by 11 world. A camera
+follows the hero around the illustrated arena; obstacles stop the hero and roaming
+enemies. Floors 1–5 use catacombs, 6–10 the temple, and 11–15 the foundry,
+with special Atlantis, graveyard and inferno paintings on boss levels.
+Every exit has an animated magical portal set in front of a stone tunnel entrance;
+it stays dim until the required enemies are defeated.
 
-| Room | Purpose |
-|---|---|
-| Random enemy | Starts a standard battle and grants a reward when defeated |
-| Elite enemy | A random purple-corrupted upgrade with more HP and abilities |
-| Repair shrine | Restore HP or improve maximum HP once on that floor |
-| Dark Web Market | Spend credits once on that floor |
-| Unknown Signal | Choose one risk or reward once on that floor |
-| Boss | A required signature encounter on Floors 5, 10, and 15 |
-
-Support encounters never remove an enemy or unlock the exit, so they cannot be
-used to skip the dungeon's combat objective.
-
-The Dark Web Market is a dedicated NPC scene hosted by **Cipher the Relic
-Merchant**, with its own upbeat theme, entrance and purchase sounds, dialogue,
-wallet display, rarity glows, and enchanted item presentation. It is visually
-distinct from route and reward selection.
+Supply chests appear on normal floors with a 38% chance and contain item or
+relic choices. Battles award recovery, and dungeon loot is collected from chests.
+After a cleared floor, a 30% chance opens a separate desolated market interlude.
+The market has its own map and merchant near its exit; entering and leaving it
+does not add to the fifteen-level counter. The merchant sells items for credits.
 
 ## Consumable items
 
@@ -269,7 +263,7 @@ bundle.
 ## Project structure
 
 ```text
-app.py                    Flask routes, procedural dungeons, combat and progression
+app.py                    Flask routes, authored dungeon layouts, combat and progression
 questions.json            100 Easy questions
 questions_medium.json     100 Medium questions
 questions_hard.json       100 Hard questions
@@ -316,38 +310,15 @@ confirmation feedback, victory, defeat, and answer feedback sounds.
 - CSS3
 - Flask signed-cookie sessions for current-run and discovery progress
 
-## Isometric exploration assets
+## Illustrated exploration
 
-The map uses a scalable illustrated arena sized to the viewport with no tile overlay.
-The virtual joystick moves freely within the arena boundaries.
-The Cyber Knight and each enemy have locally hosted SVG map sprites with idle and
-movement motion. The knight's chest carries a stylised red S crest. Combat retains
-the original detailed enemy portraits, turn-based encounter scene, and separate
-normal/boss victory cues.
-
-## Illustrated free movement update
-
-Exploration now runs an animation frame loop. Drag the virtual joystick with a mouse
-or finger to move continuously. The hero can travel freely within arena bounds;
-contact with a roaming enemy initiates combat. Enemies roam on short timed updates
-and visually interpolate between positions. The original turn-based questions, rewards, summaries,
-and victory cues remain in place.
-
-Normal floors select among three illustrated arena themes without repeating the previous
-one, and generate a different set of animated environmental elements. Boss floors
-contain the boss alone, stationary in the center. Boss floors use
-individual arenas: Atlantis for Cyber Leviathan (floor 5), a haunted graveyard
-for Death Protocol (floor 10), and an inferno for the Root Dragon (floor 15).
-The hero and bosses have generated cutout art; the existing detailed enemy
-portraits remain in the battle scene, while new four-pose run sheets animate
-the roaming enemies on the map. Bosses are larger than the hero,
-with drifting particles, idle motion, movement animation, and a collapse effect
-when defeated.
-
-The hero's eight illustrated running frames are drawn in sequence at about 10 frames
-per second while the position loop interpolates at the display refresh rate.
-The still portrait returns when input stops. Direction changes mirror the cutout.
-
-The nine ordinary enemy types now each have a four-pose locomotion sprite sheet;
-idle animation uses slower pose alternation. After 20 seconds without joystick input,
-a movement reminder fades into the exploration screen and disappears on movement.
+The hero moves with a touch or mouse joystick and desktop directional keys.
+A camera follows free movement across each of fifteen authored maps; there is
+no visible tile grid. Environmental fire, mist, runes and sparks animate while
+enemies wander and switch between individual idle and moving frames. The enemy
+sheets are split into four standalone images each to prevent the browser from
+drawing several poses at once. The battle portrait uses the same illustrated
+frame as the map actor. A movement reminder fades in after 20 seconds
+without input. Bosses wait alone at the center of their arenas with particle
+auras. Combat retains readable turn summaries, victory music, and a distinct
+boss fanfare.

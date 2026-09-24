@@ -436,27 +436,60 @@ def _floor_distances(tiles, start):
     return distances
 
 
+# Each entry is an authored arena. Rectangles are x, y, width, height in world units.
+# They leave winding routes around the center rather than a straight lane to the exit.
+LEVEL_LAYOUTS = (
+    ((4, 2, 2, 4), (8, 6, 2, 3), (12, 1, 2, 4), (13, 7, 2, 2)),
+    ((3, 4, 3, 2), (7, 1, 2, 4), (10, 6, 3, 2), (14, 3, 2, 3)),
+    ((4, 1, 2, 4), (6, 7, 3, 2), (10, 3, 2, 4), (14, 6, 2, 2)),
+    ((3, 3, 2, 4), (7, 6, 2, 3), (10, 1, 3, 3), (14, 4, 2, 3)),
+    ((3, 2, 2, 3), (4, 7, 3, 2), (12, 7, 3, 2), (14, 2, 2, 3)),
+    ((3, 2, 3, 3), (7, 6, 2, 3), (11, 1, 2, 4), (14, 7, 2, 2)),
+    ((3, 5, 3, 2), (7, 2, 2, 3), (11, 6, 3, 2), (14, 2, 2, 3)),
+    ((4, 2, 2, 4), (7, 7, 3, 2), (11, 3, 2, 3), (14, 6, 2, 2)),
+    ((3, 3, 2, 3), (6, 7, 3, 2), (10, 1, 2, 4), (14, 5, 2, 3)),
+    ((3, 2, 2, 4), (5, 7, 3, 2), (12, 7, 3, 2), (14, 2, 2, 4)),
+    ((4, 1, 2, 4), (7, 6, 3, 3), (11, 2, 2, 4), (14, 7, 2, 2)),
+    ((3, 4, 2, 3), (6, 1, 3, 3), (10, 6, 2, 3), (14, 2, 2, 4)),
+    ((4, 2, 2, 4), (7, 7, 2, 2), (10, 2, 3, 3), (14, 6, 2, 3)),
+    ((3, 2, 3, 3), (7, 5, 2, 4), (11, 1, 2, 4), (14, 7, 2, 2)),
+    ((3, 2, 2, 4), (4, 7, 3, 2), (12, 7, 3, 2), (14, 2, 2, 4)),
+)
+
+
+def walkable(dungeon, x, y, clearance=.23):
+    if not (clearance < x < dungeon["width"] - clearance and clearance < y < dungeon["height"] - clearance):
+        return False
+    return all(not (ox - clearance < x < ox + width + clearance and
+                    oy - clearance < y < oy + height + clearance)
+               for ox, oy, width, height in dungeon["obstacles"])
+
+
 def create_dungeon_floor(state):
-    """Spawn a continuous arena with its own art, decor and encounters."""
+    """Load one of the fifteen fixed maps; encounters and chest chances vary."""
     stage = state["current_room"]
     boss_floor = stage in BOSSES
-    previous_theme = state.get("previous_arena_theme")
-    themes = ["catacomb", "temple", "foundry"]
     theme = {5: "atlantis", 10: "graveyard", 15: "inferno"}.get(stage)
     if not theme:
-        theme = random.choice([item for item in themes if item != previous_theme])
-    state["previous_arena_theme"] = theme
+        theme = ("catacomb", "temple", "foundry")[(stage - 1) // 5]
     enemies = []
     if boss_floor:
         boss = BOSSES[stage]
         enemies.append({
-            "uid": f"s{stage}-boss", "x": 4.5, "y": 3.35,
+            "uid": f"s{stage}-boss", "x": 9, "y": 5.5,
             "enemy_id": boss["id"], "name": boss["name"],
             "elite": False, "kind": boss["kind"], "defeated": False,
         })
     else:
-        candidates = [(3.0, 1.7), (6.6, 2.2), (4.8, 4.7), (7.1, 4.8), (2.4, 3.4)]
-        random.shuffle(candidates)
+        candidate_pool = ((6.5, 5.5), (9.5, 5.5), (13.5, 5.5), (6.5, 1.2),
+                          (9.5, 1.2), (13.5, 9.7), (16.5, 6.0), (9.5, 9.7))
+        obstacles = LEVEL_LAYOUTS[stage - 1]
+        arena = {"width": 18, "height": 11, "obstacles": obstacles}
+        candidates = [(x, y) for x, y in candidate_pool
+                      if walkable(arena, x, y, .5) and any(
+                          not walkable(arena, 1.5 + (x - 1.5) * step / 32,
+                                       9.5 + (y - 9.5) * step / 32)
+                          for step in range(1, 32))][:3]
         for index in range(3):
             template = random.choice(NORMAL_ENEMIES[get_tier(stage)])
             x, y = candidates[index]
@@ -467,16 +500,21 @@ def create_dungeon_floor(state):
                 "enemy_id": template["id"], "name": template["name"],
                 "elite": elite, "kind": "ELITE" if elite else "ENEMY", "defeated": False,
             })
-    decor = [{"x": round(random.uniform(.75, 8.25), 2),
-              "y": round(random.uniform(1, 5.7), 2),
+    decor = [{"x": round(random.uniform(.75, 17.25), 2),
+              "y": round(random.uniform(1, 10), 2),
               "kind": random.choice(["fire", "mist", "rune", "sparks"]),
               "phase": random.random() * 6.28} for _ in range(16)]
+    chest_candidates = ((8, 1.3), (3, 1.3), (11, 9.7), (15, 9.7))
+    chest_x, chest_y = next((x, y) for x, y in chest_candidates if all(
+        not (ox - .4 < x < ox + width + .4 and oy - .4 < y < oy + height + .4)
+        for ox, oy, width, height in LEVEL_LAYOUTS[stage - 1]))
     state["dungeon"] = {
-        "width": 9, "height": 7, "theme": theme, "seed": random.randint(0, 999999999),
-        "player": {"x": 2.0, "y": 5.2}, "exit": {"x": 7.1, "y": 2.0},
+        "width": 18, "height": 11, "theme": theme, "mode": "combat", "layout_id": stage,
+        "seed": random.randint(0, 999999999), "obstacles": LEVEL_LAYOUTS[stage - 1],
+        "player": {"x": 1.5, "y": 9.5}, "exit": {"x": 16.5, "y": 1.5},
         "enemies": enemies, "decor": decor,
-        "feature": None if boss_floor else {"x": 2.2, "y": 2.0,
-                   "type": random.choice(["shop", "heal", "event"]), "used": False},
+        "chests": [{"x": chest_x, "y": chest_y, "opened": False}] if not boss_floor and random.random() < .38 else [],
+        "feature": None,
     }
     state["enemy"] = None
     state["current_enemy_uid"] = None
@@ -484,6 +522,20 @@ def create_dungeon_floor(state):
     state["return_to_dungeon_after_reward"] = False
     state["room_options"] = []
     discover("rooms", "combat")
+
+
+def create_market_floor(state):
+    """An optional interlude between levels; current_room remains unchanged."""
+    state["dungeon"] = {
+        "width": 18, "height": 11, "theme": "market", "mode": "market", "layout_id": "market",
+        "seed": random.randint(0, 999999999),
+        "obstacles": ((4, 2, 2, 3), (7, 6, 2, 3), (11, 2, 2, 3), (14, 7, 2, 2)),
+        "player": {"x": 1.5, "y": 9.5}, "exit": {"x": 16.5, "y": 1.5},
+        "enemies": [], "chests": [], "decor": [
+            {"x": x, "y": y, "kind": "fire", "phase": x} for x, y in ((3, 3), (8, 5), (13, 4), (15, 8))],
+        "feature": {"x": 15, "y": 3, "type": "shop", "used": False},
+    }
+    state["pending"] = "dungeon"
 
 
 def dungeon_view(state):
@@ -757,6 +809,10 @@ def complete_combat(state):
     if defeated_kind in {"MINIBOSS", "MAJOR BOSS", "FINAL BOSS"}:
         if "incident_response" in state["relics"]:
             state["hp"] = min(state["max_hp"], state["hp"] + 1)
+    if dungeon:
+        return_to_dungeon(state)
+        return "enemy_defeated"
+    if defeated_kind in {"MINIBOSS", "MAJOR BOSS", "FINAL BOSS"}:
         set_reward(state, "relic", advance_after=not bool(dungeon))
     elif defeated_kind == "ELITE":
         if random.random() < 0.4:
@@ -765,8 +821,6 @@ def complete_combat(state):
             set_reward(state, "item", advance_after=not bool(dungeon))
     else:
         set_reward(state, "item", advance_after=not bool(dungeon))
-    if dungeon:
-        state["return_to_dungeon_after_reward"] = True
     return "enemy_defeated"
 
 
@@ -952,10 +1006,13 @@ def move_in_dungeon():
         dx, dy = dx / distance * .48, dy / distance * .48
     next_x = player["x"] + dx
     next_y = player["y"] + dy
-    radius = math.hypot((next_x - 4.5) / 3.6, (next_y - 3.5) / 2.55)
-    if radius > 1:
-        next_x = 4.5 + (next_x - 4.5) / radius
-        next_y = 3.5 + (next_y - 3.5) / radius
+    if not walkable(dungeon, next_x, next_y):
+        if walkable(dungeon, next_x, player["y"]):
+            next_y = player["y"]
+        elif walkable(dungeon, player["x"], next_y):
+            next_x = player["x"]
+        else:
+            next_x, next_y = player["x"], player["y"]
     player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
     marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
                    and math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]) <
@@ -964,6 +1021,13 @@ def move_in_dungeon():
         start_dungeon_encounter(state, marker)
         session.modified = True
         return jsonify({"status": "encounter_started", **public_state(state)})
+    for chest in dungeon.get("chests", []):
+        if not chest["opened"] and math.hypot(chest["x"] - player["x"], chest["y"] - player["y"]) < .48:
+            chest["opened"] = True
+            set_reward(state, "relic" if random.random() < .2 else "item")
+            state["return_to_dungeon_after_reward"] = True
+            session.modified = True
+            return jsonify({"status": "chest_opened", **public_state(state)})
     feature = dungeon.get("feature")
     if feature and not feature["used"] and math.hypot(feature["x"] - player["x"], feature["y"] - player["y"]) < .42:
         activate_dungeon_feature(state, feature)
@@ -976,7 +1040,10 @@ def move_in_dungeon():
             session.modified = True
             return jsonify({"status": "exit_locked", "message": f"Defeat {remaining} remaining enemies to unlock the gate.", **public_state(state)})
         if state["current_room"] < TOTAL_ROOMS:
-            advance_dungeon_floor(state)
+            if dungeon.get("mode") == "market" or random.random() >= .3:
+                advance_dungeon_floor(state)
+            else:
+                create_market_floor(state)
             session.modified = True
             return jsonify({"status": "floor_advanced", **public_state(state)})
     session.modified = True
@@ -1007,7 +1074,7 @@ def tick_dungeon():
             enemy["vx"], enemy["vy"] = math.cos(heading), math.sin(heading)
         x = enemy["x"] + enemy.get("vx", .5) * .16
         y = enemy["y"] + enemy.get("vy", .5) * .16
-        if math.hypot((x - 4.5) / 3.6, (y - 3.5) / 2.55) > .96:
+        if not walkable(dungeon, x, y, .35):
             enemy["vx"] = -enemy.get("vx", .5)
             enemy["vy"] = -enemy.get("vy", .5)
         else:

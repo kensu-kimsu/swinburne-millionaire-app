@@ -376,7 +376,7 @@
                 return `<img class="game-asset ${className}" src="/static/assets/dungeon/${illustratedBosses[id]}.webp" alt="">`;
             }
             if (kind === 'enemy' && ILLUSTRATED_ENEMIES.has(id)) {
-                return `<img class="game-asset ${className}" src="${ENEMY_ART_BASE}${id}.webp" alt="">`;
+                return `<img class="game-asset ${className}" src="/static/assets/dungeon/run-${id}-0.webp" alt="">`;
             }
             return `<svg class="game-asset ${className}" aria-hidden="true"><use href="${ICON_SPRITE}#${kind}-${id}"></use></svg>`;
         }
@@ -563,6 +563,7 @@
             pendingDefeat = null;
             lastMoveAt = performance.now();
             roamVisuals.clear(); sceneNodes.clear();
+            followCamera();
             setMusic('music-explore');
             playEffect('snd-confirm');
             closeEncyclopedia();
@@ -623,13 +624,26 @@
             if ([5, 10, 15].includes(currentState?.room)) shell.classList.add(`boss-${stageName(currentState.room)}`);
         }
 
-        const arenaPoint = (x, y) => ({x: 70 + x * 60, y: 45 + y * 43});
+        const arenaPoint = (x, y) => ({x: x * 72, y: y * 72});
+        function walkableLocal(dungeon, x, y) {
+            const r = .23;
+            return x > r && y > r && x < dungeon.width - r && y < dungeon.height - r &&
+                dungeon.obstacles.every(([ox, oy, w, h]) => !(x > ox-r && x < ox+w+r && y > oy-r && y < oy+h+r));
+        }
+        function followCamera() {
+            if (!heroPosition || !dungeonScene) return;
+            const map = document.getElementById('dungeon-map');
+            const p = arenaPoint(heroPosition.x, heroPosition.y);
+            const x = Math.max(0, Math.min(dungeonScene.width * 72 - 680, p.x - 340));
+            const y = Math.max(0, Math.min(dungeonScene.height * 72 - 400, p.y - 200));
+            map.setAttribute('viewBox', `${x} ${y} 680 400`);
+        }
         function stageName(room) { return {5: 'atlantis', 10: 'graveyard', 15: 'inferno'}[room] || 'catacomb'; }
         function syncArenaHud(data) {
-            document.getElementById('dungeon-floor').textContent = `${data.room} / ${data.total_rooms}`;
+            document.getElementById('dungeon-floor').textContent = data.dungeon.mode === 'market' ? `MARKET · ${data.room} / ${data.total_rooms}` : `${data.room} / ${data.total_rooms}`;
             document.getElementById('dungeon-hp').textContent = `${data.hp} / ${data.max_hp}`;
             document.getElementById('dungeon-remaining').textContent = data.dungeon.remaining;
-            document.getElementById('dungeon-status').textContent = data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
+            document.getElementById('dungeon-status').textContent = data.dungeon.mode === 'market' ? 'THE DESOLATED MARKET' : data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
                 [5, 10, 15].includes(data.room) ? 'THE BOSS AWAITS' : 'HUNT EVERY ENEMY';
         }
         function renderDungeon(data) {
@@ -644,10 +658,12 @@
             const map = document.getElementById('dungeon-map');
             const changed = dungeon.enemies.some(enemy => enemy.defeated && sceneNodes.has(enemy.uid)) ||
                 (dungeon.feature?.used && sceneNodes.has('feature')) ||
+                (dungeon.chests || []).some(chest => chest.opened && sceneNodes.has('chest')) ||
                 (dungeon.exit_unlocked && !dungeonScene?.exit_unlocked);
             if (key === dungeonFloorKey && sceneNodes.size && !changed) {
                 dungeonScene = dungeon;
                 lastMoveAt = performance.now();
+                followCamera();
                 return;
             }
             dungeonFloorKey = key;
@@ -664,14 +680,38 @@
                 for (const [attribute, value] of Object.entries(attrs)) node.setAttribute(attribute, value);
                 parent.appendChild(node); return node;
             };
-            const background = [5, 10, 15].includes(data.room) ? `stage-${dungeon.theme}` : `arena-${dungeon.theme}`;
-            svg('image', {href: `/static/assets/dungeon/${background}.webp`, x: 0, y: 0, width: 680, height: 400,
+            const background = dungeon.mode === 'market' ? 'arena-market' : [5, 10, 15].includes(data.room) ? `stage-${dungeon.theme}` : `arena-${dungeon.theme}`;
+            svg('image', {href: `/static/assets/dungeon/${background}.webp`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
                 preserveAspectRatio: 'xMidYMid slice', class: 'stage-painting'});
+            const obstacleLayer = svg('g', {class: `arena-obstacles obstacles-${dungeon.theme}`});
+            for (const [ox, oy, w, h] of dungeon.obstacles) {
+                const x = ox * 72, y = oy * 72;
+                svg('ellipse', {cx: x+w*36, cy:y+h*72+4, rx:w*40, ry:17, fill:'#05090d', opacity:'.75'}, obstacleLayer);
+                svg('path', {d:`M${x+8} ${y+20} L${x+22} ${y+4} L${x+w*72-18} ${y+8} L${x+w*72} ${y+26} L${x+w*72-5} ${y+h*72-12} L${x+17} ${y+h*72} Z`,
+                    fill: dungeon.theme === 'inferno' ? '#4b2420' : dungeon.theme === 'market' ? '#443c39' : '#252b32',
+                    stroke: dungeon.theme === 'atlantis' ? '#4d9b9d' : '#6b676b', 'stroke-width':2}, obstacleLayer);
+                svg('path', {d:`M${x+16} ${y+21} L${x+w*72-18} ${y+22} M${x+30} ${y+38} L${x+30} ${y+h*72-20}`,
+                    fill:'none', stroke:'#b7a99a', opacity:'.29', 'stroke-width':3}, obstacleLayer);
+            }
+            const propLayer = svg('g', {class:'arena-props'});
+            dungeon.obstacles.forEach(([ox, oy, w], index) => {
+                const p = arenaPoint(ox + w / 2, oy + .25);
+                const node = svg('g', {class:'swaying-lantern'}, propLayer);
+                svg('path', {d:'M0 -31 L0 -10 M-7 -8 L7 -8 L10 8 L-10 8 Z M-10 8 L10 8',
+                    fill:'none',stroke:'#b7996a','stroke-width':3}, node);
+                svg('path', {d:'M-5 -5 L5 -5 L7 5 L-7 5 Z',fill:'#f6ae59',opacity:'.85'}, node);
+                svg('circle', {cx:0,cy:0,r:11,fill:'#ff9a4b',opacity:'.12',filter:'blur(4px)'}, node);
+                decorNodes.push({node,x:p.x,y:p.y,phase:index*1.73,kind:'lantern'});
+            });
             const ambience = svg('g', {class: `arena-ambience ambience-${dungeon.theme}`});
             for (const item of dungeon.decor || []) {
                 const p = arenaPoint(item.x, item.y);
                 const node = svg('g', {class: `environment-${item.kind}`}, ambience);
-                svg('circle', {cx: 0, cy: 0, r: item.kind === 'mist' ? 9 : 3}, node);
+                if (item.kind === 'fire') {
+                    svg('path', {d:'M-6 4 Q-12 -10 0 -22 Q-2 -7 8 -12 Q16 3 4 9 Q-5 13 -6 4Z', fill:'currentColor'}, node);
+                    svg('circle', {cx:0, cy:2, r:3, fill:'#fff4ac'}, node);
+                } else if (item.kind === 'mist') svg('ellipse', {cx:0, cy:0, rx:19, ry:8}, node);
+                else svg('circle', {cx:0, cy:0, r:3}, node);
                 if (item.kind === 'rune') svg('path', {d: 'M-7 0 L0 -9 L7 0 L0 9 Z', fill: 'none', stroke: 'currentColor'}, node);
                 node.setAttribute('transform', `translate(${p.x} ${p.y})`);
                 decorNodes.push({node, x: p.x, y: p.y, phase: item.phase, kind: item.kind});
@@ -682,20 +722,29 @@
                 const group = svg('g', {class: `arena-actor ${kind}`, 'data-uid': actor.uid || kind,
                     transform: `translate(${p.x} ${p.y})`}, actorLayer);
                 svg('ellipse', {cx: 0, cy: 2, rx: width * .22, ry: 7, class: 'arena-shadow'}, group);
+                if (kind === 'exit') {
+                    group.classList.toggle('locked', !dungeon.exit_unlocked);
+                    svg('ellipse', {cx:0,cy:-31,rx:25,ry:36,class:'portal-light'}, group);
+                }
                 if (kind === 'boss') for (let i = 0; i < 14; i++) {
                     svg('circle', {cx: Math.cos(i * 2.4) * 63, cy: -48 + Math.sin(i * 2.4) * 55,
                         r: 2 + i % 3, class: 'boss-aura', style: `animation-delay:-${i * .17}s`}, group);
                 }
-                if (sheet) {
-                    const frame = svg('svg', {x: -width / 2, y: -height + 6, width, height,
-                        viewBox: `0 0 320 ${actor.enemy_id === 'spam_bot' ? 480 : actor.enemy_id === 'insider_threat' ? 445 : 427}`,
-                        preserveAspectRatio: 'xMidYMid meet', class: 'actor-frame'}, group);
-                    const frameHeight = actor.enemy_id === 'spam_bot' ? 480 : actor.enemy_id === 'insider_threat' ? 445 : 427;
-                    svg('image', {href: art, x: 0, y: 0, width: 1280, height: frameHeight}, frame);
-                    group.dataset.frameHeight = frameHeight;
-                } else if (art) svg('image', {href: art, x: -width / 2, y: -height + 6, width, height,
+                if (sheet) svg('image', {href: art.replace('.webp', '-0.webp'), x:-width/2,
+                    y:-height+6, width, height, preserveAspectRatio:'xMidYMax meet', class:'actor-frame'}, group);
+                else if (art) svg('image', {href: art, x: -width / 2, y: -height + 6, width, height,
                     preserveAspectRatio: 'xMidYMax meet'}, group);
-                else { const t = svg('text', {x: 0, y: -8, 'text-anchor': 'middle', class: 'arena-label'}, group); t.textContent = kind === 'exit' ? 'EXIT' : '✦'; }
+                else if (kind === 'chest') {
+                    svg('rect', {x:-19,y:-26,width:38,height:24,rx:3,fill:'#543725',stroke:'#d5a260','stroke-width':3}, group);
+                    svg('path', {d:'M-20 -26 Q0 -43 20 -26 M-17 -27 L17 -27 M0 -32 L0 -6',fill:'none',stroke:'#edc27a','stroke-width':4}, group);
+                    svg('circle', {cx:0,cy:-18,r:3,fill:'#f7e5a6'}, group);
+                } else { const t = svg('text', {x: 0, y: -8, 'text-anchor': 'middle', class: 'arena-label'}, group); t.textContent = kind === 'exit' ? 'EXIT' : '✦'; }
+                if (kind === 'exit') {
+                    for (let i=0;i<6;i++) svg('circle', {cx:Math.sin(i*2.3)*25,cy:-18-i*8,r:1.8+i%2,
+                        class:'portal-spark',style:`animation-delay:-${i*.27}s`}, group);
+                    const label = svg('text',{x:0,y:18,'text-anchor':'middle',class:'arena-label portal-label'},group);
+                    label.textContent = 'EXIT';
+                }
                 const title = svg('title', {}, group); title.textContent = actor.name || kind;
                 sceneNodes.set(actor.uid || kind, group);
                 return group;
@@ -704,12 +753,13 @@
                 if (enemy.defeated) continue;
                 const bossArt = {phishing_king:'boss-leviathan', ransomware_overlord:'boss-death', root_admin:'boss-dragon'}[enemy.enemy_id];
                 actorNode(enemy, bossArt ? 'boss' : 'enemy', bossArt ? `/static/assets/dungeon/${bossArt}.webp`
-                    : `/static/assets/dungeon/run-${enemy.enemy_id}.webp`, bossArt ? 190 : 95, bossArt ? 180 : 90, !bossArt);
+                    : `/static/assets/dungeon/run-${enemy.enemy_id}.webp`, bossArt ? 150 : 62, bossArt ? 148 : 65, !bossArt);
                 roamVisuals.set(enemy.uid, {x: enemy.x, y: enemy.y});
             }
-            if (dungeon.feature && !dungeon.feature.used) actorNode(dungeon.feature, 'feature', null, 40, 40);
-            actorNode(dungeon.exit, 'exit', null, 40, 40);
-            actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 100, 108);
+            if (dungeon.feature && !dungeon.feature.used) actorNode(dungeon.feature, 'merchant', dungeon.mode === 'market' ? '/static/assets/npcs/cipher_merchant.webp' : null, 74, 94);
+            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', null, 42, 42);
+            actorNode(dungeon.exit, 'exit', '/static/assets/dungeon/portal-arch.webp', 104, 108);
+            actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 70, 78);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
                 const p = arenaPoint(pendingDefeat.x, pendingDefeat.y);
                 const ghost = svg('image', {href: pendingDefeat.href, x: p.x - (pendingDefeat.boss ? 95 : 48),
@@ -718,6 +768,7 @@
                 setTimeout(() => ghost.remove(), 1300);
                 pendingDefeat = null;
             }
+            followCamera();
             setMusic('music-explore');
         }
         function positionActors(time) {
@@ -747,11 +798,17 @@
                 const moving = Math.hypot(enemy.x - visual.x, enemy.y - visual.y) > .008;
                 node.classList.toggle('roaming', moving);
                 const frame = node.querySelector('.actor-frame');
-                if (frame) frame.setAttribute('viewBox', `${(moving ? Math.floor(time / 130) % 4 : Math.floor(time / 900) % 2) * 320} 0 320 ${node.dataset.frameHeight}`);
+                if (frame) {
+                    const href = `/static/assets/dungeon/run-${enemy.enemy_id}-${moving ? Math.floor(time / 130) % 4 : Math.floor(time / 900) % 2}.webp`;
+                    if (frame.getAttribute('href') !== href) frame.setAttribute('href', href);
+                }
             }
+            followCamera();
             for (const {node, x, y, phase, kind} of decorNodes) {
                 const sway = Math.sin(time * .0017 + phase);
-                node.setAttribute('transform', `translate(${x + sway * (kind === 'mist' ? 7 : 3)} ${y + Math.cos(time * .0014 + phase) * 5})`);
+                node.setAttribute('transform', kind === 'lantern'
+                    ? `translate(${x} ${y}) rotate(${sway * 11})`
+                    : `translate(${x + sway * (kind === 'mist' ? 7 : 3)} ${y + Math.cos(time * .0014 + phase) * 5})`);
                 node.style.opacity = `${.45 + .4 * Math.abs(sway)}`;
             }
         }
@@ -766,9 +823,10 @@
                     const speed = delta * 2.3;
                     const nextX = heroPosition.x + joystick.x / Math.max(1, magnitude) * speed;
                     const nextY = heroPosition.y + joystick.y / Math.max(1, magnitude) * speed;
-                    const radius = Math.hypot((nextX - 4.5) / 3.6, (nextY - 3.5) / 2.55);
-                    heroPosition.x = radius > 1 ? 4.5 + (nextX - 4.5) / radius : nextX;
-                    heroPosition.y = radius > 1 ? 3.5 + (nextY - 3.5) / radius : nextY;
+                    if (walkableLocal(dungeonScene, nextX, nextY)) {
+                        heroPosition.x = nextX; heroPosition.y = nextY;
+                    } else if (walkableLocal(dungeonScene, nextX, heroPosition.y)) heroPosition.x = nextX;
+                    else if (walkableLocal(dungeonScene, heroPosition.x, nextY)) heroPosition.y = nextY;
                     heroDirection = joystick.x < -.12 ? 'left' : joystick.x > .12 ? 'right' : joystick.y < 0 ? 'up' : 'down';
                     if (time - lastMoveSent > 95 && !dungeonMoving && !tickBusy) {
                         lastMoveSent = time;
@@ -800,7 +858,7 @@
             if (data.status === 'encounter_started') { await playBattleTransition(); await processGameState(data); return; }
             if (data.status === 'floor_advanced') {
                 heroPosition = null;
-                document.getElementById('dungeon-message').textContent = 'A deeper arena materializes around you.';
+                document.getElementById('dungeon-message').textContent = data.dungeon.mode === 'market' ? 'A deserted market lies beyond the gate.' : 'A deeper arena materializes around you.';
                 await processGameState(data); return;
             }
             if (data.pending !== 'dungeon') { await processGameState(data); return; }
@@ -1058,7 +1116,7 @@
                 const killed = dungeonScene?.enemies.find(enemy => enemy.enemy_id === data.defeated_enemy_id && !enemy.defeated);
                 if (killed) {
                     const art = {phishing_king: 'boss-leviathan', ransomware_overlord: 'boss-death', root_admin: 'boss-dragon'}[killed.enemy_id];
-                    pendingDefeat = {x: killed.x, y: killed.y, floor: data.room, boss: !!art, href: art ? `/static/assets/dungeon/${art}.webp` : `/static/assets/enemies/${killed.enemy_id}.webp`};
+                    pendingDefeat = {x: killed.x, y: killed.y, floor: data.room, boss: !!art, href: art ? `/static/assets/dungeon/${art}.webp` : `/static/assets/dungeon/run-${killed.enemy_id}-0.webp`};
                 }
                 const bossKinds = ['MINIBOSS', 'MAJOR BOSS', 'FINAL BOSS'];
                 const fanfare = bossKinds.includes(data.defeated_enemy_kind) ? 'snd-major-victory' : 'snd-victory';
@@ -1240,6 +1298,7 @@
 
         function showRouteChoice(data) {
             stopTransientSounds();
+            followCamera();
             setMusic('music-explore');
             openDecision('ROUTE SELECTION', `Prepare for Stage ${data.room}`, 'Support rooms happen between fights and do not advance the 15-stage run.');
             const area = document.getElementById('decision-options');
