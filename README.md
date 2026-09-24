@@ -327,3 +327,26 @@ The Cyber Knight and each enemy have locally hosted SVG map sprites with idle an
 movement motion. The knight's chest carries a stylised red S crest. Combat retains
 the original detailed enemy portraits, turn-based encounter scene, and separate
 normal/boss victory cues.
+
+## Illustrated free movement update
+
+Exploration now runs an animation frame loop. Hold WASD or the arrow keys to move
+continuously; on touch screens, drag the virtual joystick. The hero moves within
+walkable cells, is stopped by walls, and enters combat when crossing into an
+enemy's cell. Enemies choose neighboring traversable cells roughly once a second
+and visually interpolate between positions. An enemy reaching the player's cell
+also initiates combat. The original turn-based questions, rewards, summaries,
+and victory cues remain in place.
+
+The normal dungeon uses an illustrated cyber-catacomb backdrop. Boss floors use
+individual arenas: Atlantis for Cyber Leviathan (floor 5), a haunted graveyard
+for Death Protocol (floor 10), and an inferno for the Root Dragon (floor 15).
+The hero and bosses have generated cutout art; the existing detailed enemy
+portraits serve as the roaming sprites. The arena layers keep bright maze tiles
+and dark walls visible above the scene art. Bosses are larger than the hero,
+with drifting particles, idle motion, movement animation, and a collapse effect
+when defeated.
+
+The hero's eight illustrated running frames are drawn in sequence at about 10 frames
+per second while the position loop interpolates at the display refresh rate.
+The still portrait returns when input stops. Direction changes mirror the cutout.

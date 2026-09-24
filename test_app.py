@@ -86,6 +86,30 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(data["enemy"]["id"], "spam_bot")
         self.assertIsNone(data["pending"])
 
+    def test_roaming_enemy_can_enter_player_tile_and_start_battle(self):
+        self.client.post("/api/start")
+        with self.client.session_transaction() as flask_session:
+            state = flask_session["game_state"]
+            dungeon = state["dungeon"]
+            dungeon["tiles"] = ["#########"] + ["#.......#"] * 5 + ["#########"]
+            dungeon["player"] = {"x": 1, "y": 1}
+            dungeon["exit"] = {"x": 7, "y": 5}
+            dungeon["enemies"][0].update({"x": 2, "y": 1, "enemy_id": "spam_bot", "elite": False})
+            dungeon["enemies"][1]["defeated"] = True
+            flask_session["game_state"] = state
+        with patch("app.random.random", return_value=0), patch("app.random.choice", side_effect=lambda options: options[-1]):
+            data = self.client.post("/api/dungeon/tick").get_json()
+        self.assertEqual(data["status"], "encounter_started")
+        self.assertEqual(data["enemy"]["id"], "spam_bot")
+
+    def test_illustrated_arenas_and_joystick_assets_are_available(self):
+        page = self.client.get("/").get_data(as_text=True)
+        self.assertIn('id="movement-stick"', page)
+        self.assertIn("requestAnimationFrame(movementFrame)", page)
+        for name in ("hero-illustrated", "stage-catacomb", "stage-atlantis", "stage-graveyard",
+                     "stage-inferno", "boss-leviathan", "boss-death", "boss-dragon"):
+            self.assertGreater((Path(__file__).parent / "static/assets/dungeon" / f"{name}.webp").stat().st_size, 1000)
+
     def test_dungeon_exit_requires_every_enemy_and_advances_floor(self):
         self.client.post("/api/start")
         with self.client.session_transaction() as flask_session:

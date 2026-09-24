@@ -946,13 +946,7 @@ def move_in_dungeon():
     dungeon["player"] = {"x": target_x, "y": target_y}
     marker = next((entry for entry in dungeon["enemies"] if not entry["defeated"] and entry["x"] == target_x and entry["y"] == target_y), None)
     if marker:
-        state["current_enemy_uid"] = marker["uid"]
-        state["enemy"] = create_enemy(
-            state["current_room"], elite=marker["elite"], relics=state["relics"], enemy_id=marker["enemy_id"]
-        )
-        state["pending"] = None
-        if marker["elite"]:
-            discover("mechanics", "elites")
+        start_dungeon_encounter(state, marker)
         session.modified = True
         return jsonify({"status": "encounter_started", **public_state(state)})
 
@@ -975,6 +969,44 @@ def move_in_dungeon():
 
     session.modified = True
     return jsonify({"status": "moved", **public_state(state)})
+
+
+def start_dungeon_encounter(state, marker):
+    state["current_enemy_uid"] = marker["uid"]
+    state["enemy"] = create_enemy(
+        state["current_room"], elite=marker["elite"], relics=state["relics"], enemy_id=marker["enemy_id"]
+    )
+    state["pending"] = None
+    if marker["elite"]:
+        discover("mechanics", "elites")
+
+
+@app.route("/api/dungeon/tick", methods=["POST"])
+def tick_dungeon():
+    state = session.get("game_state")
+    if not state or state.get("pending") != "dungeon":
+        return jsonify({"error": "The dungeon is not active."}), 400
+    dungeon = state["dungeon"]
+    occupied = {(enemy["x"], enemy["y"]) for enemy in dungeon["enemies"] if not enemy["defeated"]}
+    exit_point = (dungeon["exit"]["x"], dungeon["exit"]["y"])
+    for enemy in dungeon["enemies"]:
+        if enemy["defeated"] or random.random() > (0.35 if "BOSS" in enemy["kind"] else 0.75):
+            continue
+        origin = (enemy["x"], enemy["y"])
+        choices = [(origin[0] + dx, origin[1] + dy) for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0))]
+        choices = [(x, y) for x, y in choices if 0 <= x < dungeon["width"] and 0 <= y < dungeon["height"]
+                   and dungeon["tiles"][y][x] == "." and (x, y) not in occupied and (x, y) != exit_point]
+        if not choices:
+            continue
+        occupied.remove(origin)
+        enemy["x"], enemy["y"] = random.choice(choices)
+        occupied.add((enemy["x"], enemy["y"]))
+        if (enemy["x"], enemy["y"]) == (dungeon["player"]["x"], dungeon["player"]["y"]):
+            start_dungeon_encounter(state, enemy)
+            session.modified = True
+            return jsonify({"status": "encounter_started", **public_state(state)})
+    session.modified = True
+    return jsonify({"status": "roaming", **public_state(state)})
 
 
 @app.route("/api/question", methods=["GET"])
