@@ -317,3 +317,13 @@ confirmation feedback, victory, defeat, and answer feedback sounds.
 - HTML5
 - CSS3
 - Flask signed-cookie sessions for current-run and discovery progress
+
+## Isometric exploration assets
+
+The map uses scalable vector tiles sized to the viewport, so the complete floor remains
+visible on narrow screens. Cyan diamond tiles indicate walkable paths; raised dark
+blocks mark walls. The D-pad arrows correspond to the projected map directions.
+The Cyber Knight and each enemy have locally hosted SVG map sprites with idle and
+movement motion. The knight's chest carries a stylised red S crest. Combat retains
+the original detailed enemy portraits, turn-based encounter scene, and separate
+normal/boss victory cues.

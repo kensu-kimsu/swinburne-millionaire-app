@@ -1473,3 +1473,41 @@ button { font: inherit; }
     .feedback { max-height: min(64dvh, 440px); }
     .main-panel.turn-resolved .enemy-card { display: flex; }
 }
+
+/* Isometric floor: SVG viewBox keeps the entire walkable maze visible on narrow phones. */
+.dungeon-map {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    aspect-ratio: 680 / 400;
+    padding: 0;
+    overflow: visible;
+    background: radial-gradient(ellipse at center, #173346 0%, #07111f 65%, #03060c 100%);
+}
+.iso-path { fill: #225673; stroke: #7bd8e8; stroke-width: 2.2; }
+.iso-path-light { fill: #b7ffff; opacity: .8; }
+.iso-wall { fill: #243247; stroke: #506778; stroke-width: 1; }
+.iso-wall-front { fill: #101d30; stroke: #203e54; stroke-width: 1; }
+.iso-wall-side { fill: #152a40; stroke: #234860; stroke-width: 1; }
+.iso-shadow { fill: #020914; opacity: .65; }
+.iso-actor image { transform-box: fill-box; transform-origin: center bottom; animation: iso-idle 1.5s ease-in-out infinite alternate; }
+.iso-enemy image { animation: iso-roam 1.1s ease-in-out infinite alternate; }
+.iso-boss image { animation: iso-roam .9s ease-in-out infinite alternate; filter: drop-shadow(0 0 5px #ff657a); }
+.iso-hero image { animation: iso-idle .9s ease-in-out infinite alternate; filter: drop-shadow(0 0 6px #54eaff); }
+.iso-symbol { fill: #9ffff2; font: 800 9px system-ui, sans-serif; paint-order: stroke; stroke: #061b22; stroke-width: 3px; }
+.iso-locked .iso-symbol { fill: #ffbd9a; }
+@keyframes iso-idle { to { transform: translateY(-3px) scale(1.035); } }
+@keyframes iso-roam { to { transform: translate(2px, -4px) rotate(3deg); } }
+@media (max-width: 580px) {
+    .dungeon-screen { padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+    .dungeon-map-wrap { width: 100%; }
+    .dungeon-map { width: 100%; max-height: min(100%, 58dvh); }
+    .dungeon-controls { flex: 0 0 auto; }
+    .dungeon-controls button { min-height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) { .iso-actor image { animation: none; } }
+.iso-hero.facing-left image, .iso-hero.facing-down image { scale: -1 1; }
+.iso-hero.running image { animation: iso-run .16s ease-in-out infinite alternate; }
+@keyframes iso-run { to { transform: translate(3px, -7px) rotate(5deg); } }
+@media (prefers-reduced-motion: reduce) { .iso-hero.running image { animation: none; } }

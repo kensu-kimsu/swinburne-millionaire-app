@@ -137,14 +137,14 @@
             <h2 id="dungeon-status">HUNT EVERY ENEMY</h2>
         </div>
         <div class="dungeon-map-wrap">
-            <div id="dungeon-map" class="dungeon-map"></div>
+            <svg id="dungeon-map" class="dungeon-map" viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Isometric dungeon map with bright walkable paths"></svg>
         </div>
         <p id="dungeon-message" class="dungeon-message">Use the controls to explore. The exit opens when all enemies are defeated.</p>
         <div class="dungeon-controls" aria-label="Movement controls">
-            <button onclick="moveDungeon('up')" aria-label="Move up">▲</button>
-            <button onclick="moveDungeon('left')" aria-label="Move left">◀</button>
-            <button onclick="moveDungeon('down')" aria-label="Move down">▼</button>
-            <button onclick="moveDungeon('right')" aria-label="Move right">▶</button>
+            <button onclick="moveDungeon('up')" aria-label="Move northeast">↗</button>
+            <button onclick="moveDungeon('left')" aria-label="Move northwest">↖</button>
+            <button onclick="moveDungeon('down')" aria-label="Move southwest">↙</button>
+            <button onclick="moveDungeon('right')" aria-label="Move southeast">↘</button>
         </div>
     </section>
 
@@ -274,6 +274,8 @@
         let answerLockTimer = null;
         let answerLocked = false;
         let dungeonMoving = false;
+        let heroDirection = 'down';
+        let heroRunningUntil = 0;
         let isContinuing = false;
         let currentMusic = null;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
@@ -613,35 +615,53 @@
             document.getElementById('dungeon-remaining').textContent = dungeon.remaining;
             document.getElementById('dungeon-status').textContent = dungeon.exit_unlocked ? 'THE EXIT IS OPEN' : 'HUNT EVERY ENEMY';
             const map = document.getElementById('dungeon-map');
-            map.style.setProperty('--dungeon-columns', dungeon.width);
-            map.style.setProperty('--dungeon-rows', dungeon.height);
-            map.innerHTML = '';
-            const enemies = new Map(dungeon.enemies.filter(enemy => !enemy.defeated).map(enemy => [`${enemy.x},${enemy.y}`, enemy]));
-            for (let y = 0; y < dungeon.height; y++) {
-                for (let x = 0; x < dungeon.width; x++) {
-                    const tile = document.createElement('div');
-                    tile.className = dungeon.tiles[y][x] === '#' ? 'dungeon-tile wall' : 'dungeon-tile floor';
-                    const key = `${x},${y}`;
-                    const enemy = enemies.get(key);
-                    if (enemy) {
-                        tile.classList.add('enemy-spawn', enemy.elite ? 'elite-spawn' : '', enemy.kind.includes('BOSS') ? 'boss-spawn' : '');
-                        tile.innerHTML = gameAsset('enemy', enemy.enemy_id, 'map-enemy');
-                        tile.title = enemy.name;
-                    }
-                    if (dungeon.feature && !dungeon.feature.used && dungeon.feature.x === x && dungeon.feature.y === y) {
-                        tile.classList.add('feature-spawn');
-                        tile.innerHTML = gameAsset('ui', dungeon.feature.type, 'map-feature');
-                    }
-                    if (dungeon.exit.x === x && dungeon.exit.y === y) {
-                        tile.classList.add('dungeon-exit', dungeon.exit_unlocked ? 'unlocked' : 'locked');
-                        tile.innerHTML = dungeon.exit_unlocked ? '⇧' : '🔒';
-                    }
-                    if (dungeon.player.x === x && dungeon.player.y === y) {
-                        tile.classList.add('player-tile');
-                        tile.innerHTML = `<span class="dungeon-player">⚔</span>`;
-                    }
-                    map.appendChild(tile);
+            map.replaceChildren();
+            const ns = 'http://www.w3.org/2000/svg';
+            const svg = (tag, attrs, parent = map) => {
+                const node = document.createElementNS(ns, tag);
+                for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+                parent.appendChild(node);
+                return node;
+            };
+            const point = (x, y) => ({x: 340 + (x - y) * 34, y: 48 + (x + y) * 17});
+            const polygon = (x, y, wall) => {
+                const p = point(x, y);
+                const corners = `${p.x},${p.y} ${p.x + 33},${p.y + 16} ${p.x},${p.y + 32} ${p.x - 33},${p.y + 16}`;
+                if (wall) {
+                    svg('path', {d: `M ${p.x - 33} ${p.y + 16} L ${p.x} ${p.y + 32} L ${p.x} ${p.y + 46} L ${p.x - 33} ${p.y + 30} Z`, class: 'iso-wall-side'});
+                    svg('path', {d: `M ${p.x} ${p.y + 32} L ${p.x + 33} ${p.y + 16} L ${p.x + 33} ${p.y + 30} L ${p.x} ${p.y + 46} Z`, class: 'iso-wall-front'});
                 }
+                svg('polygon', {points: corners, class: wall ? 'iso-wall' : 'iso-path'});
+                if (!wall) svg('circle', {cx: p.x, cy: p.y + 16, r: 2, class: 'iso-path-light'});
+            };
+            for (let depth = 0; depth < dungeon.width + dungeon.height - 1; depth++) {
+                for (let y = 0; y < dungeon.height; y++) {
+                    const x = depth - y;
+                    if (x >= 0 && x < dungeon.width) polygon(x, y, dungeon.tiles[y][x] === '#');
+                }
+            }
+            const marker = (x, y, kind, href, label) => {
+                const p = point(x, y);
+                const group = svg('g', {class: `iso-actor ${kind}`});
+                svg('ellipse', {cx: p.x, cy: p.y + 25, rx: 20, ry: 7, class: 'iso-shadow'}, group);
+                if (href) svg('image', {href, x: p.x - 27, y: p.y - 40, width: 54, height: 66, preserveAspectRatio: 'xMidYMax meet'}, group);
+                else {
+                    const text = svg('text', {x: p.x, y: p.y + 13, 'text-anchor': 'middle', class: 'iso-symbol'}, group);
+                    text.textContent = label;
+                }
+                const title = svg('title', {}, group);
+                title.textContent = label;
+            };
+            const actors = dungeon.enemies.filter(enemy => !enemy.defeated).map(enemy => ({...enemy, type: 'enemy'}));
+            if (dungeon.feature && !dungeon.feature.used) actors.push({...dungeon.feature, type: 'feature'});
+            actors.push({...dungeon.exit, type: 'exit'});
+            actors.push({...dungeon.player, type: 'hero'});
+            actors.sort((a, b) => (a.x + a.y) - (b.x + b.y) || (a.type === 'hero' ? 1 : -1));
+            for (const actor of actors) {
+                if (actor.type === 'hero') marker(actor.x, actor.y, `iso-hero facing-${heroDirection} ${Date.now() < heroRunningUntil ? 'running' : ''}`, '/static/assets/dungeon/cyber-knight.svg', 'Cyber Knight');
+                else if (actor.type === 'enemy') marker(actor.x, actor.y, actor.kind.includes('BOSS') ? 'iso-boss' : 'iso-enemy', `/static/assets/dungeon/${actor.enemy_id}.svg`, actor.name);
+                else if (actor.type === 'exit') marker(actor.x, actor.y, dungeon.exit_unlocked ? 'iso-open' : 'iso-locked', null, dungeon.exit_unlocked ? 'EXIT' : 'LOCKED');
+                else marker(actor.x, actor.y, 'iso-feature', null, 'SUPPLY');
             }
             setMusic('music-explore');
         }
@@ -653,6 +673,10 @@
             const data = await postJson('/api/dungeon/move', {direction});
             dungeonMoving = false;
             if (!data) return;
+            if (data.status !== 'blocked') {
+                heroDirection = direction;
+                heroRunningUntil = Date.now() + 300;
+            }
             if (data.message) {
                 document.getElementById('dungeon-message').textContent = data.message;
                 if (data.status === 'blocked' || data.status === 'exit_locked') playEffect('snd-wrong');
@@ -667,6 +691,7 @@
                 document.getElementById('dungeon-message').textContent = 'A deeper floor materializes around you.';
             }
             await processGameState(data);
+            setTimeout(() => document.querySelector('.iso-hero')?.classList.remove('running'), 320);
         }
 
         function playBattleTransition() {
