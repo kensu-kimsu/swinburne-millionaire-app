@@ -239,6 +239,16 @@ class RoguelikeGameTests(unittest.TestCase):
         moved = self.client.post('/api/dungeon/move', json={'x':4.1,'y':3.5}).get_json()
         self.assertEqual(moved['dungeon']['player']['x'], 3.5)
 
+    def test_large_enemy_contact_matches_its_visual_scale(self):
+        from app import encounter_radius
+        hydra = {'kind':'ENEMY','enemy_id':'zero_day_exploit'}
+        panther = {'kind':'ENEMY','enemy_id':'credential_thief'}
+        normal = {'kind':'ENEMY','enemy_id':'spam_bot'}
+        boss = {'kind':'FINAL BOSS','enemy_id':'root_admin'}
+        self.assertGreater(encounter_radius(boss),encounter_radius(hydra))
+        self.assertGreater(encounter_radius(hydra),encounter_radius(panther))
+        self.assertGreater(encounter_radius(panther),encounter_radius(normal))
+
     def test_chest_loot_and_market_interlude_do_not_skip_a_level(self):
         from unittest.mock import patch
         self.client.post('/api/start')

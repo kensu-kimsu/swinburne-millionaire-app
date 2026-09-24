@@ -477,6 +477,12 @@ def walkable(dungeon, x, y, clearance=.23):
                for ox, oy, width, height in dungeon["obstacles"])
 
 
+def encounter_radius(enemy):
+    if "BOSS" in enemy["kind"]:
+        return 1.25
+    return {"zero_day_exploit": 1.0, "credential_thief": .85}.get(enemy["enemy_id"], .75)
+
+
 def create_dungeon_floor(state):
     """Load one of the fifteen fixed maps; encounters and chest chances vary."""
     stage = state["current_room"]
@@ -1028,7 +1034,7 @@ def move_in_dungeon():
     player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
     marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
                    and math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]) <
-                   (0.88 if "BOSS" in enemy["kind"] else .52)), None)
+                   encounter_radius(enemy)), None)
     if marker:
         start_dungeon_encounter(state, marker)
         session.modified = True
@@ -1091,7 +1097,7 @@ def tick_dungeon():
             enemy["vy"] = -enemy.get("vy", .5)
         else:
             enemy["x"], enemy["y"] = round(x, 3), round(y, 3)
-        if math.hypot(enemy["x"] - dungeon["player"]["x"], enemy["y"] - dungeon["player"]["y"]) < .52:
+        if math.hypot(enemy["x"] - dungeon["player"]["x"], enemy["y"] - dungeon["player"]["y"]) < encounter_radius(enemy):
             start_dungeon_encounter(state, enemy)
             session.modified = True
             return jsonify({"status": "encounter_started", **public_state(state)})
