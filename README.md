@@ -112,6 +112,7 @@ All fifteen levels have fixed obstacle layouts in an 18 by 11 world. A camera
 follows the hero around the illustrated arena; obstacles stop the hero and roaming
 enemies. Floors 1–5 use catacombs, 6–10 the temple, and 11–15 the foundry,
 with special Atlantis, graveyard and inferno paintings on boss levels.
+Painted ruins, volcanic rubble, and broken stalls mark the collidable obstacles.
 Every exit has an animated magical portal set in front of a stone tunnel entrance;
 it stays dim until the required enemies are defeated.
 

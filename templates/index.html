@@ -684,14 +684,14 @@
             svg('image', {href: `/static/assets/dungeon/${background}.webp`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
                 preserveAspectRatio: 'xMidYMid slice', class: 'stage-painting'});
             const obstacleLayer = svg('g', {class: `arena-obstacles obstacles-${dungeon.theme}`});
+            const obstacleArt = dungeon.theme === 'market' ? 'market' :
+                ['inferno', 'foundry'].includes(dungeon.theme) ? 'inferno' : 'ruins';
             for (const [ox, oy, w, h] of dungeon.obstacles) {
                 const x = ox * 72, y = oy * 72;
                 svg('ellipse', {cx: x+w*36, cy:y+h*72+4, rx:w*40, ry:17, fill:'#05090d', opacity:'.75'}, obstacleLayer);
-                svg('path', {d:`M${x+8} ${y+20} L${x+22} ${y+4} L${x+w*72-18} ${y+8} L${x+w*72} ${y+26} L${x+w*72-5} ${y+h*72-12} L${x+17} ${y+h*72} Z`,
-                    fill: dungeon.theme === 'inferno' ? '#4b2420' : dungeon.theme === 'market' ? '#443c39' : '#252b32',
-                    stroke: dungeon.theme === 'atlantis' ? '#4d9b9d' : '#6b676b', 'stroke-width':2}, obstacleLayer);
-                svg('path', {d:`M${x+16} ${y+21} L${x+w*72-18} ${y+22} M${x+30} ${y+38} L${x+30} ${y+h*72-20}`,
-                    fill:'none', stroke:'#b7a99a', opacity:'.29', 'stroke-width':3}, obstacleLayer);
+                svg('image', {href:`/static/assets/dungeon/obstacle-${obstacleArt}.webp`,
+                    x:x-8,y:y-12,width:w*72+16,height:h*72+18,
+                    preserveAspectRatio:'none',class:'painted-obstacle'}, obstacleLayer);
             }
             const propLayer = svg('g', {class:'arena-props'});
             dungeon.obstacles.forEach(([ox, oy, w], index) => {
