@@ -233,11 +233,15 @@ class RoguelikeGameTests(unittest.TestCase):
         self.client.post('/api/start')
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
-            state['dungeon']['player'] = {'x':3.5,'y':3.5}
+            state['dungeon']['player'] = {'x':4.05,'y':4.5}
             state['dungeon']['obstacles'] = ((4,3,2,3),)
             flask_session['game_state'] = state
-        moved = self.client.post('/api/dungeon/move', json={'x':4.1,'y':3.5}).get_json()
-        self.assertEqual(moved['dungeon']['player']['x'], 3.5)
+        moved = self.client.post('/api/dungeon/move', json={'x':4.53,'y':4.5}).get_json()
+        self.assertEqual(moved['dungeon']['player']['x'], 4.05)
+        from app import walkable
+        arena = moved['dungeon']
+        self.assertTrue(walkable(arena, 4.04, 3.04))  # transparent corner stays passable
+        self.assertFalse(walkable(arena, 5, 4.5))  # opaque center blocks movement
 
     def test_large_enemy_contact_matches_its_visual_scale(self):
         from app import encounter_radius
@@ -296,12 +300,33 @@ class RoguelikeGameTests(unittest.TestCase):
         from pathlib import Path
         root = Path(__file__).parent
         page = (root/'templates/index.html').read_text()
-        self.assertIn("actorNode(dungeon.exit, 'exit', '/static/assets/dungeon/fx-portal-0.webp'",page)
+        self.assertIn("'exit', '/static/assets/dungeon/fx-portal-0.webp'",page)
+        self.assertIn('dungeon.portal_visual', page)
         self.assertIn('src="/static/assets/dungeon/run-${id}-0.webp"',page)
         self.assertGreater((root/'static/assets/dungeon/fx-portal-0.webp').stat().st_size,1000)
         for enemy in ('spam_bot','insider_threat','zero_day_exploit'):
             for frame in range(4):
                 self.assertGreater((root/f'static/assets/dungeon/run-{enemy}-{frame}.webp').stat().st_size,1000)
+
+    def test_movement_listeners_do_not_accumulate_and_portal_faces_door(self):
+        page = (Path(__file__).parent/'templates/index.html').read_text()
+        self.assertEqual(page.count("document.addEventListener('keydown'"), 1)
+        self.assertEqual(page.count("window.addEventListener('resize', followCamera)"), 1)
+        self.assertIn("scale(${heroDirection === 'left' ? -1 : 1} 1)", page)
+        from app import create_dungeon_floor
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            for stage in (1, 10, 15):
+                state['current_room'] = stage
+                create_dungeon_floor(state)
+                arena = state['dungeon']
+                self.assertEqual(arena['portal_visual']['x'], arena['exit']['x'])
+                self.assertLess(arena['portal_visual']['y'], arena['exit']['y'])
+                self.assertTrue(all(item['kind'] in ('flame', 'fairy') and item['size'] <= 19
+                                    for item in arena['decor']))
+                if stage == 10: self.assertEqual(arena['exit']['x'], 9.0)
+            self.assertEqual(state['dungeon']['exit']['x'], 16.4)
 
     def test_wrong_answer_removes_hp_but_run_continues(self):
         correct_answer = self.answer_for_current_question()
@@ -740,7 +765,7 @@ class RoguelikeGameTests(unittest.TestCase):
         project_root = Path(__file__).parent
         page = self.client.get("/").get_data(as_text=True)
         expected_assets = [
-            "assets/backgrounds/cyber-dungeon.webp",
+            "assets/dungeon/title-cathedral.webp",
             "assets/ui/game-icons.svg",
             "assets/audio/dungeon_pulse.wav",
             "assets/audio/player_attack.wav",
@@ -758,7 +783,7 @@ class RoguelikeGameTests(unittest.TestCase):
             "assets/audio/defeat.wav",
         ]
         for asset in expected_assets:
-            self.assertIn(asset, page if asset != "assets/backgrounds/cyber-dungeon.webp" else (project_root / "static/style.css").read_text())
+            self.assertIn(asset, page if asset != "assets/dungeon/title-cathedral.webp" else (project_root / "static/style.css").read_text())
             path = project_root / "static" / asset.removeprefix("assets/")
             if asset.startswith("assets/"):
                 path = project_root / "static" / asset

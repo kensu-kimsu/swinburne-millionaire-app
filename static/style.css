@@ -62,9 +62,13 @@ button { font: inherit; }
 
 #title-screen {
     background:
-        linear-gradient(180deg, rgba(5, 7, 13, .35), rgba(5, 7, 13, .88) 76%),
-        url("assets/backgrounds/cyber-dungeon.webp") center / cover no-repeat;
+        linear-gradient(180deg, rgba(5, 7, 13, .22), rgba(5, 7, 13, .72) 76%),
+        url("assets/dungeon/title-cathedral.webp") center / cover no-repeat;
 }
+#title-screen > :not(.title-knight) { position: relative; z-index: 2; }
+#title-screen .title-knight { position: absolute; z-index: 1; left: 2vw; bottom: 0;
+    height: min(59vh, 650px); max-width: 31vw; object-fit: contain; object-position: bottom left;
+    filter: drop-shadow(0 13px 17px #05040b); pointer-events: none; }
 
 #title-screen::before {
     content: "";
@@ -1274,7 +1278,7 @@ button { font: inherit; }
 @media (max-width: 850px) {
     body { padding: 7px; }
     .game-shell { grid-template-columns: 1fr; }
-    .run-panel { order: -1; }
+    .run-panel { display: none; }
     .path { grid-template-columns: repeat(5, 1fr); }
     .status-box, .tip { display: none; }
     .choice-grid, .encyclopedia-grid { grid-template-columns: 1fr 1fr; }
@@ -1580,7 +1584,6 @@ button { font: inherit; }
 .arena-actor image { transform-box: fill-box; transform-origin: center bottom; }
 .arena-actor.hero.running image { animation: hero-stride .22s ease-in-out infinite alternate; }
 .arena-actor.hero:not(.running) image { animation: hero-breath 1.5s ease-in-out infinite alternate; }
-.arena-actor.hero.facing-left image { scale: -1 1; }
 .arena-actor.boss image { animation: boss-breath 2s ease-in-out infinite alternate; filter: drop-shadow(0 0 13px #f3636f); }
 .arena-actor.enemy.roaming .actor-frame { filter: drop-shadow(0 0 7px #ffcf91); }
 .arena-actor.enemy:not(.roaming) .actor-frame { filter: drop-shadow(0 0 4px #ffad7d); }
@@ -1633,6 +1636,10 @@ button { font: inherit; }
 .environment-fairy .effect-frame { filter:drop-shadow(0 0 8px #77eaff); }
 .environment-flame .effect-frame { filter:drop-shadow(0 0 8px #ffb663); }
 @media (max-width:600px) {
+    #title-screen .title-knight { left:auto; right:-8vw; height:39dvh; max-width:52vw; opacity:.54; }
+    #title-screen h1 { font-size:clamp(2.35rem,10vw,4rem); }
+    #title-screen .rules { margin:10px 0; }
+    .game-shell.battle-active .run-panel { display:none; }
     .dungeon-map { width:100%; height:100%; max-height:none; }
     .dungeon-hud { top:max(6px,env(safe-area-inset-top)); }
     .dungeon-title { top:58px; }

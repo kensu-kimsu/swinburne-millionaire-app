@@ -46,12 +46,12 @@
     <audio id="music-shop" class="music" src="{{ url_for('static', filename='assets/audio/music_shop.wav') }}" loop preload="none"></audio>
 
     <section id="title-screen" class="screen-overlay">
-        <div class="menu-sigil" aria-hidden="true"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#enemy-root_admin"></use></svg></div>
+        <img class="title-knight" src="{{ url_for('static', filename='assets/dungeon/hero-illustrated.webp') }}" alt="" aria-hidden="true">
         <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELITE</p>
         <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
         <p class="intro-copy">
-            Explore a changing dungeon, hunt every roaming cyber-monster, and
-            defeat The Root Dragon across 15 procedural floors.
+            Move through 15 hand-painted arenas, challenge roaming monsters with
+            your knowledge, and face the leviathan, death and the root dragon.
         </p>
         <div class="rules">
             <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-heal"></use></svg>Survive</span>
@@ -631,7 +631,8 @@
             const r = .23;
             const [left,top,right,bottom] = dungeon.floor_bounds || [0,0,dungeon.width,dungeon.height];
             return x > left+r && y > top+r && x < right-r && y < bottom-r &&
-                dungeon.obstacles.every(([ox, oy, w, h]) => !(x > ox-r && x < ox+w+r && y > oy-r && y < oy+h+r));
+                dungeon.obstacles.every(([ox, oy, w, h]) =>
+                    ((x-ox-w/2)/(w*.34+r))**2 + ((y-oy-h/2)/(h*.32+r))**2 >= 1);
         }
         function followCamera() {
             if (!heroPosition || !dungeonScene) return;
@@ -641,7 +642,8 @@
             const viewportWidth = viewportHeight * map.clientWidth / Math.max(1,map.clientHeight);
             const x = Math.max(0, Math.min(dungeonScene.width * 72 - viewportWidth, p.x - viewportWidth/2));
             const y = Math.max(0, Math.min(dungeonScene.height * 72 - viewportHeight, p.y - viewportHeight/2));
-            map.setAttribute('viewBox', `${x} ${y} ${viewportWidth} ${viewportHeight}`);
+            const view = `${Math.round(x)} ${Math.round(y)} ${Math.round(viewportWidth)} ${Math.round(viewportHeight)}`;
+            if (map.getAttribute('viewBox') !== view) map.setAttribute('viewBox', view);
         }
         function stageName(room) { return {5: 'atlantis', 10: 'graveyard', 15: 'inferno'}[room] || 'catacomb'; }
         function syncArenaHud(data) {
@@ -703,11 +705,13 @@
             }
             const ambience = svg('g',{class:`arena-ambience ambience-${dungeon.theme}`});
             for (const item of dungeon.decor || []) {
+                if (!['flame','fairy'].includes(item.kind)) continue;
                 const p = arenaPoint(item.x,item.y);
                 const node = svg('g',{class:`environment-${item.kind}`},ambience);
+                const size = item.size || (item.kind === 'flame' ? 13 : 19);
                 svg('image',{href:`/static/assets/dungeon/fx-${item.kind}-0.webp`,
-                    x:item.kind === 'fairy' ? -23 : -18,y:item.kind === 'fairy' ? -28 : -36,
-                    width:item.kind === 'fairy' ? 46 : 36,height:item.kind === 'fairy' ? 44 : 40,
+                    x:-size/2,y:item.kind === 'flame' ? -size : -size/2,
+                    width:size,height:size,
                     class:'effect-frame'},node);
                 node.setAttribute('transform',`translate(${p.x} ${p.y})`);
                 decorNodes.push({node,x:p.x,y:p.y,phase:item.phase,kind:item.kind});
@@ -757,7 +761,8 @@
             if (dungeon.feature && (dungeon.mode === 'market' || !dungeon.feature.used)) actorNode(dungeon.feature, 'merchant',
                 dungeon.mode === 'market' ? '/static/assets/npcs/cipher_merchant.webp' : null, 74, 94);
             for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', null, 42, 42);
-            actorNode(dungeon.exit, 'exit', '/static/assets/dungeon/fx-portal-0.webp', 70, 83);
+            actorNode({...dungeon.exit, ...(dungeon.portal_visual || {x:dungeon.exit.x,y:dungeon.exit.y-.68})},
+                'exit', '/static/assets/dungeon/fx-portal-0.webp', 56, 73);
             actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 70, 78);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
                 const p = arenaPoint(pendingDefeat.x, pendingDefeat.y);
@@ -775,7 +780,7 @@
             const hero = sceneNodes.get('hero');
             if (hero) {
                 const p = arenaPoint(heroPosition.x, heroPosition.y);
-                hero.setAttribute('transform', `translate(${p.x} ${p.y})`);
+                hero.setAttribute('transform', `translate(${p.x} ${p.y}) scale(${heroDirection === 'left' ? -1 : 1} 1)`);
                 const running = Math.hypot(moveInput.x, moveInput.y) > .12;
                 hero.classList.toggle('running', running);
                 hero.classList.toggle('facing-left', heroDirection === 'left');
@@ -810,9 +815,10 @@
             followCamera();
             for (const {node,x,y,phase,kind} of decorNodes) {
                 const sway = Math.sin(time*.0017+phase);
-                node.setAttribute('transform',`translate(${x+sway*(kind==='fairy'?18:2)} ${y+Math.cos(time*.002+phase)*(kind==='fairy'?14:2)})`);
+                const location = `translate(${Math.round(x+sway*(kind==='fairy'?18:0))} ${Math.round(y+Math.cos(time*.002+phase)*(kind==='fairy'?14:0))})`;
+                if (node.getAttribute('transform') !== location) node.setAttribute('transform',location);
                 const frame = node.querySelector('.effect-frame');
-                const href = `/static/assets/dungeon/fx-${kind}-${Math.floor(time/145+phase)%4}.webp`;
+                const href = `/static/assets/dungeon/fx-${kind}-${Math.floor(time/225+phase)%4}.webp`;
                 if (frame && frame.getAttribute('href') !== href) frame.setAttribute('href',href);
             }
         }
@@ -843,17 +849,7 @@
                 reminder.classList.toggle('hidden', time - lastMoveAt < 20000 || magnitude > .1);
                 positionActors(time);
             }
-            document.addEventListener('keydown', event => {
-            const key = event.key.toLowerCase();
-            if (!['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key) ||
-                document.getElementById('dungeon-screen').classList.contains('hidden') ||
-                /^(input|textarea|select)$/i.test(event.target.tagName)) return;
-            heldKeys.add(key); event.preventDefault();
-        });
-        document.addEventListener('keyup', event => heldKeys.delete(event.key.toLowerCase()));
-        window.addEventListener('blur', () => heldKeys.clear());
-        window.addEventListener('resize', followCamera);
-        requestAnimationFrame(movementFrame);
+            requestAnimationFrame(movementFrame);
         }
         async function tickRoaming() {
             if (tickBusy || dungeonMoving || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;

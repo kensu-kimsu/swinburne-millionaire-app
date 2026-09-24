@@ -462,9 +462,9 @@ LEVEL_OBSTACLES = tuple(tuple((round(x + w / 2 - .58, 2),
                                 round(y + h / 2 - .5, 2), 1.16, 1.0)
                                for x, y, w, h in layout)
                         for layout in LEVEL_LAYOUTS)
-FLOOR_BOUNDS = (1.0, 2.25, 17.0, 10.25)
+FLOOR_BOUNDS = (1.0, 1.75, 17.0, 10.25)
 LEVEL_DOORS = (16.15, 16.0, 15.95, 15.9, 16.2,
-               16.25, 15.95, 16.2, 15.9, 16.55,
+               16.25, 15.95, 16.2, 15.9, 9.0,
                16.55, 15.75, 16.5, 16.35, 16.4)
 
 
@@ -472,8 +472,10 @@ def walkable(dungeon, x, y, clearance=.23):
     left, top, right, bottom = dungeon.get("floor_bounds", (0, 0, dungeon["width"], dungeon["height"]))
     if not (left + clearance < x < right - clearance and top + clearance < y < bottom - clearance):
         return False
-    return all(not (ox - clearance < x < ox + width + clearance and
-                    oy - clearance < y < oy + height + clearance)
+    # The prop images contain transparent margins. Collide with their solid
+    # center so the painted passages around them remain traversable.
+    return all(((x - ox - width / 2) / (width * .34 + clearance)) ** 2 +
+               ((y - oy - height / 2) / (height * .32 + clearance)) ** 2 >= 1
                for ox, oy, width, height in dungeon["obstacles"])
 
 
@@ -515,12 +517,15 @@ def create_dungeon_floor(state):
                 "enemy_id": template["id"], "name": template["name"],
                 "elite": elite, "kind": "ELITE" if elite else "ENEMY", "defeated": False,
             })
-    effect_positions = ((3, 3.1), (5.7, 8.5), (8.3, 3.5), (11.5, 8.6),
-                        (14.6, 3.2), (15.2, 8.4), (7.8, 6.5))
-    decor = [{"x": x, "y": y,
-              "kind": "fairy" if theme in ("temple", "atlantis", "graveyard") and index % 2 else "flame",
-              "phase": index * 1.1 + stage * .37}
-             for index, (x, y) in enumerate(effect_positions)]
+    # Torch flames sit on the wall fixtures beside the painted doorway.
+    # Magical stages use drifting light instead of an unattached flame.
+    if theme in ("atlantis", "graveyard"):
+        decor = [{"x": 4.0, "y": 3.4, "kind": "fairy", "phase": stage * .37, "size": 19}]
+    else:
+        decor = [{"x": min(16.8, LEVEL_DOORS[stage - 1] - 1.15), "y": 1.13,
+                  "kind": "flame", "phase": stage * .37, "size": 13}]
+        if theme == "temple":
+            decor.append({"x": 3.6, "y": 4.1, "kind": "fairy", "phase": stage * .77, "size": 19})
     chest_candidates = ((8, 3.0), (3, 3.1), (11, 9.2), (15, 8.8))
     chest_x, chest_y = next((x, y) for x, y in chest_candidates if all(
         not (ox - .4 < x < ox + width + .4 and oy - .4 < y < oy + height + .4)
@@ -530,6 +535,7 @@ def create_dungeon_floor(state):
         "seed": random.randint(0, 999999999), "obstacles": LEVEL_OBSTACLES[stage - 1],
         "floor_bounds": FLOOR_BOUNDS,
         "player": {"x": 1.6, "y": 9.4}, "exit": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
+        "portal_visual": {"x": LEVEL_DOORS[stage - 1], "y": 1.92},
         "enemies": enemies, "decor": decor,
         "chests": [{"x": chest_x, "y": chest_y, "opened": False}] if not boss_floor and random.random() < .38 else [],
         "feature": None,
@@ -549,8 +555,9 @@ def create_market_floor(state):
         "seed": random.randint(0, 999999999),
         "obstacles": (), "floor_bounds": FLOOR_BOUNDS,
         "player": {"x": 1.6, "y": 9.4}, "exit": {"x": 14.45, "y": 2.6},
+        "portal_visual": {"x": 14.45, "y": 1.92},
         "enemies": [], "chests": [], "decor": [
-            {"x": x, "y": y, "kind": "flame", "phase": x} for x, y in ((3, 3), (8, 5), (13, 4), (15, 8))],
+            {"x": 13.76, "y": 1.10, "kind": "flame", "phase": 1, "size": 12}],
         "feature": {"x": 13.45, "y": 3.4, "type": "shop", "used": False},
     }
     state["pending"] = "dungeon"
