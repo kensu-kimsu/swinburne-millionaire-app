@@ -280,9 +280,10 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(market['dungeon']['obstacles'], [])
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
-            state['dungeon']['player'] = {'x':13.45,'y':3.4}
+            state['dungeon']['player'] = {'x':state['dungeon']['feature']['x'],
+                                          'y':state['dungeon']['feature']['y']}
             flask_session['game_state'] = state
-        merchant = self.client.post('/api/dungeon/move',json={'x':13.45,'y':3.4}).get_json()
+        merchant = self.client.post('/api/dungeon/move',json=state['dungeon']['player']).get_json()
         self.assertEqual(merchant['pending'], 'shop')
         self.assertEqual(merchant['room'], 1)
         closed = self.client.post('/api/shop/leave').get_json()
@@ -301,19 +302,28 @@ class RoguelikeGameTests(unittest.TestCase):
         root = Path(__file__).parent
         page = (root/'templates/index.html').read_text()
         self.assertIn("'exit', '/static/assets/dungeon/fx-portal-0.webp'",page)
-        self.assertIn('dungeon.portal_visual', page)
+        self.assertIn('actorNode(dungeon.exit,', page)
         self.assertIn('src="/static/assets/dungeon/run-${id}-0.webp"',page)
         self.assertGreater((root/'static/assets/dungeon/fx-portal-0.webp').stat().st_size,1000)
         for enemy in ('spam_bot','insider_threat','zero_day_exploit'):
             for frame in range(4):
                 self.assertGreater((root/f'static/assets/dungeon/run-{enemy}-{frame}.webp').stat().st_size,1000)
+            for frame in range(8):
+                self.assertGreater((root/f'static/assets/dungeon/move-{enemy}-{frame}.webp').stat().st_size,1000)
+        for frame in range(16):
+            self.assertGreater((root/f'static/assets/dungeon/hero-smooth-{frame}.webp').stat().st_size,1000)
+        for frame in range(8):
+            self.assertGreater((root/f'static/assets/dungeon/fx-flame-{frame}.webp').stat().st_size,1000)
+        self.assertGreater((root/'static/assets/dungeon/market-stall.webp').stat().st_size,1000)
 
     def test_movement_listeners_do_not_accumulate_and_portal_faces_door(self):
         page = (Path(__file__).parent/'templates/index.html').read_text()
         self.assertEqual(page.count("document.addEventListener('keydown'"), 1)
         self.assertEqual(page.count("window.addEventListener('resize', followCamera)"), 1)
         self.assertIn("scale(${heroDirection === 'left' ? -1 : 1} 1)", page)
-        from app import create_dungeon_floor
+        self.assertIn('scale(${facing} 1)', page)
+        self.assertIn("if (data.room === 5) return setMusic('music-boss')", page)
+        from app import create_dungeon_floor, FIRE_FIXTURES
         self.client.post('/api/start')
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
@@ -322,11 +332,29 @@ class RoguelikeGameTests(unittest.TestCase):
                 create_dungeon_floor(state)
                 arena = state['dungeon']
                 self.assertEqual(arena['portal_visual']['x'], arena['exit']['x'])
-                self.assertLess(arena['portal_visual']['y'], arena['exit']['y'])
-                self.assertTrue(all(item['kind'] in ('flame', 'fairy') and item['size'] <= 19
-                                    for item in arena['decor']))
+                self.assertEqual(arena['portal_visual']['y'], arena['exit']['y'])
+                self.assertEqual(len(arena['decor']), len(FIRE_FIXTURES[stage-1]))
                 if stage == 10: self.assertEqual(arena['exit']['x'], 9.0)
             self.assertEqual(state['dungeon']['exit']['x'], 16.4)
+
+    def test_first_boss_portal_advances_when_approached_from_below(self):
+        from app import create_dungeon_floor
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['current_room'] = 5
+            create_dungeon_floor(state)
+            boss = state['dungeon']['enemies'][0]
+            boss['defeated'] = True
+            exit_point = state['dungeon']['exit']
+            state['dungeon']['player'] = {'x':exit_point['x'], 'y':exit_point['y']+.9}
+            flask_session['game_state'] = state
+        from unittest.mock import patch
+        with patch('app.random.random', return_value=.9):
+            advanced = self.client.post('/api/dungeon/move',json={
+                'x':exit_point['x'], 'y':exit_point['y']+.75}).get_json()
+        self.assertEqual(advanced['status'], 'floor_advanced')
+        self.assertEqual(advanced['room'], 6)
 
     def test_wrong_answer_removes_hp_but_run_continues(self):
         correct_answer = self.answer_for_current_question()

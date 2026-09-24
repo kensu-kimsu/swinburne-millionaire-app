@@ -288,6 +288,19 @@
         let dungeonFloorKey = null;
         let pendingDefeat = null;
         let heroFramePath = '';
+        const arenaFrameCache = new Map();
+        function preloadArenaFrames(dungeon) {
+            const paths = Array.from({length:16}, (_,i) => `/static/assets/dungeon/hero-smooth-${i}.webp`);
+            if (dungeon.decor?.some(item => item.kind === 'flame'))
+                for (let i=0;i<8;i++) paths.push(`/static/assets/dungeon/fx-flame-${i}.webp`);
+            for (const id of new Set(dungeon.enemies.filter(enemy => !enemy.defeated && !enemy.kind.includes('BOSS'))
+                    .map(enemy => enemy.enemy_id)))
+                for (let i=0;i<8;i++) paths.push(`/static/assets/dungeon/move-${id}-${i}.webp`);
+            for (const path of paths) if (!arenaFrameCache.has(path)) {
+                const asset = new Image(); asset.src = path;
+                arenaFrameCache.set(path, asset);
+            }
+        }
         let isContinuing = false;
         let currentMusic = null;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
@@ -362,7 +375,14 @@
         function syncMusic(data) {
             if (!data || data.game_over) return;
             const enemy = data.enemy;
-            if (!enemy) return setMusic('music-explore');
+            if (!enemy) {
+                if (data.pending === 'dungeon' && data.dungeon?.mode === 'combat') {
+                    if (data.room === 15) return setMusic('music-final-boss');
+                    if (data.room === 10) return setMusic('music-major-boss');
+                    if (data.room === 5) return setMusic('music-boss');
+                }
+                return setMusic('music-explore');
+            }
             if (enemy.kind === 'FINAL BOSS') return setMusic('music-final-boss');
             if (enemy.kind === 'MAJOR BOSS') return setMusic('music-major-boss');
             if (enemy.kind === 'MINIBOSS') return setMusic('music-boss');
@@ -657,6 +677,7 @@
         function renderDungeon(data) {
             const dungeon = data.dungeon;
             if (!dungeon) return showFatalError('The arena could not be generated.');
+            preloadArenaFrames(dungeon);
             closeDecision(); closeShop();
             document.querySelector('.game-shell').classList.add('hidden');
             document.querySelector('.game-shell').classList.remove('battle-active');
@@ -710,8 +731,8 @@
                 const node = svg('g',{class:`environment-${item.kind}`},ambience);
                 const size = item.size || (item.kind === 'flame' ? 13 : 19);
                 svg('image',{href:`/static/assets/dungeon/fx-${item.kind}-0.webp`,
-                    x:-size/2,y:item.kind === 'flame' ? -size : -size/2,
-                    width:size,height:size,
+                    x:-size/2,y:item.kind === 'flame' ? -size * 1.35 : -size/2,
+                    width:size,height:item.kind === 'flame' ? size * 1.4 : size,
                     class:'effect-frame'},node);
                 node.setAttribute('transform',`translate(${p.x} ${p.y})`);
                 decorNodes.push({node,x:p.x,y:p.y,phase:item.phase,kind:item.kind});
@@ -758,10 +779,13 @@
                     : `/static/assets/dungeon/run-${enemy.enemy_id}.webp`, bossArt ? 215 : size[0], bossArt ? 205 : size[1], !bossArt);
                 roamVisuals.set(enemy.uid, {x: enemy.x, y: enemy.y});
             }
-            if (dungeon.feature && (dungeon.mode === 'market' || !dungeon.feature.used)) actorNode(dungeon.feature, 'merchant',
-                dungeon.mode === 'market' ? '/static/assets/npcs/cipher_merchant.webp' : null, 74, 94);
+            if (dungeon.mode === 'market' && dungeon.feature) {
+                actorNode({x:dungeon.feature.x,y:dungeon.feature.y-.25,name:'Cipher Market Stall'},
+                    'stall','/static/assets/dungeon/market-stall.webp',260,184);
+                actorNode(dungeon.feature,'merchant','/static/assets/npcs/cipher_merchant.webp',77,102);
+            }
             for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', null, 42, 42);
-            actorNode({...dungeon.exit, ...(dungeon.portal_visual || {x:dungeon.exit.x,y:dungeon.exit.y-.68})},
+            actorNode(dungeon.exit,
                 'exit', '/static/assets/dungeon/fx-portal-0.webp', 56, 73);
             actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 70, 78);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
@@ -773,7 +797,7 @@
                 pendingDefeat = null;
             }
             followCamera();
-            setMusic('music-explore');
+            syncMusic(data);
         }
         function positionActors(time) {
             if (!dungeonScene || !heroPosition) return;
@@ -784,7 +808,7 @@
                 const running = Math.hypot(moveInput.x, moveInput.y) > .12;
                 hero.classList.toggle('running', running);
                 hero.classList.toggle('facing-left', heroDirection === 'left');
-                const sprite = running ? `/static/assets/dungeon/hero-run-${Math.floor(time / 95) % 8}.webp`
+                const sprite = running ? `/static/assets/dungeon/hero-smooth-${Math.floor(time / 48) % 16}.webp`
                     : '/static/assets/dungeon/hero-illustrated.webp';
                 if (sprite !== heroFramePath) {
                     hero.querySelector('image')?.setAttribute('href', sprite);
@@ -798,12 +822,15 @@
                 visual.x += (enemy.x - visual.x) * .18;
                 visual.y += (enemy.y - visual.y) * .18;
                 const p = arenaPoint(visual.x, visual.y);
-                node.setAttribute('transform', `translate(${p.x} ${p.y})`);
+                const facing = enemy.x < visual.x - .003 ? -1 : enemy.x > visual.x + .003 ? 1 :
+                    (node.dataset.facing === '-1' ? -1 : 1);
+                node.dataset.facing = String(facing);
+                node.setAttribute('transform', `translate(${p.x} ${p.y}) scale(${facing} 1)`);
                 const moving = Math.hypot(enemy.x - visual.x, enemy.y - visual.y) > .008;
                 node.classList.toggle('roaming', moving);
                 const frame = node.querySelector('.actor-frame');
                 if (frame) {
-                    const href = `/static/assets/dungeon/run-${enemy.enemy_id}-${moving ? Math.floor(time / 130) % 4 : Math.floor(time / 900) % 2}.webp`;
+                    const href = `/static/assets/dungeon/move-${enemy.enemy_id}-${moving ? Math.floor(time / 75) % 8 : Math.floor(time / 900) % 2 * 2}.webp`;
                     if (frame.getAttribute('href') !== href) frame.setAttribute('href', href);
                 }
             }
@@ -818,7 +845,8 @@
                 const location = `translate(${Math.round(x+sway*(kind==='fairy'?18:0))} ${Math.round(y+Math.cos(time*.002+phase)*(kind==='fairy'?14:0))})`;
                 if (node.getAttribute('transform') !== location) node.setAttribute('transform',location);
                 const frame = node.querySelector('.effect-frame');
-                const href = `/static/assets/dungeon/fx-${kind}-${Math.floor(time/225+phase)%4}.webp`;
+                const count = kind === 'flame' ? 8 : 4;
+                const href = `/static/assets/dungeon/fx-${kind}-${Math.floor(time/130+phase)%count}.webp`;
                 if (frame && frame.getAttribute('href') !== href) frame.setAttribute('href',href);
             }
         }

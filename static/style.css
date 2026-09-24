@@ -1582,11 +1582,13 @@ button { font: inherit; }
 .stage-painting { opacity: 1; }
 .arena-shadow { fill: #02040b; opacity: .57; }
 .arena-actor image { transform-box: fill-box; transform-origin: center bottom; }
-.arena-actor.hero.running image { animation: hero-stride .22s ease-in-out infinite alternate; }
+.arena-actor.hero.running image { animation: none; filter: drop-shadow(0 0 5px #59dfff); }
 .arena-actor.hero:not(.running) image { animation: hero-breath 1.5s ease-in-out infinite alternate; }
 .arena-actor.boss image { animation: boss-breath 2s ease-in-out infinite alternate; filter: drop-shadow(0 0 13px #f3636f); }
 .arena-actor.enemy.roaming .actor-frame { filter: drop-shadow(0 0 7px #ffcf91); }
 .arena-actor.enemy:not(.roaming) .actor-frame { filter: drop-shadow(0 0 4px #ffad7d); }
+.arena-actor.stall image { filter: drop-shadow(0 10px 12px #0009); }
+.arena-actor.merchant image { filter: drop-shadow(0 5px 7px #000b); }
 .arena-label { fill: white; font: 900 16px system-ui, sans-serif; paint-order: stroke; stroke: #07111a; stroke-width: 4px; }
 .arena-actor.exit .arena-label { fill: #8af9db; }
 .arena-actor.feature .arena-label { fill: #ffdd8d; font-size: 31px; }
@@ -1634,7 +1636,7 @@ button { font: inherit; }
 .arena-actor.exit.locked .portal-frame { opacity:.16; }
 .arena-actor.exit:not(.locked) .portal-frame { filter:drop-shadow(0 0 10px #81baff); }
 .environment-fairy .effect-frame { filter:drop-shadow(0 0 8px #77eaff); }
-.environment-flame .effect-frame { filter:drop-shadow(0 0 8px #ffb663); }
+.environment-flame .effect-frame { filter:drop-shadow(0 0 3px #f3a04b); }
 @media (max-width:600px) {
     #title-screen .title-knight { left:auto; right:-8vw; height:39dvh; max-width:52vw; opacity:.54; }
     #title-screen h1 { font-size:clamp(2.35rem,10vw,4rem); }
