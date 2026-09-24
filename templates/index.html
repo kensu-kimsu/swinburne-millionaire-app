@@ -644,7 +644,7 @@
                 const p = point(x, y);
                 const group = svg('g', {class: `iso-actor ${kind}`});
                 svg('ellipse', {cx: p.x, cy: p.y + 25, rx: 20, ry: 7, class: 'iso-shadow'}, group);
-                if (href) svg('image', {href, x: p.x - 27, y: p.y - 40, width: 54, height: 66, preserveAspectRatio: 'xMidYMax meet'}, group);
+                if (href) svg('image', {href, x: p.x - 39, y: p.y - 57, width: 78, height: 86, preserveAspectRatio: 'xMidYMax meet'}, group);
                 else {
                     const text = svg('text', {x: p.x, y: p.y + 13, 'text-anchor': 'middle', class: 'iso-symbol'}, group);
                     text.textContent = label;
@@ -687,7 +687,7 @@
                 return;
             }
             if (data.status === 'floor_advanced') {
-                playEffect('snd-major-victory');
+                playEffect('snd-confirm');
                 document.getElementById('dungeon-message').textContent = 'A deeper floor materializes around you.';
             }
             await processGameState(data);
