@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import random
 
@@ -436,39 +437,46 @@ def _floor_distances(tiles, start):
 
 
 def create_dungeon_floor(state):
-    tiles = _maze_floor()
-    start = (1, 1)
-    distances = _floor_distances(tiles, start)
-    exit_point = max(distances, key=distances.get)
-    available = [point for point, distance in distances.items() if distance >= 3 and point != exit_point]
-    random.shuffle(available)
+    """Spawn a continuous arena with its own art, decor and encounters."""
     stage = state["current_room"]
-    markers = []
-    normal_count = 2
-    for index in range(normal_count):
-        template = random.choice(NORMAL_ENEMIES[get_tier(stage)])
-        elite = random.random() < ELITE_SPAWN_CHANCE
-        x, y = available.pop()
-        markers.append({
-            "uid": f"s{stage}-e{index}", "x": x, "y": y,
-            "enemy_id": template["id"], "name": template["name"],
-            "elite": elite, "kind": "ELITE" if elite else "ENEMY", "defeated": False,
-        })
-    if stage in BOSSES:
+    boss_floor = stage in BOSSES
+    previous_theme = state.get("previous_arena_theme")
+    themes = ["catacomb", "temple", "foundry"]
+    theme = {5: "atlantis", 10: "graveyard", 15: "inferno"}.get(stage)
+    if not theme:
+        theme = random.choice([item for item in themes if item != previous_theme])
+    state["previous_arena_theme"] = theme
+    enemies = []
+    if boss_floor:
         boss = BOSSES[stage]
-        x, y = available.pop()
-        markers.append({
-            "uid": f"s{stage}-boss", "x": x, "y": y,
+        enemies.append({
+            "uid": f"s{stage}-boss", "x": 4.5, "y": 3.35,
             "enemy_id": boss["id"], "name": boss["name"],
             "elite": False, "kind": boss["kind"], "defeated": False,
         })
-    feature_point = available.pop() if available else start
+    else:
+        candidates = [(3.0, 1.7), (6.6, 2.2), (4.8, 4.7), (7.1, 4.8), (2.4, 3.4)]
+        random.shuffle(candidates)
+        for index in range(3):
+            template = random.choice(NORMAL_ENEMIES[get_tier(stage)])
+            x, y = candidates[index]
+            elite = random.random() < ELITE_SPAWN_CHANCE
+            enemies.append({
+                "uid": f"s{stage}-e{index}", "x": x, "y": y,
+                "vx": random.uniform(-1, 1), "vy": random.uniform(-1, 1),
+                "enemy_id": template["id"], "name": template["name"],
+                "elite": elite, "kind": "ELITE" if elite else "ENEMY", "defeated": False,
+            })
+    decor = [{"x": round(random.uniform(.75, 8.25), 2),
+              "y": round(random.uniform(1, 5.7), 2),
+              "kind": random.choice(["fire", "mist", "rune", "sparks"]),
+              "phase": random.random() * 6.28} for _ in range(16)]
     state["dungeon"] = {
-        "width": len(tiles[0]), "height": len(tiles), "tiles": tiles,
-        "player": {"x": start[0], "y": start[1]},
-        "exit": {"x": exit_point[0], "y": exit_point[1]},
-        "enemies": markers,
-        "feature": {"x": feature_point[0], "y": feature_point[1], "type": random.choice(["shop", "heal", "event"]), "used": False},
+        "width": 9, "height": 7, "theme": theme, "seed": random.randint(0, 999999999),
+        "player": {"x": 2.0, "y": 5.2}, "exit": {"x": 7.1, "y": 2.0},
+        "enemies": enemies, "decor": decor,
+        "feature": None if boss_floor else {"x": 2.2, "y": 2.0,
+                   "type": random.choice(["shop", "heal", "event"]), "used": False},
     }
     state["enemy"] = None
     state["current_enemy_uid"] = None
@@ -927,38 +935,43 @@ def get_state():
 @app.route("/api/dungeon/move", methods=["POST"])
 def move_in_dungeon():
     state = session.get("game_state")
-    data = request.get_json() or {}
-    direction = data.get("direction")
-    vectors = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
-    if not state or state.get("pending") != "dungeon" or direction not in vectors:
+    data = request.get_json(silent=True) or {}
+    if not state or state.get("pending") != "dungeon":
         return jsonify({"error": "The dungeon cannot be moved through right now."}), 400
-    dungeon = state.get("dungeon")
-    if not dungeon:
-        return jsonify({"error": "No dungeon floor is active."}), 400
-    dx, dy = vectors[direction]
-    target_x = dungeon["player"]["x"] + dx
-    target_y = dungeon["player"]["y"] + dy
-    if not (0 <= target_x < dungeon["width"] and 0 <= target_y < dungeon["height"]):
-        return jsonify({"status": "blocked", "message": "The void blocks that path.", **public_state(state)})
-    if dungeon["tiles"][target_y][target_x] == "#":
-        return jsonify({"status": "blocked", "message": "A dungeon wall blocks the path.", **public_state(state)})
-
-    dungeon["player"] = {"x": target_x, "y": target_y}
-    marker = next((entry for entry in dungeon["enemies"] if not entry["defeated"] and entry["x"] == target_x and entry["y"] == target_y), None)
+    dungeon = state["dungeon"]
+    try:
+        x, y = float(data["x"]), float(data["y"])
+    except (KeyError, ValueError, TypeError):
+        return jsonify({"error": "Movement requires x and y positions."}), 400
+    if not all(map(math.isfinite, (x, y))):
+        return jsonify({"error": "Movement requires finite positions."}), 400
+    player = dungeon["player"]
+    dx, dy = x - player["x"], y - player["y"]
+    distance = math.hypot(dx, dy)
+    if distance > .48:
+        dx, dy = dx / distance * .48, dy / distance * .48
+    next_x = player["x"] + dx
+    next_y = player["y"] + dy
+    radius = math.hypot((next_x - 4.5) / 3.6, (next_y - 3.5) / 2.55)
+    if radius > 1:
+        next_x = 4.5 + (next_x - 4.5) / radius
+        next_y = 3.5 + (next_y - 3.5) / radius
+    player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
+    marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
+                   and math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]) <
+                   (0.88 if "BOSS" in enemy["kind"] else .52)), None)
     if marker:
         start_dungeon_encounter(state, marker)
         session.modified = True
         return jsonify({"status": "encounter_started", **public_state(state)})
-
     feature = dungeon.get("feature")
-    if feature and not feature["used"] and feature["x"] == target_x and feature["y"] == target_y:
+    if feature and not feature["used"] and math.hypot(feature["x"] - player["x"], feature["y"] - player["y"]) < .42:
         activate_dungeon_feature(state, feature)
         session.modified = True
         return jsonify({"status": "feature_found", **public_state(state)})
-
     exit_point = dungeon["exit"]
-    if exit_point["x"] == target_x and exit_point["y"] == target_y:
-        remaining = sum(not entry["defeated"] for entry in dungeon["enemies"])
+    if math.hypot(exit_point["x"] - player["x"], exit_point["y"] - player["y"]) < .55:
+        remaining = sum(not enemy["defeated"] for enemy in dungeon["enemies"])
         if remaining:
             session.modified = True
             return jsonify({"status": "exit_locked", "message": f"Defeat {remaining} remaining enemies to unlock the gate.", **public_state(state)})
@@ -966,7 +979,6 @@ def move_in_dungeon():
             advance_dungeon_floor(state)
             session.modified = True
             return jsonify({"status": "floor_advanced", **public_state(state)})
-
     session.modified = True
     return jsonify({"status": "moved", **public_state(state)})
 
@@ -987,21 +999,20 @@ def tick_dungeon():
     if not state or state.get("pending") != "dungeon":
         return jsonify({"error": "The dungeon is not active."}), 400
     dungeon = state["dungeon"]
-    occupied = {(enemy["x"], enemy["y"]) for enemy in dungeon["enemies"] if not enemy["defeated"]}
-    exit_point = (dungeon["exit"]["x"], dungeon["exit"]["y"])
     for enemy in dungeon["enemies"]:
-        if enemy["defeated"] or random.random() > (0.35 if "BOSS" in enemy["kind"] else 0.75):
-            continue
-        origin = (enemy["x"], enemy["y"])
-        choices = [(origin[0] + dx, origin[1] + dy) for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0))]
-        choices = [(x, y) for x, y in choices if 0 <= x < dungeon["width"] and 0 <= y < dungeon["height"]
-                   and dungeon["tiles"][y][x] == "." and (x, y) not in occupied and (x, y) != exit_point]
-        if not choices:
-            continue
-        occupied.remove(origin)
-        enemy["x"], enemy["y"] = random.choice(choices)
-        occupied.add((enemy["x"], enemy["y"]))
-        if (enemy["x"], enemy["y"]) == (dungeon["player"]["x"], dungeon["player"]["y"]):
+        if enemy["defeated"] or "BOSS" in enemy["kind"]:
+            continue  # Boss waits at the center of its arena.
+        if random.random() < .12:
+            heading = random.random() * math.tau
+            enemy["vx"], enemy["vy"] = math.cos(heading), math.sin(heading)
+        x = enemy["x"] + enemy.get("vx", .5) * .16
+        y = enemy["y"] + enemy.get("vy", .5) * .16
+        if math.hypot((x - 4.5) / 3.6, (y - 3.5) / 2.55) > .96:
+            enemy["vx"] = -enemy.get("vx", .5)
+            enemy["vy"] = -enemy.get("vy", .5)
+        else:
+            enemy["x"], enemy["y"] = round(x, 3), round(y, 3)
+        if math.hypot(enemy["x"] - dungeon["player"]["x"], enemy["y"] - dungeon["player"]["y"]) < .52:
             start_dungeon_encounter(state, enemy)
             session.modified = True
             return jsonify({"status": "encounter_started", **public_state(state)})

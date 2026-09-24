@@ -3,8 +3,7 @@
 **Swinburne Cyber Dungeon** is a cybersecurity adventure RPG dungeon crawler built with
 Python, Flask, HTML, CSS, and vanilla JavaScript.
 
-The player explores 15 procedurally generated dungeon floors with direct
-keyboard or touch controls. Each floor creates a new maze, random enemies, an
+The player explores 15 illustrated open arenas with pointer and touch joystick movement. Each floor creates a distinct scene, random enemies, an
 optional support encounter, and a locked exit. Touching a monster launches a
 dedicated turn-based battle; every monster on the map must be defeated before
 the gate to the next floor opens.
@@ -14,13 +13,13 @@ The complete roguelite version is developed on `roguelike-v1`.
 
 ## Core game loop
 
-1. Explore a newly generated maze with WASD, arrow keys, or the mobile D-pad.
+1. Explore an open illustrated arena by dragging the joystick with a mouse or finger.
 2. Touch a roaming-map monster to enter its dedicated battle scene.
 3. Choose Attack, Defend, or Exploit while the enemy action remains hidden.
 4. Answer a concise cybersecurity question within 45 seconds.
 5. Resolve both combatants' actions, claim a reward, and return to the map.
 6. Defeat every enemy to unlock the exit and descend to the next floor.
-7. Overcome the bosses and their guards on Floors 5, 10, and 15.
+7. Overcome the lone boss waiting in the center of Floors 5, 10, and 15.
 
 ### Combat actions
 
@@ -60,7 +59,7 @@ Exploit is presented as an ultimate attack with a beam, elemental detonation,
 smoke, expanding rings, and a large particle burst.
 
 On phones, exploration and combat each use a dedicated single-screen layout
-sized with the dynamic mobile viewport. The dungeon has an on-screen D-pad,
+sized with the dynamic mobile viewport. The dungeon has a virtual joystick,
 enemy portraits are enlarged, answers remain in a legible two-by-two grid, and
 items use a horizontal quick-access bar. Resolved-turn summaries open as a
 fully opaque bottom sheet with their own scroll area, so the battlefield cannot
@@ -104,13 +103,12 @@ characters. Standard battles allow 45 seconds; Time Compression allows 30.
 
 ## Dungeon floors and encounters
 
-Each floor is a connected random maze with two standard enemy spawns. Elite
-status is rolled independently at a 22% chance, changing the monster to a
-menacing ultraviolet palette and increasing its power. Floors 5, 10, and 15
-also place their fixed boss somewhere in the maze. The exit remains sealed
-until every enemy marker—including the boss and its guards—is defeated.
+Each normal floor is a continuous illustrated arena with three roaming enemies.
+Elite status is rolled independently at a 22% chance. Floors 5, 10, and 15
+contain only the centered boss, with no ordinary monsters or support encounters.
+The exit remains sealed until every encounter on the floor is defeated.
 
-A single optional support encounter also appears at a random reachable tile:
+A single optional support encounter appears on normal floors:
 
 | Room | Purpose |
 |---|---|
@@ -320,9 +318,8 @@ confirmation feedback, victory, defeat, and answer feedback sounds.
 
 ## Isometric exploration assets
 
-The map uses scalable vector tiles sized to the viewport, so the complete floor remains
-visible on narrow screens. Cyan diamond tiles indicate walkable paths; raised dark
-blocks mark walls. The D-pad arrows correspond to the projected map directions.
+The map uses a scalable illustrated arena sized to the viewport with no tile overlay.
+The virtual joystick moves freely within the arena boundaries.
 The Cyber Knight and each enemy have locally hosted SVG map sprites with idle and
 movement motion. The knight's chest carries a stylised red S crest. Combat retains
 the original detailed enemy portraits, turn-based encounter scene, and separate
@@ -330,23 +327,27 @@ normal/boss victory cues.
 
 ## Illustrated free movement update
 
-Exploration now runs an animation frame loop. Hold WASD or the arrow keys to move
-continuously; on touch screens, drag the virtual joystick. The hero moves within
-walkable cells, is stopped by walls, and enters combat when crossing into an
-enemy's cell. Enemies choose neighboring traversable cells roughly once a second
-and visually interpolate between positions. An enemy reaching the player's cell
-also initiates combat. The original turn-based questions, rewards, summaries,
+Exploration now runs an animation frame loop. Drag the virtual joystick with a mouse
+or finger to move continuously. The hero can travel freely within arena bounds;
+contact with a roaming enemy initiates combat. Enemies roam on short timed updates
+and visually interpolate between positions. The original turn-based questions, rewards, summaries,
 and victory cues remain in place.
 
-The normal dungeon uses an illustrated cyber-catacomb backdrop. Boss floors use
+Normal floors select among three illustrated arena themes without repeating the previous
+one, and generate a different set of animated environmental elements. Boss floors
+contain the boss alone, stationary in the center. Boss floors use
 individual arenas: Atlantis for Cyber Leviathan (floor 5), a haunted graveyard
 for Death Protocol (floor 10), and an inferno for the Root Dragon (floor 15).
 The hero and bosses have generated cutout art; the existing detailed enemy
-portraits serve as the roaming sprites. The arena layers keep bright maze tiles
-and dark walls visible above the scene art. Bosses are larger than the hero,
+portraits remain in the battle scene, while new four-pose run sheets animate
+the roaming enemies on the map. Bosses are larger than the hero,
 with drifting particles, idle motion, movement animation, and a collapse effect
 when defeated.
 
 The hero's eight illustrated running frames are drawn in sequence at about 10 frames
 per second while the position loop interpolates at the display refresh rate.
 The still portrait returns when input stops. Direction changes mirror the cutout.
+
+The nine ordinary enemy types now each have a four-pose locomotion sprite sheet;
+idle animation uses slower pose alternation. After 20 seconds without joystick input,
+a movement reminder fades into the exploration screen and disappears on movement.

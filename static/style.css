@@ -1572,3 +1572,34 @@ button { font: inherit; }
   .enemy-card.boss .enemy-icon { width: 120px; height: 120px; flex-basis: 120px; }
   .main-panel.turn-resolved .enemy-card.boss .enemy-icon { width: 96px; height: 96px; flex-basis: 96px; }
 }
+
+/* Open, illustrated arenas replace the visible maze grid. */
+.dungeon-map { aspect-ratio: 680 / 400; background: #080c15; border: 0; border-radius: 16px; overflow: hidden; }
+.stage-painting { opacity: 1; }
+.arena-shadow { fill: #02040b; opacity: .57; }
+.arena-actor image { transform-box: fill-box; transform-origin: center bottom; }
+.arena-actor.hero.running image { animation: hero-stride .22s ease-in-out infinite alternate; }
+.arena-actor.hero:not(.running) image { animation: hero-breath 1.5s ease-in-out infinite alternate; }
+.arena-actor.hero.facing-left image { scale: -1 1; }
+.arena-actor.boss image { animation: boss-breath 2s ease-in-out infinite alternate; filter: drop-shadow(0 0 13px #f3636f); }
+.arena-actor.enemy.roaming .actor-frame { filter: drop-shadow(0 0 7px #ffcf91); }
+.arena-actor.enemy:not(.roaming) .actor-frame { filter: drop-shadow(0 0 4px #ffad7d); }
+.arena-label { fill: white; font: 900 16px system-ui, sans-serif; paint-order: stroke; stroke: #07111a; stroke-width: 4px; }
+.arena-actor.exit .arena-label { fill: #8af9db; }
+.arena-actor.feature .arena-label { fill: #ffdd8d; font-size: 31px; }
+.arena-actor.boss .boss-aura { fill: #ff5388; }
+.environment-fire { color: #ffbd5b; fill: #ffc44e; filter: drop-shadow(0 0 8px orange); }
+.environment-mist { color: #adceef; fill: #adcffa; opacity: .22; filter: blur(7px); }
+.environment-rune { color: #8cf3ff; fill: #97e8ff; filter: drop-shadow(0 0 5px cyan); }
+.environment-sparks { color: #ff8663; fill: #ff8663; filter: drop-shadow(0 0 6px #f84); }
+.ambience-atlantis .environment-fire, .ambience-atlantis .environment-sparks { fill: #61eeef; }
+.ambience-graveyard .environment-fire, .ambience-graveyard .environment-sparks { fill: #8cf9c6; }
+.ambience-inferno .environment-fire, .ambience-inferno .environment-rune { fill: #ff6a35; }
+.move-reminder { position: relative; z-index: 5; margin: 2px auto; padding: 7px 16px; border: 1px solid #9eeaff; border-radius: 20px; background: #071824e8; color: white; font-size: .82rem; font-weight: 800; opacity: 1; animation: reminder-in .8s ease both; pointer-events: none; }
+@keyframes reminder-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.movement-stick { position: relative; z-index: 4; display: grid; place-items: center; width: 112px; height: 112px; flex: 0 0 112px; margin: 8px auto; border: 2px solid #6297ad; border-radius: 50%; background: radial-gradient(circle, #254b60b8, #0a1a2cde); box-shadow: 0 0 20px #153d55; touch-action: none; user-select: none; cursor: grab; }
+.movement-stick:active { cursor: grabbing; }
+.movement-stick span { display: block; width: 46px; height: 46px; border: 2px solid #a2f8ff; border-radius: 50%; background: #2e809ca8; box-shadow: 0 0 12px #76d9ee; pointer-events: none; }
+.dungeon-controls { display: none !important; }
+@media (max-width: 580px) { .dungeon-map { max-height: min(100%, 60dvh); } .movement-stick { width: 92px; height: 92px; flex-basis: 92px; margin: 3px auto; } }
+@media (prefers-reduced-motion: reduce) { .arena-actor image, .boss-aura { animation: none !important; } }
