@@ -3,7 +3,7 @@
 **Swinburne Cyber Dungeon** is a cybersecurity adventure RPG dungeon crawler built with
 Python, Flask, HTML, CSS, and vanilla JavaScript.
 
-The player explores 15 illustrated open arenas with pointer and touch joystick movement. Each floor creates a distinct scene, random enemies, an
+The player explores 15 illustrated open arenas with WASD, arrow keys, or a touch joystick. Each floor has its own painting and layout, random enemies, an
 chance-based supply chest, and a locked exit. Touching a monster launches a
 dedicated turn-based battle; every monster on the map must be defeated before
 the gate to the next floor opens.
@@ -13,7 +13,7 @@ The complete roguelite version is developed on `roguelike-v1`.
 
 ## Core game loop
 
-1. Explore an open illustrated arena by dragging the joystick with a mouse or finger.
+1. Explore a painted arena with WASD, arrow keys, or the mouse and touch joystick.
 2. Touch a roaming-map monster to enter its dedicated battle scene.
 3. Choose Attack, Defend, or Exploit while the enemy action remains hidden.
 4. Answer a concise cybersecurity question within 45 seconds.
@@ -108,13 +108,14 @@ Elite status is rolled independently at a 22% chance. Floors 5, 10, and 15
 contain only the centered boss, with no ordinary monsters or support encounters.
 The exit remains sealed until every encounter on the floor is defeated.
 
-All fifteen levels have fixed obstacle layouts in an 18 by 11 world. A camera
-follows the hero around the illustrated arena; obstacles stop the hero and roaming
+All fifteen levels have unique painted backgrounds and fixed obstacle layouts
+in an 18 by 11 world. A camera follows the hero around the full-screen arena;
+the visible floor boundary and small obstacles stop the hero and roaming
 enemies. Floors 1–5 use catacombs, 6–10 the temple, and 11–15 the foundry,
 with special Atlantis, graveyard and inferno paintings on boss levels.
-Painted ruins, volcanic rubble, and broken stalls mark the collidable obstacles.
-Every exit has an animated magical portal set in front of a stone tunnel entrance;
-it stays dim until the required enemies are defeated.
+Painted ruins and volcanic rubble share the same footprint as their collision.
+The market has no obstacles. Each level's portal animation sits in front of
+its painted door, stays dim until enemies are defeated, and announces when open.
 
 Supply chests appear on normal floors with a 38% chance and contain item or
 relic choices. Battles award recovery, and dungeon loot is collected from chests.
@@ -251,7 +252,7 @@ Press `Ctrl+C` in the terminal to stop the server.
 python -m unittest -v
 ```
 
-The 35-test automated suite checks procedural map creation, map collision,
+The automated suite checks the authored maps, map collision,
 locked exits, battle-to-map return, Focus requirements, hidden intentions,
 danger and lethal warnings, post-fight healing, support encounter rules,
 question-length limits, all three combat actions, simultaneous damage, Zero
@@ -313,9 +314,9 @@ confirmation feedback, victory, defeat, and answer feedback sounds.
 
 ## Illustrated exploration
 
-The hero moves with a touch or mouse joystick and desktop directional keys.
+The hero moves with a touch or mouse joystick, WASD, or arrow keys.
 A camera follows free movement across each of fifteen authored maps; there is
-no visible tile grid. Environmental fire, mist, runes and sparks animate while
+no visible tile grid. Painterly four-frame flames and flying fairies animate while
 enemies wander and switch between individual idle and moving frames. The enemy
 sheets are split into four standalone images each to prevent the browser from
 drawing several poses at once. The battle portrait uses the same illustrated

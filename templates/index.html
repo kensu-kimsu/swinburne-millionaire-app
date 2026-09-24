@@ -133,14 +133,14 @@
             <button class="icon-button" onclick="openEncyclopedia()" aria-label="Open encyclopedia"><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-encyclopedia"></use></svg></button>
         </header>
         <div class="dungeon-title">
-            <p class="eyebrow">PROCEDURAL CYBER CATACOMBS</p>
+            <p class="eyebrow" id="dungeon-theme-label">THE FIFTEEN REALMS</p>
             <h2 id="dungeon-status">HUNT EVERY ENEMY</h2>
         </div>
         <div class="dungeon-map-wrap">
             <svg id="dungeon-map" class="dungeon-map" viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Illustrated open arena with roaming enemies"></svg>
         </div>
         <p id="dungeon-message" class="dungeon-message">Explore the arena. Defeat every enemy to open the exit.</p>
-        <div id="move-reminder" class="move-reminder hidden" role="status">Drag the joystick to move</div>
+        <div id="move-reminder" class="move-reminder hidden" role="status">Move with WASD / arrow keys or drag the joystick</div>
         <div id="movement-stick" class="movement-stick" aria-label="Virtual movement joystick" role="application"><span id="movement-knob"></span></div>
     </section>
 
@@ -281,6 +281,8 @@
         let lastMoveSent = 0;
         let roamVisuals = new Map();
         let joystick = {x: 0, y: 0};
+        const heldKeys = new Set();
+        let moveInput = {x:0,y:0};
         let lastFrame = 0;
         let tickBusy = false;
         let dungeonFloorKey = null;
@@ -627,16 +629,19 @@
         const arenaPoint = (x, y) => ({x: x * 72, y: y * 72});
         function walkableLocal(dungeon, x, y) {
             const r = .23;
-            return x > r && y > r && x < dungeon.width - r && y < dungeon.height - r &&
+            const [left,top,right,bottom] = dungeon.floor_bounds || [0,0,dungeon.width,dungeon.height];
+            return x > left+r && y > top+r && x < right-r && y < bottom-r &&
                 dungeon.obstacles.every(([ox, oy, w, h]) => !(x > ox-r && x < ox+w+r && y > oy-r && y < oy+h+r));
         }
         function followCamera() {
             if (!heroPosition || !dungeonScene) return;
             const map = document.getElementById('dungeon-map');
             const p = arenaPoint(heroPosition.x, heroPosition.y);
-            const x = Math.max(0, Math.min(dungeonScene.width * 72 - 680, p.x - 340));
-            const y = Math.max(0, Math.min(dungeonScene.height * 72 - 400, p.y - 200));
-            map.setAttribute('viewBox', `${x} ${y} 680 400`);
+            const viewportHeight = map.clientHeight > map.clientWidth ? 620 : 400;
+            const viewportWidth = viewportHeight * map.clientWidth / Math.max(1,map.clientHeight);
+            const x = Math.max(0, Math.min(dungeonScene.width * 72 - viewportWidth, p.x - viewportWidth/2));
+            const y = Math.max(0, Math.min(dungeonScene.height * 72 - viewportHeight, p.y - viewportHeight/2));
+            map.setAttribute('viewBox', `${x} ${y} ${viewportWidth} ${viewportHeight}`);
         }
         function stageName(room) { return {5: 'atlantis', 10: 'graveyard', 15: 'inferno'}[room] || 'catacomb'; }
         function syncArenaHud(data) {
@@ -645,6 +650,7 @@
             document.getElementById('dungeon-remaining').textContent = data.dungeon.remaining;
             document.getElementById('dungeon-status').textContent = data.dungeon.mode === 'market' ? 'THE DESOLATED MARKET' : data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
                 [5, 10, 15].includes(data.room) ? 'THE BOSS AWAITS' : 'HUNT EVERY ENEMY';
+            document.getElementById('dungeon-theme-label').textContent = data.dungeon.mode === 'market' ? 'THE DESOLATED MARKET' : `${data.dungeon.theme.toUpperCase()} · LEVEL ${data.room}`;
         }
         function renderDungeon(data) {
             const dungeon = data.dungeon;
@@ -657,7 +663,7 @@
             const key = `${data.room}:${dungeon.seed}`;
             const map = document.getElementById('dungeon-map');
             const changed = dungeon.enemies.some(enemy => enemy.defeated && sceneNodes.has(enemy.uid)) ||
-                (dungeon.feature?.used && sceneNodes.has('feature')) ||
+                (dungeon.mode !== 'market' && dungeon.feature?.used && sceneNodes.has('merchant')) ||
                 (dungeon.chests || []).some(chest => chest.opened && sceneNodes.has('chest')) ||
                 (dungeon.exit_unlocked && !dungeonScene?.exit_unlocked);
             if (key === dungeonFloorKey && sceneNodes.size && !changed) {
@@ -665,6 +671,11 @@
                 lastMoveAt = performance.now();
                 followCamera();
                 return;
+            }
+            if (dungeon.mode === 'combat' && dungeon.exit_unlocked && dungeonScene &&
+                    dungeonScene.seed === dungeon.seed && !dungeonScene.exit_unlocked) {
+                showToast('PORTAL OPEN — GO TO THE EXIT', 4800);
+                document.getElementById('dungeon-message').textContent = 'The portal is open. Reach the door to continue.';
             }
             dungeonFloorKey = key;
             dungeonScene = dungeon;
@@ -680,41 +691,26 @@
                 for (const [attribute, value] of Object.entries(attrs)) node.setAttribute(attribute, value);
                 parent.appendChild(node); return node;
             };
-            const background = dungeon.mode === 'market' ? 'arena-market' : [5, 10, 15].includes(data.room) ? `stage-${dungeon.theme}` : `arena-${dungeon.theme}`;
+            const background = dungeon.mode === 'market' ? 'arena-market' : `level-${String(data.room).padStart(2,'0')}`;
             svg('image', {href: `/static/assets/dungeon/${background}.webp`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
-                preserveAspectRatio: 'xMidYMid slice', class: 'stage-painting'});
-            const obstacleLayer = svg('g', {class: `arena-obstacles obstacles-${dungeon.theme}`});
-            const obstacleArt = dungeon.theme === 'market' ? 'market' :
-                ['inferno', 'foundry'].includes(dungeon.theme) ? 'inferno' : 'ruins';
-            for (const [ox, oy, w, h] of dungeon.obstacles) {
-                const x = ox * 72, y = oy * 72;
-                svg('ellipse', {cx: x+w*36, cy:y+h*72+4, rx:w*40, ry:17, fill:'#05090d', opacity:'.75'}, obstacleLayer);
+                preserveAspectRatio: 'none', class: 'stage-painting'});
+            const obstacleLayer = svg('g', {class:`arena-obstacles obstacles-${dungeon.theme}`});
+            const obstacleArt = ['inferno','foundry'].includes(dungeon.theme) ? 'inferno' : 'ruins';
+            for (const [ox,oy,w,h] of dungeon.obstacles) {
                 svg('image', {href:`/static/assets/dungeon/obstacle-${obstacleArt}.webp`,
-                    x:x-8,y:y-12,width:w*72+16,height:h*72+18,
-                    preserveAspectRatio:'none',class:'painted-obstacle'}, obstacleLayer);
+                    x:ox*72,y:oy*72,width:w*72,height:h*72,preserveAspectRatio:'none',
+                    class:'painted-obstacle'},obstacleLayer);
             }
-            const propLayer = svg('g', {class:'arena-props'});
-            dungeon.obstacles.forEach(([ox, oy, w], index) => {
-                const p = arenaPoint(ox + w / 2, oy + .25);
-                const node = svg('g', {class:'swaying-lantern'}, propLayer);
-                svg('path', {d:'M0 -31 L0 -10 M-7 -8 L7 -8 L10 8 L-10 8 Z M-10 8 L10 8',
-                    fill:'none',stroke:'#b7996a','stroke-width':3}, node);
-                svg('path', {d:'M-5 -5 L5 -5 L7 5 L-7 5 Z',fill:'#f6ae59',opacity:'.85'}, node);
-                svg('circle', {cx:0,cy:0,r:11,fill:'#ff9a4b',opacity:'.12',filter:'blur(4px)'}, node);
-                decorNodes.push({node,x:p.x,y:p.y,phase:index*1.73,kind:'lantern'});
-            });
-            const ambience = svg('g', {class: `arena-ambience ambience-${dungeon.theme}`});
+            const ambience = svg('g',{class:`arena-ambience ambience-${dungeon.theme}`});
             for (const item of dungeon.decor || []) {
-                const p = arenaPoint(item.x, item.y);
-                const node = svg('g', {class: `environment-${item.kind}`}, ambience);
-                if (item.kind === 'fire') {
-                    svg('path', {d:'M-6 4 Q-12 -10 0 -22 Q-2 -7 8 -12 Q16 3 4 9 Q-5 13 -6 4Z', fill:'currentColor'}, node);
-                    svg('circle', {cx:0, cy:2, r:3, fill:'#fff4ac'}, node);
-                } else if (item.kind === 'mist') svg('ellipse', {cx:0, cy:0, rx:19, ry:8}, node);
-                else svg('circle', {cx:0, cy:0, r:3}, node);
-                if (item.kind === 'rune') svg('path', {d: 'M-7 0 L0 -9 L7 0 L0 9 Z', fill: 'none', stroke: 'currentColor'}, node);
-                node.setAttribute('transform', `translate(${p.x} ${p.y})`);
-                decorNodes.push({node, x: p.x, y: p.y, phase: item.phase, kind: item.kind});
+                const p = arenaPoint(item.x,item.y);
+                const node = svg('g',{class:`environment-${item.kind}`},ambience);
+                svg('image',{href:`/static/assets/dungeon/fx-${item.kind}-0.webp`,
+                    x:item.kind === 'fairy' ? -23 : -18,y:item.kind === 'fairy' ? -28 : -36,
+                    width:item.kind === 'fairy' ? 46 : 36,height:item.kind === 'fairy' ? 44 : 40,
+                    class:'effect-frame'},node);
+                node.setAttribute('transform',`translate(${p.x} ${p.y})`);
+                decorNodes.push({node,x:p.x,y:p.y,phase:item.phase,kind:item.kind});
             }
             const actorLayer = svg('g', {class: 'arena-actors'});
             function actorNode(actor, kind, art, width, height, sheet = false) {
@@ -724,7 +720,7 @@
                 svg('ellipse', {cx: 0, cy: 2, rx: width * .22, ry: 7, class: 'arena-shadow'}, group);
                 if (kind === 'exit') {
                     group.classList.toggle('locked', !dungeon.exit_unlocked);
-                    svg('ellipse', {cx:0,cy:-31,rx:25,ry:36,class:'portal-light'}, group);
+                    svg('ellipse', {cx:0,cy:-30,rx:23,ry:30,class:'portal-light'}, group);
                 }
                 if (kind === 'boss') for (let i = 0; i < 14; i++) {
                     svg('circle', {cx: Math.cos(i * 2.4) * 63, cy: -48 + Math.sin(i * 2.4) * 55,
@@ -733,7 +729,7 @@
                 if (sheet) svg('image', {href: art.replace('.webp', '-0.webp'), x:-width/2,
                     y:-height+6, width, height, preserveAspectRatio:'xMidYMax meet', class:'actor-frame'}, group);
                 else if (art) svg('image', {href: art, x: -width / 2, y: -height + 6, width, height,
-                    preserveAspectRatio: 'xMidYMax meet'}, group);
+                    preserveAspectRatio: 'xMidYMax meet',class:kind === 'exit' ? 'portal-frame' : ''}, group);
                 else if (kind === 'chest') {
                     svg('rect', {x:-19,y:-26,width:38,height:24,rx:3,fill:'#543725',stroke:'#d5a260','stroke-width':3}, group);
                     svg('path', {d:'M-20 -26 Q0 -43 20 -26 M-17 -27 L17 -27 M0 -32 L0 -6',fill:'none',stroke:'#edc27a','stroke-width':4}, group);
@@ -752,13 +748,16 @@
             for (const enemy of dungeon.enemies) {
                 if (enemy.defeated) continue;
                 const bossArt = {phishing_king:'boss-leviathan', ransomware_overlord:'boss-death', root_admin:'boss-dragon'}[enemy.enemy_id];
+                const size = enemy.enemy_id === 'zero_day_exploit' ? [150,133] :
+                    enemy.enemy_id === 'credential_thief' ? [125,105] : [110,100];
                 actorNode(enemy, bossArt ? 'boss' : 'enemy', bossArt ? `/static/assets/dungeon/${bossArt}.webp`
-                    : `/static/assets/dungeon/run-${enemy.enemy_id}.webp`, bossArt ? 150 : 62, bossArt ? 148 : 65, !bossArt);
+                    : `/static/assets/dungeon/run-${enemy.enemy_id}.webp`, bossArt ? 215 : size[0], bossArt ? 205 : size[1], !bossArt);
                 roamVisuals.set(enemy.uid, {x: enemy.x, y: enemy.y});
             }
-            if (dungeon.feature && !dungeon.feature.used) actorNode(dungeon.feature, 'merchant', dungeon.mode === 'market' ? '/static/assets/npcs/cipher_merchant.webp' : null, 74, 94);
+            if (dungeon.feature && (dungeon.mode === 'market' || !dungeon.feature.used)) actorNode(dungeon.feature, 'merchant',
+                dungeon.mode === 'market' ? '/static/assets/npcs/cipher_merchant.webp' : null, 74, 94);
             for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', null, 42, 42);
-            actorNode(dungeon.exit, 'exit', '/static/assets/dungeon/portal-arch.webp', 104, 108);
+            actorNode(dungeon.exit, 'exit', '/static/assets/dungeon/fx-portal-0.webp', 70, 83);
             actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 70, 78);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
                 const p = arenaPoint(pendingDefeat.x, pendingDefeat.y);
@@ -777,7 +776,7 @@
             if (hero) {
                 const p = arenaPoint(heroPosition.x, heroPosition.y);
                 hero.setAttribute('transform', `translate(${p.x} ${p.y})`);
-                const running = Math.hypot(joystick.x, joystick.y) > .12;
+                const running = Math.hypot(moveInput.x, moveInput.y) > .12;
                 hero.classList.toggle('running', running);
                 hero.classList.toggle('facing-left', heroDirection === 'left');
                 const sprite = running ? `/static/assets/dungeon/hero-run-${Math.floor(time / 95) % 8}.webp`
@@ -803,31 +802,39 @@
                     if (frame.getAttribute('href') !== href) frame.setAttribute('href', href);
                 }
             }
+            const portal = sceneNodes.get('exit')?.querySelector('.portal-frame');
+            if (portal) {
+                const href = `/static/assets/dungeon/fx-portal-${Math.floor(time/180)%4}.webp`;
+                if (portal.getAttribute('href') !== href) portal.setAttribute('href',href);
+            }
             followCamera();
-            for (const {node, x, y, phase, kind} of decorNodes) {
-                const sway = Math.sin(time * .0017 + phase);
-                node.setAttribute('transform', kind === 'lantern'
-                    ? `translate(${x} ${y}) rotate(${sway * 11})`
-                    : `translate(${x + sway * (kind === 'mist' ? 7 : 3)} ${y + Math.cos(time * .0014 + phase) * 5})`);
-                node.style.opacity = `${.45 + .4 * Math.abs(sway)}`;
+            for (const {node,x,y,phase,kind} of decorNodes) {
+                const sway = Math.sin(time*.0017+phase);
+                node.setAttribute('transform',`translate(${x+sway*(kind==='fairy'?18:2)} ${y+Math.cos(time*.002+phase)*(kind==='fairy'?14:2)})`);
+                const frame = node.querySelector('.effect-frame');
+                const href = `/static/assets/dungeon/fx-${kind}-${Math.floor(time/145+phase)%4}.webp`;
+                if (frame && frame.getAttribute('href') !== href) frame.setAttribute('href',href);
             }
         }
         function movementFrame(time) {
             const delta = Math.min((time - (lastFrame || time)) / 1000, .05);
             lastFrame = time;
             if (dungeonScene && !document.getElementById('dungeon-screen').classList.contains('hidden')) {
-                const magnitude = Math.hypot(joystick.x, joystick.y);
+                const keyboard = {x:Number(heldKeys.has('d')||heldKeys.has('arrowright'))-Number(heldKeys.has('a')||heldKeys.has('arrowleft')),
+                    y:Number(heldKeys.has('s')||heldKeys.has('arrowdown'))-Number(heldKeys.has('w')||heldKeys.has('arrowup'))};
+                moveInput = Math.hypot(keyboard.x,keyboard.y) > 0 ? keyboard : joystick;
+                const magnitude = Math.hypot(moveInput.x, moveInput.y);
                 const reminder = document.getElementById('move-reminder');
                 if (magnitude > .1 && heroPosition) {
                     lastMoveAt = time;
                     const speed = delta * 2.3;
-                    const nextX = heroPosition.x + joystick.x / Math.max(1, magnitude) * speed;
-                    const nextY = heroPosition.y + joystick.y / Math.max(1, magnitude) * speed;
+                    const nextX = heroPosition.x + moveInput.x / Math.max(1, magnitude) * speed;
+                    const nextY = heroPosition.y + moveInput.y / Math.max(1, magnitude) * speed;
                     if (walkableLocal(dungeonScene, nextX, nextY)) {
                         heroPosition.x = nextX; heroPosition.y = nextY;
                     } else if (walkableLocal(dungeonScene, nextX, heroPosition.y)) heroPosition.x = nextX;
                     else if (walkableLocal(dungeonScene, heroPosition.x, nextY)) heroPosition.y = nextY;
-                    heroDirection = joystick.x < -.12 ? 'left' : joystick.x > .12 ? 'right' : joystick.y < 0 ? 'up' : 'down';
+                    heroDirection = moveInput.x < -.12 ? 'left' : moveInput.x > .12 ? 'right' : moveInput.y < 0 ? 'up' : 'down';
                     if (time - lastMoveSent > 95 && !dungeonMoving && !tickBusy) {
                         lastMoveSent = time;
                         moveDungeon();
@@ -836,7 +843,17 @@
                 reminder.classList.toggle('hidden', time - lastMoveAt < 20000 || magnitude > .1);
                 positionActors(time);
             }
-            requestAnimationFrame(movementFrame);
+            document.addEventListener('keydown', event => {
+            const key = event.key.toLowerCase();
+            if (!['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key) ||
+                document.getElementById('dungeon-screen').classList.contains('hidden') ||
+                /^(input|textarea|select)$/i.test(event.target.tagName)) return;
+            heldKeys.add(key); event.preventDefault();
+        });
+        document.addEventListener('keyup', event => heldKeys.delete(event.key.toLowerCase()));
+        window.addEventListener('blur', () => heldKeys.clear());
+        window.addEventListener('resize', followCamera);
+        requestAnimationFrame(movementFrame);
         }
         async function tickRoaming() {
             if (tickBusy || dungeonMoving || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
@@ -1661,6 +1678,16 @@
         }
         stick.addEventListener('pointerup', releaseStick);
         stick.addEventListener('pointercancel', releaseStick);
+        document.addEventListener('keydown', event => {
+            const key = event.key.toLowerCase();
+            if (!['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key) ||
+                document.getElementById('dungeon-screen').classList.contains('hidden') ||
+                /^(input|textarea|select)$/i.test(event.target.tagName)) return;
+            heldKeys.add(key); event.preventDefault();
+        });
+        document.addEventListener('keyup', event => heldKeys.delete(event.key.toLowerCase()));
+        window.addEventListener('blur', () => heldKeys.clear());
+        window.addEventListener('resize', followCamera);
         requestAnimationFrame(movementFrame);
         setInterval(tickRoaming, 250);
     </script>

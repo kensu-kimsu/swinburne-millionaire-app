@@ -1611,3 +1611,33 @@ button { font: inherit; }
 .dungeon-controls { display: none !important; }
 @media (max-width: 580px) { .dungeon-map { max-height: min(100%, 60dvh); } .movement-stick { width: 92px; height: 92px; flex-basis: 92px; margin: 3px auto; } }
 @media (prefers-reduced-motion: reduce) { .arena-actor image, .boss-aura, .portal-spark, .portal-light { animation: none !important; } }
+
+/* The arena occupies the viewport; HUD and touch controls float above it. */
+.dungeon-screen { width:100vw; height:100dvh; min-height:0; padding:0; overflow:hidden; }
+.dungeon-map-wrap { position:absolute; inset:0; width:100%; height:100%; display:block; }
+.dungeon-map { width:100%; height:100%; max-height:none; aspect-ratio:auto; border:0; border-radius:0; box-shadow:none; overflow:hidden; }
+.dungeon-hud { position:absolute; top:max(10px,env(safe-area-inset-top)); left:50%;
+    transform:translateX(-50%); width:min(720px,calc(100% - 24px)); z-index:7; background:#0c1725da; }
+.dungeon-title { position:absolute; top:62px; left:50%; transform:translateX(-50%);
+    width:max-content; max-width:90%; z-index:6; pointer-events:none; text-shadow:0 2px 8px #000; }
+.dungeon-title h2 { font-size:clamp(.9rem,2vw,1.3rem); }
+.dungeon-message { position:absolute; z-index:7; bottom:max(16px,env(safe-area-inset-bottom));
+    left:50%; transform:translateX(-50%); width:max-content; max-width:75%;
+    padding:6px 12px; border-radius:20px; background:#091624c9; color:#fff; text-align:center; }
+.move-reminder { position:absolute; z-index:8; bottom:104px; left:50%; transform:translateX(-50%);
+    max-width:90%; text-align:center; }
+.movement-stick { position:absolute; z-index:8; bottom:max(22px,env(safe-area-inset-bottom));
+    left:max(22px,env(safe-area-inset-left)); margin:0; touch-action:none; }
+.arena-actor.exit.locked .portal-frame { opacity:.16; }
+.arena-actor.exit:not(.locked) .portal-frame { filter:drop-shadow(0 0 10px #81baff); }
+.environment-fairy .effect-frame { filter:drop-shadow(0 0 8px #77eaff); }
+.environment-flame .effect-frame { filter:drop-shadow(0 0 8px #ffb663); }
+@media (max-width:600px) {
+    .dungeon-map { width:100%; height:100%; max-height:none; }
+    .dungeon-hud { top:max(6px,env(safe-area-inset-top)); }
+    .dungeon-title { top:58px; }
+    .dungeon-message { bottom:max(8px,env(safe-area-inset-bottom)); left:auto; right:8px;
+        transform:none; max-width:60%; font-size:.72rem; }
+    .move-reminder { bottom:110px; }
+    .movement-stick { left:16px; bottom:max(16px,env(safe-area-inset-bottom)); }
+}
