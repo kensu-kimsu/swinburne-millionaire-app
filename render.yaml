@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: swinburne-cyber-dungeon
+    runtime: python
+    plan: free
+    region: singapore
+    repo: https://github.com/kensu-kimsu/swinburne-millionaire-app
+    branch: roguelike-v1
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeployTrigger: commit
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
