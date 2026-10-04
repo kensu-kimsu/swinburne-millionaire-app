@@ -97,7 +97,7 @@ ABILITIES = {
     },
     "haste": {
         "name": "Time Compression", "icon": "⏳",
-        "description": "Questions begin with only 30 seconds.",
+        "description": "Questions begin with only 25 seconds.",
     },
     "jammer": {
         "name": "Signal Jammer", "icon": "📵",
@@ -165,7 +165,7 @@ NORMAL_ENEMIES = {
     "MEDIUM": [
         {"id": "botnet_node", "name": "Botnet Golem", "icon": "🧟", "abilities": ["shielded"], "description": "An undead network golem whose server-heart commands a swarm of cable-bound skulls.", "strategy": "Break its starting armor, then interrupt Fortify before it rebuilds defenses."},
         {"id": "credential_thief", "name": "Credential Panther", "icon": "🔓", "abilities": ["credit_drain"], "description": "A masked shadow panther that stalks access keys and vanishes into corrupted smoke.", "strategy": "Exploit Wallet Drain and defend against the following Heavy Attack."},
-        {"id": "malware_loader", "name": "Payload Ogre", "icon": "👾", "abilities": ["haste"], "description": "A furnace-bellied cyber-ogre carrying cursed payload cores and an infernal launcher.", "strategy": "Plan your action before reading the answers; its questions only allow 30 seconds."},
+        {"id": "malware_loader", "name": "Payload Ogre", "icon": "👾", "abilities": ["haste"], "description": "A furnace-bellied cyber-ogre carrying cursed payload cores and an infernal launcher.", "strategy": "Plan your action before reading the answers; its questions only allow 25 seconds."},
     ],
     "HARD": [
         {"id": "ransomware", "name": "Ransom Lich", "icon": "💀", "abilities": ["encryptor"], "description": "A chained cyber-lich fused to a mechanical spider body that seals relics in red data-fire.", "strategy": "Interrupt Encrypt whenever you carry an important consumable."},
@@ -1078,14 +1078,16 @@ def move_in_dungeon():
         elif walkable(dungeon, next_x, next_y + step_y):
             next_y += step_y
     player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
+    contact_positions = {enemy["uid"]: (enemy["x"], enemy["y"]) for enemy in dungeon["enemies"]}
     advance_roaming_enemies(dungeon)
     marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
-                   and math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]) <
-                   encounter_radius(enemy)), None)
+                   and min(math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]),
+                           math.hypot(contact_positions[enemy["uid"]][0] - player["x"],
+                                      contact_positions[enemy["uid"]][1] - player["y"])) < encounter_radius(enemy)), None)
     if marker:
         start_dungeon_encounter(state, marker)
         session.modified = True
-        return jsonify({"status": "encounter_started", **public_state(state)})
+        return jsonify({"status": "encounter_started", **battle_question_payload(state)})
     for chest in dungeon.get("chests", []):
         if not chest["opened"] and math.hypot(chest["x"] - player["x"], chest["y"] - player["y"]) < .48:
             chest["opened"] = True
@@ -1172,7 +1174,7 @@ def tick_dungeon():
         if math.hypot(enemy["x"] - dungeon["player"]["x"], enemy["y"] - dungeon["player"]["y"]) < encounter_radius(enemy):
             start_dungeon_encounter(state, enemy)
             session.modified = True
-            return jsonify({"status": "encounter_started", **public_state(state)})
+            return jsonify({"status": "encounter_started", **battle_question_payload(state)})
     session.modified = True
     return jsonify({"status": "roaming", **public_state(state)})
 
@@ -1182,19 +1184,26 @@ def get_question():
     state = session.get("game_state")
     if not state or state.get("game_over") or not state.get("enemy") or state.get("pending"):
         return jsonify({"error": "No active combat question"}), 400
+    return jsonify(battle_question_payload(state))
+
+
+def battle_question_payload(state):
+    """Return the first question with encounter confirmation to save a round trip."""
     question = current_question(state)
     tier = get_tier(state["current_room"])
-    time_limit = 30 if "haste" in state["enemy"]["abilities"] else 45
+    kind = state["enemy"]["kind"]
+    time_limit = 15 if kind == "FINAL BOSS" else 20 if "BOSS" in kind else (
+        25 if "haste" in state["enemy"]["abilities"] else 30)
     if question.get("domain") == "Networking" and "wireshark" in state["relics"]:
         time_limit += 5
-    return jsonify({
+    return {
         "tier": tier,
         "domain": question.get("domain", "General Security"),
         "question": question["question"],
         "options": question["options"],
         "time_limit": time_limit,
         **public_state(state),
-    })
+    }
 
 
 @app.route("/api/answer", methods=["POST"])

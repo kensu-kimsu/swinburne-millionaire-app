@@ -271,6 +271,9 @@
         let answerLockTimer = null;
         let answerLocked = false;
         let dungeonMoving = false;
+        let encounterPending = false;
+        let battleEntering = false;
+        let contactStartedAt = 0;
         let heroDirection = 'down';
         let heroRunningUntil = 0;
         let dungeonScene = null;
@@ -626,6 +629,7 @@
             heroPosition = null;
             dungeonScene = null;
             pendingDefeat = null;
+            cancelBattleContact();
             lastMoveAt = performance.now();
             roamVisuals.clear(); sceneNodes.clear();
             followCamera();
@@ -674,7 +678,7 @@
             }
             if (data.enemy) {
                 showBattleScene();
-                await fetchQuestion();
+                await fetchQuestion(data.question ? data : null);
                 return;
             }
             showFatalError('The run reached an unknown state. Start a new run.');
@@ -829,7 +833,7 @@
                     'stall','/static/assets/dungeon/market-stall.webp',260,184);
                 actorNode(dungeon.feature,'merchant','/static/assets/npcs/cipher_merchant.webp',77,102);
             }
-            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', null, 42, 42);
+            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', '/static/assets/dungeon/treasure-chest.webp', 68, 57);
             actorNode(dungeon.exit,
                 'exit', '/static/assets/dungeon/fx-portal-0.webp', 56, 73);
             actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 70, 78);
@@ -902,16 +906,48 @@
                 if (frame && frame.getAttribute('href') !== href) frame.setAttribute('href',href);
             }
         }
+        function beginBattleContact() {
+            if (encounterPending) return;
+            encounterPending = true;
+            contactStartedAt = performance.now();
+            document.getElementById('battle-transition').classList.remove('hidden');
+            playEffect('snd-warning');
+        }
+
+        function cancelBattleContact() {
+            encounterPending = false;
+            document.getElementById('battle-transition').classList.add('hidden');
+        }
+
+        function touchingEnemy() {
+            return dungeonScene.enemies.some(enemy => {
+                if (enemy.defeated) return false;
+                const radius = enemy.kind.includes('BOSS') ? 1.25 :
+                    enemy.enemy_id === 'zero_day_exploit' ? 1 : enemy.enemy_id === 'credential_thief' ? .85 : .75;
+                return Math.hypot(enemy.x - heroPosition.x, enemy.y - heroPosition.y) < radius;
+            });
+        }
+
+        async function enterBattle(data) {
+            battleEntering = true;
+            beginBattleContact();
+            // The wipe begins at local contact, rather than after the network reply.
+            const remaining = Math.max(0, 180 - (performance.now() - contactStartedAt));
+            if (remaining) await new Promise(resolve => setTimeout(resolve, remaining));
+            cancelBattleContact();
+            try { await processGameState(data); } finally { battleEntering = false; }
+        }
+
         function movementFrame(time) {
             const delta = Math.min((time - (lastFrame || time)) / 1000, .05);
             lastFrame = time;
-            if (dungeonScene && !document.getElementById('dungeon-screen').classList.contains('hidden')) {
+            if (dungeonScene && !battleEntering && !document.getElementById('dungeon-screen').classList.contains('hidden')) {
                 const keyboard = {x:Number(heldKeys.has('d')||heldKeys.has('arrowright'))-Number(heldKeys.has('a')||heldKeys.has('arrowleft')),
                     y:Number(heldKeys.has('s')||heldKeys.has('arrowdown'))-Number(heldKeys.has('w')||heldKeys.has('arrowup'))};
                 moveInput = Math.hypot(keyboard.x,keyboard.y) > 0 ? keyboard : joystick;
                 const magnitude = Math.hypot(moveInput.x, moveInput.y);
                 const reminder = document.getElementById('move-reminder');
-                if (magnitude > .1 && heroPosition) {
+                if (magnitude > .1 && heroPosition && !encounterPending) {
                     lastMoveAt = time;
                     const speed = delta * 2.3;
                     const nextX = heroPosition.x + moveInput.x / Math.max(1, magnitude) * speed;
@@ -928,10 +964,11 @@
                 }
                 // Finish syncing the last predicted step after the joystick is
                 // released. Only one request may be in flight at a time.
+                if (!encounterPending && heroPosition && touchingEnemy()) beginBattleContact();
                 const unsentMovement = heroPosition && confirmedHeroPosition &&
                     Math.hypot(heroPosition.x - confirmedHeroPosition.x,
                                heroPosition.y - confirmedHeroPosition.y) > .05;
-                if (unsentMovement && time - lastMoveSent > 160 && !dungeonMoving && !tickBusy) {
+                if ((encounterPending || (unsentMovement && time - lastMoveSent > 160)) && !dungeonMoving && !tickBusy) {
                     lastMoveSent = time;
                     moveDungeon();
                 }
@@ -946,7 +983,7 @@
             requestAnimationFrame(movementFrame);
         }
         async function tickRoaming() {
-            if (tickBusy || dungeonMoving || Math.hypot(moveInput.x, moveInput.y) > .1 ||
+            if (battleEntering || tickBusy || dungeonMoving || Math.hypot(moveInput.x, moveInput.y) > .1 ||
                     (heroPosition && confirmedHeroPosition &&
                      Math.hypot(heroPosition.x - confirmedHeroPosition.x,
                                 heroPosition.y - confirmedHeroPosition.y) > .05) ||
@@ -956,42 +993,33 @@
             tickBusy = false;
             if (!data) return;
             if (data.status === 'encounter_started') {
-                await playBattleTransition(); await processGameState(data);
+                await enterBattle(data);
             } else { dungeonScene = data.dungeon; syncArenaHud(data); }
         }
         async function moveDungeon() {
-            if (dungeonMoving || tickBusy || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
+            if (battleEntering || dungeonMoving || tickBusy || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
             dungeonMoving = true;
             const requestedPosition = {...heroPosition};
             const data = await postJson('/api/dungeon/move', requestedPosition);
             dungeonMoving = false;
-            if (!data) return;
+            if (!data) { cancelBattleContact(); return; }
             if (data.message) document.getElementById('dungeon-message').textContent = data.message;
-            if (data.status === 'encounter_started') { await playBattleTransition(); await processGameState(data); return; }
+            if (data.status === 'encounter_started') { await enterBattle(data); return; }
             if (data.status === 'floor_advanced') {
+                cancelBattleContact();
                 heroPosition = null;
                 document.getElementById('dungeon-message').textContent = data.dungeon.mode === 'market' ? 'A deserted market lies beyond the gate.' : 'A deeper arena materializes around you.';
                 await processGameState(data); return;
             }
-            if (data.pending !== 'dungeon') { await processGameState(data); return; }
+            if (data.pending !== 'dungeon') { cancelBattleContact(); await processGameState(data); return; }
             dungeonScene = data.dungeon;
             confirmedHeroPosition = {...data.dungeon.player};
             syncArenaHud(data);
+            if (encounterPending && Math.hypot(heroPosition.x - requestedPosition.x,
+                    heroPosition.y - requestedPosition.y) < .01) cancelBattleContact();
         }
 
-        function playBattleTransition() {
-            return new Promise(resolve => {
-                const transition = document.getElementById('battle-transition');
-                transition.classList.remove('hidden');
-                playEffect('snd-warning');
-                setTimeout(() => {
-                    transition.classList.add('hidden');
-                    resolve();
-                }, 720);
-            });
-        }
-
-        async function fetchQuestion() {
+        async function fetchQuestion(initialQuestion = null) {
             cancelAutoContinue();
             closeDecision();
             document.querySelector('.main-panel').classList.remove('turn-resolved');
@@ -1003,9 +1031,12 @@
                 button.classList.remove('selected');
                 button.disabled = false;
             });
-            const response = await fetch('/api/question');
-            const data = await response.json();
-            if (!response.ok) return showFatalError(data.error || 'Question could not load.');
+            let data = initialQuestion;
+            if (!data) {
+                const response = await fetch('/api/question');
+                data = await response.json();
+                if (!response.ok) return showFatalError(data.error || 'Question could not load.');
+            }
             questionLoaded = true;
             renderState(data);
             renderQuestion(data);
@@ -1185,7 +1216,7 @@
         function beginAutoContinue() {
             cancelAutoContinue();
             const button = document.getElementById('next-button');
-            const delaySeconds = 8;
+            const delaySeconds = 4;
             let seconds = delaySeconds;
             const update = () => {
                 button.textContent = `CONTINUE (${seconds}) →`;

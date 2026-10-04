@@ -1261,12 +1261,12 @@ button { font: inherit; }
     place-items: center;
     overflow: hidden;
     background: #03040a;
-    animation: battle-wipe .72s ease-in-out forwards;
+    animation: battle-wipe .18s ease-in-out forwards;
 }
 .battle-transition::before,
-.battle-transition::after { content: ""; position: absolute; width: 160%; height: 34%; background: linear-gradient(90deg, transparent, #dc251c, #ffcf68, #dc251c, transparent); transform: rotate(-16deg); animation: encounter-slash .7s ease-out forwards; }
+.battle-transition::after { content: ""; position: absolute; width: 160%; height: 34%; background: linear-gradient(90deg, transparent, #dc251c, #ffcf68, #dc251c, transparent); transform: rotate(-16deg); animation: encounter-slash .18s ease-out forwards; }
 .battle-transition::after { transform: rotate(18deg); animation-delay: .08s; }
-.battle-transition strong { position: relative; z-index: 2; color: white; font-size: clamp(1.4rem, 9vw, 4rem); letter-spacing: .18em; text-shadow: 0 0 24px #ff3e34; animation: encounter-title .7s ease-out forwards; }
+.battle-transition strong { position: relative; z-index: 2; color: white; font-size: clamp(1.4rem, 9vw, 4rem); letter-spacing: .18em; text-shadow: 0 0 24px #ff3e34; animation: encounter-title .18s ease-out forwards; }
 
 @keyframes map-enemy-hover { to { transform: translateY(-5px) scale(1.06); } }
 @keyframes player-ready { to { transform: scale(1.08); box-shadow: 0 0 21px #43dfff, inset 0 -8px 12px rgba(0, 0, 0, .75); } }

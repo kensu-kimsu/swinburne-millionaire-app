@@ -4,13 +4,14 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const html = fs.readFileSync('templates/index.html', 'utf8');
 const frame = html.slice(html.indexOf('function movementFrame('), html.indexOf('async function tickRoaming('));
-const move = html.slice(html.indexOf('async function moveDungeon('), html.indexOf('function playBattleTransition('));
+const move = html.slice(html.indexOf('async function moveDungeon('), html.indexOf('async function fetchQuestion('));
 let resolveReply, sent, requests = 0, draws = 0;
 const c = vm.createContext({Math, document: {getElementById: () => ({classList: {contains: () => false, toggle: () => {}}})},
  requestAnimationFrame: () => {}, walkableLocal: () => true,
  positionActors: () => draws++, syncArenaHud: () => {},
  postJson: async (url, body) => { requests++; sent = body; return new Promise(r => {resolveReply = r;}); },
- processGameState: async () => {}, playBattleTransition: async () => {},
+ processGameState: async () => {}, enterBattle: async () => {}, touchingEnemy: () => false,
+ beginBattleContact: () => {}, cancelBattleContact: () => {}, encounterPending: false, battleEntering: false,
  dungeonScene: {player: {x: 2, y: 5}}, heroPosition: {x: 2, y: 5}, confirmedHeroPosition: {x: 2, y: 5},
  dungeonMoving: false, tickBusy: false, heldKeys: new Set(['d']), joystick: {x:0,y:0},
  moveInput: {x:0,y:0}, lastFrame: 0, lastMoveSent: 0, lastMoveAt: 0, lastSceneFrame: 0});

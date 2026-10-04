@@ -802,6 +802,35 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertTrue(enemy["patterns"][0])
         self.assertIn("name", enemy["patterns"][0][0])
 
+    def test_question_timers_scale_with_encounter(self):
+        for room, enemy_id, expected in [(1, 'spam_bot', 30), (6, 'malware_loader', 25),
+                                         (5, None, 20), (10, None, 20), (15, None, 15)]:
+            with self.client.session_transaction() as flask_session:
+                state = flask_session['game_state']
+                state['current_room'] = room
+                state['enemy'] = create_enemy(room, enemy_id=enemy_id)
+                state['relics'] = []
+                flask_session['game_state'] = state
+            self.assertEqual(self.client.get('/api/question').get_json()['time_limit'], expected)
+
+    def test_contact_reply_includes_first_question_without_answer(self):
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['player'] = {'x':6, 'y':5.5}
+            state['dungeon']['enemies'][0].update(x=6.5, y=5.5, vx=1, vy=0)
+            state['dungeon']['last_roam_at'] = 100
+            flask_session['game_state'] = state
+        # Enemy walks away during the reply; touching its previous position still counts.
+        with patch('app.time.monotonic', return_value=101), patch('app.random.random', return_value=1):
+            result = self.client.post('/api/dungeon/move', json={'x':6, 'y':5.5}).get_json()
+        self.assertEqual(result['status'], 'encounter_started')
+        self.assertTrue(result['question'])
+        self.assertTrue(result['options'])
+        self.assertNotIn('answer', result)
+        self.assertNotIn('correct_answer', result)
+        self.assertEqual(result['question'], self.client.get('/api/question').get_json()['question'])
+
     def test_final_boss_uses_shorter_timer(self):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
@@ -810,7 +839,7 @@ class RoguelikeGameTests(unittest.TestCase):
             flask_session["game_state"] = state
 
         data = self.client.get("/api/question").get_json()
-        self.assertEqual(data["time_limit"], 30)
+        self.assertEqual(data["time_limit"], 15)
 
     def test_encyclopedia_only_returns_discovered_content(self):
         data = self.client.get("/api/encyclopedia").get_json()
@@ -862,7 +891,7 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertIn('id="mobile-current-room"', page)
         self.assertIn('id="ui-credits"', (project_root / "static/assets/ui/game-icons.svg").read_text())
         self.assertIn("beginAutoContinue()", page)
-        self.assertIn("const delaySeconds = 8", page)
+        self.assertIn("const delaySeconds = 4", page)
         self.assertIn("CIPHER'S RELIC EMPORIUM", page)
         self.assertIn("card.classList.toggle('elite'", page)
         self.assertIn("applyAnswerLock(data.answer_lock", page)
