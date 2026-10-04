@@ -1078,12 +1078,20 @@ def move_in_dungeon():
         elif walkable(dungeon, next_x, next_y + step_y):
             next_y += step_y
     player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
+    # The client may touch the marker from the preceding reply while an older
+    # movement request is in flight. Keep a short history across the in-flight reply and capped follow-up moves.
+    contact_uid = data.get("contact_uid")
+    marker = next((enemy for enemy in dungeon["enemies"]
+                   if not enemy["defeated"] and enemy["uid"] == contact_uid
+                   and any(math.hypot(px - player["x"], py - player["y"]) < encounter_radius(enemy) + .01
+                           for px, py in [(enemy["x"], enemy["y"]), *enemy.get("recent_positions", [])])), None)
     contact_positions = {enemy["uid"]: (enemy["x"], enemy["y"]) for enemy in dungeon["enemies"]}
-    advance_roaming_enemies(dungeon)
-    marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
-                   and min(math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]),
-                           math.hypot(contact_positions[enemy["uid"]][0] - player["x"],
-                                      contact_positions[enemy["uid"]][1] - player["y"])) < encounter_radius(enemy)), None)
+    if marker is None:
+        advance_roaming_enemies(dungeon)
+        marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
+                       and min(math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]),
+                               math.hypot(contact_positions[enemy["uid"]][0] - player["x"],
+                                          contact_positions[enemy["uid"]][1] - player["y"])) < encounter_radius(enemy)), None)
     if marker:
         start_dungeon_encounter(state, marker)
         session.modified = True
@@ -1137,6 +1145,12 @@ def advance_roaming_enemies(dungeon):
     for enemy in dungeon["enemies"]:
         if enemy["defeated"] or "BOSS" in enemy["kind"]:
             continue
+        if elapsed > .001:
+            positions = enemy.setdefault("recent_positions", [])
+            position = [enemy["x"], enemy["y"]]
+            if not positions or positions[-1] != position:
+                positions.append(position)
+            del positions[:-3]
         vx, vy = enemy.get("vx", 1), enemy.get("vy", 0)
         if math.hypot(vx, vy) < .1 or random.random() < elapsed * .08:
             heading = random.random() * math.tau

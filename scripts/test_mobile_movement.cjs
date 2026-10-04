@@ -11,7 +11,7 @@ const c = vm.createContext({Math, document: {getElementById: () => ({classList: 
  positionActors: () => draws++, syncArenaHud: () => {},
  postJson: async (url, body) => { requests++; sent = body; return new Promise(r => {resolveReply = r;}); },
  processGameState: async () => {}, enterBattle: async () => {}, touchingEnemy: () => false,
- beginBattleContact: () => {}, cancelBattleContact: () => {}, encounterPending: false, battleEntering: false,
+ beginBattleContact: () => {}, cancelBattleContact: () => {}, encounterPending: false, contactEnemyUid: null, contactRetryAfter: 0, battleEntering: false,
  dungeonScene: {player: {x: 2, y: 5}}, heroPosition: {x: 2, y: 5}, confirmedHeroPosition: {x: 2, y: 5},
  dungeonMoving: false, tickBusy: false, heldKeys: new Set(['d']), joystick: {x:0,y:0},
  moveInput: {x:0,y:0}, lastFrame: 0, lastMoveSent: 0, lastMoveAt: 0, lastSceneFrame: 0});

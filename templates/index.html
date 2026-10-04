@@ -272,6 +272,8 @@
         let answerLocked = false;
         let dungeonMoving = false;
         let encounterPending = false;
+        let contactEnemyUid = null;
+        let contactRetryAfter = 0;
         let battleEntering = false;
         let contactStartedAt = 0;
         let heroDirection = 'down';
@@ -906,21 +908,24 @@
                 if (frame && frame.getAttribute('href') !== href) frame.setAttribute('href',href);
             }
         }
-        function beginBattleContact() {
+        function beginBattleContact(enemy = null) {
             if (encounterPending) return;
             encounterPending = true;
+            contactEnemyUid = enemy?.uid || null;
             contactStartedAt = performance.now();
+            document.getElementById('battle-transition').querySelector('strong').textContent = 'ENGAGING…';
             document.getElementById('battle-transition').classList.remove('hidden');
             playEffect('snd-warning');
         }
 
         function cancelBattleContact() {
             encounterPending = false;
+            contactEnemyUid = null;
             document.getElementById('battle-transition').classList.add('hidden');
         }
 
         function touchingEnemy() {
-            return dungeonScene.enemies.some(enemy => {
+            return dungeonScene.enemies.find(enemy => {
                 if (enemy.defeated) return false;
                 const radius = enemy.kind.includes('BOSS') ? 1.25 :
                     enemy.enemy_id === 'zero_day_exploit' ? 1 : enemy.enemy_id === 'credential_thief' ? .85 : .75;
@@ -931,6 +936,7 @@
         async function enterBattle(data) {
             battleEntering = true;
             beginBattleContact();
+            document.getElementById('battle-transition').querySelector('strong').textContent = 'ENCOUNTER!';
             // The wipe begins at local contact, rather than after the network reply.
             const remaining = Math.max(0, 180 - (performance.now() - contactStartedAt));
             if (remaining) await new Promise(resolve => setTimeout(resolve, remaining));
@@ -964,7 +970,10 @@
                 }
                 // Finish syncing the last predicted step after the joystick is
                 // released. Only one request may be in flight at a time.
-                if (!encounterPending && heroPosition && touchingEnemy()) beginBattleContact();
+                if (!encounterPending && heroPosition && time >= contactRetryAfter) {
+                    const enemy = touchingEnemy();
+                    if (enemy) beginBattleContact(enemy);
+                }
                 const unsentMovement = heroPosition && confirmedHeroPosition &&
                     Math.hypot(heroPosition.x - confirmedHeroPosition.x,
                                heroPosition.y - confirmedHeroPosition.y) > .05;
@@ -983,7 +992,7 @@
             requestAnimationFrame(movementFrame);
         }
         async function tickRoaming() {
-            if (battleEntering || tickBusy || dungeonMoving || Math.hypot(moveInput.x, moveInput.y) > .1 ||
+            if (encounterPending || battleEntering || tickBusy || dungeonMoving || Math.hypot(moveInput.x, moveInput.y) > .1 ||
                     (heroPosition && confirmedHeroPosition &&
                      Math.hypot(heroPosition.x - confirmedHeroPosition.x,
                                 heroPosition.y - confirmedHeroPosition.y) > .05) ||
@@ -1000,7 +1009,9 @@
             if (battleEntering || dungeonMoving || tickBusy || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
             dungeonMoving = true;
             const requestedPosition = {...heroPosition};
-            const data = await postJson('/api/dungeon/move', requestedPosition);
+            const requestedContact = contactEnemyUid;
+            const payload = requestedContact ? {...requestedPosition, contact_uid:requestedContact} : requestedPosition;
+            const data = await postJson('/api/dungeon/move', payload);
             dungeonMoving = false;
             if (!data) { cancelBattleContact(); return; }
             if (data.message) document.getElementById('dungeon-message').textContent = data.message;
@@ -1015,8 +1026,14 @@
             dungeonScene = data.dungeon;
             confirmedHeroPosition = {...data.dungeon.player};
             syncArenaHud(data);
-            if (encounterPending && Math.hypot(heroPosition.x - requestedPosition.x,
-                    heroPosition.y - requestedPosition.y) < .01) cancelBattleContact();
+            // An older reply must not cancel a newly detected contact. Keep
+            // syncing until the server has accepted the actual contact position.
+            if (encounterPending && requestedContact === contactEnemyUid &&
+                    Math.hypot(heroPosition.x - confirmedHeroPosition.x,
+                               heroPosition.y - confirmedHeroPosition.y) < .05) {
+                contactRetryAfter = performance.now() + 750;
+                cancelBattleContact();
+            }
         }
 
         async function fetchQuestion(initialQuestion = null) {

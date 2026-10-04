@@ -831,6 +831,37 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertNotIn('correct_answer', result)
         self.assertEqual(result['question'], self.client.get('/api/question').get_json()['question'])
 
+    def test_contact_survives_an_older_patrol_reply(self):
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['player'] = {'x':5, 'y':5.5}
+            state['dungeon']['enemies'][0].update(x=6.5, y=5.5, vx=1, vy=0)
+            uid = state['dungeon']['enemies'][0]['uid']
+            state['dungeon']['last_roam_at'] = 100
+            flask_session['game_state'] = state
+        with patch('app.time.monotonic', return_value=101), patch('app.random.random', return_value=1):
+            older_reply = self.client.post('/api/dungeon/tick').get_json()
+        self.assertEqual(older_reply['status'], 'roaming')
+        self.assertGreater(older_reply['dungeon']['enemies'][0]['x'], 7)
+        with patch('app.time.monotonic', return_value=101.1), patch('app.random.random', return_value=1):
+            contact = self.client.post('/api/dungeon/move', json={'x':6, 'y':5.5, 'contact_uid':uid}).get_json()
+        self.assertEqual(contact['status'], 'moved')  # First movement is capped.
+        with patch('app.time.monotonic', return_value=101.3), patch('app.random.random', return_value=1):
+            contact = self.client.post('/api/dungeon/move', json={'x':6, 'y':5.5, 'contact_uid':uid}).get_json()
+        self.assertEqual(contact['status'], 'encounter_started')
+        with self.client.session_transaction() as flask_session:
+            self.assertEqual(flask_session['game_state']['current_enemy_uid'], uid)
+        self.assertTrue(contact['question'])
+
+    def test_named_contact_cannot_start_a_distant_encounter(self):
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            uid = flask_session['game_state']['dungeon']['enemies'][0]['uid']
+        result = self.client.post('/api/dungeon/move', json={'x':1.8, 'y':9.4, 'contact_uid':uid}).get_json()
+        self.assertEqual(result['status'], 'moved')
+        self.assertIsNone(result['enemy'])
+
     def test_final_boss_uses_shorter_timer(self):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]

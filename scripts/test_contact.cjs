@@ -4,13 +4,13 @@ const code=html.slice(html.indexOf('function beginBattleContact('),html.indexOf(
  html.slice(html.indexOf('async function moveDungeon('),html.indexOf('async function fetchQuestion('));
 let resolveReply,requests=0,overlay=false,entered=false;
 const c=vm.createContext({Math,performance:{now:()=>32},setTimeout:fn=>fn(),
- document:{getElementById:id=>({classList:{contains:()=>false,toggle(){},remove(){if(id==='battle-transition')overlay=true;},add(){if(id==='battle-transition')overlay=false;}}})},
+ document:{getElementById:id=>({querySelector:()=>({textContent:''}),classList:{contains:()=>false,toggle(){},remove(){if(id==='battle-transition')overlay=true;},add(){if(id==='battle-transition')overlay=false;}}})},
  requestAnimationFrame(){},walkableLocal:()=>true,positionActors(){},syncArenaHud(){},playEffect(){},
  postJson:async()=>{requests++;return new Promise(r=>resolveReply=r);},
  processGameState:async data=>{assert.ok(data.question);entered=true;c.movementFrame(64);assert.equal(requests,1);},
- dungeonScene:{enemies:[{x:2.76,y:5,kind:'ENEMY',enemy_id:'spam_bot',defeated:false}]},
+ dungeonScene:{enemies:[{x:2.76,y:5,kind:'ENEMY',enemy_id:'spam_bot',uid:'s1-e0',defeated:false}]},
  heroPosition:{x:2,y:5},confirmedHeroPosition:{x:2,y:5},dungeonMoving:false,tickBusy:false,
- encounterPending:false,battleEntering:false,contactStartedAt:0,heldKeys:new Set(['d']),joystick:{x:0,y:0},
+ encounterPending:false,contactEnemyUid:null,contactRetryAfter:0,battleEntering:false,contactStartedAt:0,heldKeys:new Set(['d']),joystick:{x:0,y:0},
  moveInput:{x:0,y:0},lastFrame:0,lastMoveSent:0,lastMoveAt:0,lastSceneFrame:0});
 vm.runInContext(code,c);
 (async()=>{
