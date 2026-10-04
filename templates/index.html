@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <button id="sound-toggle" type="button" aria-label="Enable sound">Enable sound</button>
     <audio id="snd-ticking" src="{{ url_for('static', filename='assets/audio/dungeon_pulse.wav') }}" loop></audio>
     <audio id="snd-final" class="sfx" src="{{ url_for('static', filename='assets/audio/lock_in.wav') }}"></audio>
     <audio id="snd-correct" class="sfx" src="{{ url_for('static', filename='assets/audio/correct.wav') }}"></audio>
@@ -305,6 +306,9 @@
         }
         let isContinuing = false;
         let currentMusic = null;
+        let soundEnabled = true;
+        let effectsUnlocked = false;
+        let lastActorTime = 0;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
         const ENEMY_ART_BASE = "{{ url_for('static', filename='assets/enemies/') }}";
         const ILLUSTRATED_ENEMIES = new Set([
@@ -338,7 +342,9 @@
 
         function playSound(id, loop = false) {
             const sound = audio(id);
-            if (!sound) return;
+            if (!sound || !soundEnabled) return;
+            sound.dataset.priming = "no";
+            sound.muted = false;
             stopTransientSounds();
             sound.loop = loop;
             sound.play().catch(() => {});
@@ -346,7 +352,9 @@
 
         function playEffect(id) {
             const sound = audio(id);
-            if (!sound) return;
+            if (!sound || !soundEnabled) return;
+            sound.dataset.priming = "no";
+            sound.muted = false;
             sound.pause();
             sound.currentTime = 0;
             sound.onended = null;
@@ -358,20 +366,53 @@
             soundTimeouts.push(timeout);
         }
 
+        function updateSoundButton(playing) {
+            const button = document.getElementById('sound-toggle');
+            button.textContent = !soundEnabled ? 'Sound off' : playing ? 'Sound on' : 'Enable sound';
+            button.setAttribute('aria-label', button.textContent);
+        }
+
         function setMusic(id) {
-            if (currentMusic === id && !audio(id)?.paused) return;
-            document.querySelectorAll('audio.music').forEach(track => {
-                if (track.id !== id) {
-                    track.pause();
-                    track.currentTime = 0;
-                }
-            });
-            const track = audio(id);
-            if (!track) return;
+            // Reuse the element unlocked by the user's tap for every stage track.
+            const track = audio('music-menu'), source = audio(id);
+            if (!track || !source) return;
+            const src = source.dataset.source || source.getAttribute('src');
+            source.dataset.source = src;
+            audio('music-menu').dataset.source ||= audio('music-menu').getAttribute('src');
+            if (currentMusic !== id) {
+                track.pause();
+                track.setAttribute('src', src);
+                track.currentTime = 0;
+            }
+            currentMusic = id;
+            if (!soundEnabled) return;
             track.volume = id === 'music-final-boss' ? .34 : .25;
             track.loop = true;
-            currentMusic = id;
-            track.play().catch(() => {});
+            if (!track.paused) return;
+            track.play().then(() => {
+                updateSoundButton(true);
+                document.getElementById('sound-hint')?.classList.add('sound-awake');
+            }).catch(() => updateSoundButton(false));
+        }
+
+        function awakenSound(event) {
+            if (event?.target?.closest?.("#sound-toggle")) return;
+            if (!soundEnabled) return;
+            // Prime effects inside the trusted gesture, before any API response.
+            if (!effectsUnlocked) {
+                effectsUnlocked = true;
+                document.querySelectorAll('audio:not(.music)').forEach(sound => {
+                    sound.dataset.priming = 'yes';
+                    sound.muted = true;
+                    sound.play().then(() => {
+                        if (sound.dataset.priming === 'yes') {
+                            sound.pause(); sound.currentTime = 0;
+                        }
+                        sound.muted = false;
+                    }).catch(() => { sound.muted = false; effectsUnlocked = false; });
+                });
+            }
+            setMusic(currentMusic || 'music-menu');
         }
 
         function syncMusic(data) {
@@ -804,6 +845,8 @@
             syncMusic(data);
         }
         function positionActors(time) {
+            const actorDelta = Math.min((time - (lastActorTime || time)) / 1000, .1);
+            lastActorTime = time;
             if (!dungeonScene || !heroPosition) return;
             const hero = sceneNodes.get('hero');
             if (hero) {
@@ -823,8 +866,13 @@
                 if (enemy.defeated) continue;
                 const node = sceneNodes.get(enemy.uid), visual = roamVisuals.get(enemy.uid);
                 if (!node || !visual) continue;
-                visual.x += (enemy.x - visual.x) * .28;
-                visual.y += (enemy.y - visual.y) * .28;
+                const dx = enemy.x - visual.x, dy = enemy.y - visual.y;
+                const remaining = Math.hypot(dx, dy);
+                const step = Math.min(remaining, .65 * actorDelta);
+                if (remaining > 0) {
+                    visual.x += dx / remaining * step;
+                    visual.y += dy / remaining * step;
+                }
                 const p = arenaPoint(visual.x, visual.y);
                 const facing = enemy.x < visual.x - .003 ? -1 : enemy.x > visual.x + .003 ? 1 :
                     (node.dataset.facing === '-1' ? -1 : 1);
@@ -834,7 +882,7 @@
                 node.classList.toggle('roaming', moving);
                 const frame = node.querySelector('.actor-frame');
                 if (frame) {
-                    const href = `/static/assets/dungeon/move-${enemy.enemy_id}-${moving ? Math.floor(time / 75) % 8 : Math.floor(time / 900) % 2 * 2}.webp`;
+                    const href = `/static/assets/dungeon/move-${enemy.enemy_id}-${moving ? Math.floor(time / 100) % 8 : 0}.webp`;
                     if (frame.getAttribute('href') !== href) frame.setAttribute('href', href);
                 }
             }
@@ -1196,7 +1244,7 @@
             fanfare.volume = 1;
             fanfare.onended = () => {
                 document.querySelectorAll('audio.music').forEach(track => {
-                    track.volume = track.id === 'music-final-boss' ? .34 : .25;
+                    track.volume = currentMusic === 'music-final-boss' ? .34 : .25;
                 });
             };
         }
@@ -1704,10 +1752,18 @@
         buildPath();
         updatePath(1);
         setMusic('music-menu');
-        document.addEventListener('pointerdown', () => {
-            document.getElementById('sound-hint')?.classList.add('sound-awake');
-            if (!document.getElementById('title-screen').classList.contains('hidden')) setMusic('music-menu');
-        }, {once: true});
+        document.addEventListener('pointerdown', awakenSound, {capture: true});
+        document.getElementById('sound-toggle').addEventListener('click', () => {
+            const playing = !audio('music-menu').paused;
+            if (soundEnabled && playing) {
+                soundEnabled = false;
+                document.querySelectorAll('audio').forEach(sound => sound.pause());
+                updateSoundButton(false);
+            } else {
+                soundEnabled = true;
+                awakenSound();
+            }
+        });
         const stick = document.getElementById('movement-stick');
         const knob = document.getElementById('movement-knob');
         function updateStick(event) {
@@ -1730,6 +1786,7 @@
         stick.addEventListener('pointerup', releaseStick);
         stick.addEventListener('pointercancel', releaseStick);
         document.addEventListener('keydown', event => {
+            awakenSound(event);
             const key = event.key.toLowerCase();
             if (!['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key) ||
                 document.getElementById('dungeon-screen').classList.contains('hidden') ||

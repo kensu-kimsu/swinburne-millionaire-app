@@ -563,7 +563,7 @@ def create_dungeon_floor(state):
         "width": 18, "height": 11, "theme": theme, "mode": "combat", "layout_id": stage,
         "seed": random.randint(0, 999999999), "obstacles": LEVEL_OBSTACLES[stage - 1],
         "floor_bounds": FLOOR_BOUNDS,
-        "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(),
+        "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(), "last_roam_at": time.monotonic(),
         "exit": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
         "portal_visual": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
         "enemies": enemies, "decor": decor,
@@ -584,7 +584,7 @@ def create_market_floor(state):
         "width": 18, "height": 11, "theme": "market", "mode": "market", "layout_id": "market",
         "seed": random.randint(0, 999999999),
         "obstacles": (), "floor_bounds": FLOOR_BOUNDS,
-        "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(),
+        "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(), "last_roam_at": time.monotonic(),
         "exit": {"x": 14.45, "y": 2.6},
         "portal_visual": {"x": 14.45, "y": 2.6},
         "enemies": [], "chests": [], "decor": [],
@@ -1078,6 +1078,7 @@ def move_in_dungeon():
         elif walkable(dungeon, next_x, next_y + step_y):
             next_y += step_y
     player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
+    advance_roaming_enemies(dungeon)
     marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
                    and math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]) <
                    encounter_radius(enemy)), None)
@@ -1126,25 +1127,48 @@ def start_dungeon_encounter(state, marker):
         discover("mechanics", "elites")
 
 
+def advance_roaming_enemies(dungeon):
+    """Advance patrols on either movement or idle requests, using elapsed time."""
+    now = time.monotonic()
+    elapsed = max(0, min(1.5, now - dungeon.get("last_roam_at", now - .25)))
+    dungeon["last_roam_at"] = now
+    for enemy in dungeon["enemies"]:
+        if enemy["defeated"] or "BOSS" in enemy["kind"]:
+            continue
+        vx, vy = enemy.get("vx", 1), enemy.get("vy", 0)
+        if math.hypot(vx, vy) < .1 or random.random() < elapsed * .08:
+            heading = random.random() * math.tau
+            vx, vy = math.cos(heading), math.sin(heading)
+        length = math.hypot(vx, vy)
+        vx, vy = vx / length, vy / length
+        distance = .65 * elapsed
+        steps = max(1, math.ceil(distance / .1))
+        for _ in range(steps):
+            x, y = enemy["x"] + vx * distance / steps, enemy["y"] + vy * distance / steps
+            if walkable(dungeon, x, y, .35):
+                enemy["x"], enemy["y"] = x, y
+            else:
+                # Turn into an open direction instead of oscillating against a wall.
+                heading = random.random() * math.tau
+                for offset in range(8):
+                    angle = heading + offset * math.tau / 8
+                    vx, vy = math.cos(angle), math.sin(angle)
+                    if walkable(dungeon, enemy["x"] + vx * .12, enemy["y"] + vy * .12, .35):
+                        break
+        enemy["x"], enemy["y"] = round(enemy["x"], 3), round(enemy["y"], 3)
+        enemy["vx"], enemy["vy"] = vx, vy
+
+
 @app.route("/api/dungeon/tick", methods=["POST"])
 def tick_dungeon():
     state = session.get("game_state")
     if not state or state.get("pending") != "dungeon":
         return jsonify({"error": "The dungeon is not active."}), 400
     dungeon = state["dungeon"]
+    advance_roaming_enemies(dungeon)
     for enemy in dungeon["enemies"]:
-        if enemy["defeated"] or "BOSS" in enemy["kind"]:
-            continue  # Boss waits at the center of its arena.
-        if random.random() < .12:
-            heading = random.random() * math.tau
-            enemy["vx"], enemy["vy"] = math.cos(heading), math.sin(heading)
-        x = enemy["x"] + enemy.get("vx", .5) * .16
-        y = enemy["y"] + enemy.get("vy", .5) * .16
-        if not walkable(dungeon, x, y, .35):
-            enemy["vx"] = -enemy.get("vx", .5)
-            enemy["vy"] = -enemy.get("vy", .5)
-        else:
-            enemy["x"], enemy["y"] = round(x, 3), round(y, 3)
+        if enemy["defeated"]:
+            continue
         if math.hypot(enemy["x"] - dungeon["player"]["x"], enemy["y"] - dungeon["player"]["y"]) < encounter_radius(enemy):
             start_dungeon_encounter(state, enemy)
             session.modified = True

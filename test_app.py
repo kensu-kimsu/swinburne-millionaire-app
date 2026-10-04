@@ -98,6 +98,20 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(data["status"], "encounter_started")
         self.assertEqual(data["enemy"]["id"], "spam_bot")
 
+    def test_enemies_patrol_while_hero_moves_and_normalize_slow_headings(self):
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['last_roam_at'] = 100
+            state['dungeon']['enemies'][0].update(x=6.5, y=5.5, vx=.001, vy=0)
+            flask_session['game_state'] = state
+        with patch('app.time.monotonic', return_value=101), patch('app.random.random', return_value=1):
+            result = self.client.post('/api/dungeon/move', json={'x':1.8, 'y':9.4}).get_json()
+        enemy = result['dungeon']['enemies'][0]
+        self.assertAlmostEqual(enemy['x'], 7.15)
+        self.assertAlmostEqual(enemy['y'], 5.5)
+        self.assertTrue(walkable(result['dungeon'], enemy['x'], enemy['y'], .35))
+
     def test_illustrated_arenas_and_joystick_assets_are_available(self):
         page = self.client.get("/").get_data(as_text=True)
         self.assertIn('id="movement-stick"', page)

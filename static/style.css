@@ -1657,3 +1657,10 @@ button { font: inherit; }
     .arena-actor .portal-light { display:none; }
     .arena-actor.exit.locked image { opacity:.4; }
 }
+
+#sound-toggle {
+    position: fixed; top: max(8px, env(safe-area-inset-top)); right: 10px;
+    z-index: 10000; min-height: 36px; padding: 6px 12px;
+    color: #fce7bd; background: #211b24; border: 1px solid #bfa16b;
+    border-radius: 8px; font: inherit; font-size: 12px; cursor: pointer;
+}
