@@ -17,7 +17,13 @@ SOURCE = ROOT / 'fire-source.webp'
 
 
 def save(image, path):
-    image.save(path, 'WEBP', quality=82, method=5)
+    # Actors occupy at most 110 CSS pixels on the map. Keep the originals as
+    # sources, but ship smaller frames to avoid decoding full-size art at 30 fps.
+    if path.name.startswith('hero-smooth-'):
+        image.thumbnail((192, 256), Image.Resampling.LANCZOS)
+    elif path.name.startswith('move-'):
+        image.thumbnail((160, 214), Image.Resampling.LANCZOS)
+    image.save(path, 'WEBP', quality=78, method=5)
 
 
 def build_fire():

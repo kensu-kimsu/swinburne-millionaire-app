@@ -1650,3 +1650,10 @@ button { font: inherit; }
     .move-reminder { bottom:110px; }
     .movement-stick { left:16px; bottom:max(16px,env(safe-area-inset-bottom)); }
 }
+@media (max-width:850px) {
+    .dungeon-map { box-shadow:none; }
+    .arena-actor image, .arena-actor .boss-aura, .arena-actor .portal-spark,
+    .environment-flame .effect-frame { filter:none !important; }
+    .arena-actor .portal-light { display:none; }
+    .arena-actor.exit.locked image { opacity:.4; }
+}

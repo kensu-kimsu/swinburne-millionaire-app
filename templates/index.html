@@ -274,6 +274,7 @@
         let heroRunningUntil = 0;
         let dungeonScene = null;
         let heroPosition = null;
+        let confirmedHeroPosition = null;
         let heroAnchor = null;
         let sceneNodes = new Map();
         let decorNodes = [];
@@ -284,6 +285,7 @@
         const heldKeys = new Set();
         let moveInput = {x:0,y:0};
         let lastFrame = 0;
+        let lastSceneFrame = 0;
         let tickBusy = false;
         let dungeonFloorKey = null;
         let pendingDefeat = null;
@@ -691,6 +693,7 @@
                 (dungeon.exit_unlocked && !dungeonScene?.exit_unlocked);
             if (key === dungeonFloorKey && sceneNodes.size && !changed) {
                 dungeonScene = dungeon;
+                confirmedHeroPosition = {...dungeon.player};
                 lastMoveAt = performance.now();
                 followCamera();
                 return;
@@ -703,6 +706,7 @@
             dungeonFloorKey = key;
             dungeonScene = dungeon;
             heroPosition = {...dungeon.player};
+            confirmedHeroPosition = {...dungeon.player};
             heroFramePath = '';
             lastMoveAt = performance.now();
             roamVisuals.clear(); sceneNodes.clear(); decorNodes = [];
@@ -819,8 +823,8 @@
                 if (enemy.defeated) continue;
                 const node = sceneNodes.get(enemy.uid), visual = roamVisuals.get(enemy.uid);
                 if (!node || !visual) continue;
-                visual.x += (enemy.x - visual.x) * .18;
-                visual.y += (enemy.y - visual.y) * .18;
+                visual.x += (enemy.x - visual.x) * .28;
+                visual.y += (enemy.y - visual.y) * .28;
                 const p = arenaPoint(visual.x, visual.y);
                 const facing = enemy.x < visual.x - .003 ? -1 : enemy.x > visual.x + .003 ? 1 :
                     (node.dataset.facing === '-1' ? -1 : 1);
@@ -864,23 +868,41 @@
                     const speed = delta * 2.3;
                     const nextX = heroPosition.x + moveInput.x / Math.max(1, magnitude) * speed;
                     const nextY = heroPosition.y + moveInput.y / Math.max(1, magnitude) * speed;
-                    if (walkableLocal(dungeonScene, nextX, nextY)) {
+                    const withinServerLead = (x, y) => !confirmedHeroPosition ||
+                        Math.hypot(x - confirmedHeroPosition.x, y - confirmedHeroPosition.y) < .88;
+                    if (walkableLocal(dungeonScene, nextX, nextY) && withinServerLead(nextX, nextY)) {
                         heroPosition.x = nextX; heroPosition.y = nextY;
-                    } else if (walkableLocal(dungeonScene, nextX, heroPosition.y)) heroPosition.x = nextX;
-                    else if (walkableLocal(dungeonScene, heroPosition.x, nextY)) heroPosition.y = nextY;
+                    } else if (walkableLocal(dungeonScene, nextX, heroPosition.y) &&
+                               withinServerLead(nextX, heroPosition.y)) heroPosition.x = nextX;
+                    else if (walkableLocal(dungeonScene, heroPosition.x, nextY) &&
+                             withinServerLead(heroPosition.x, nextY)) heroPosition.y = nextY;
                     heroDirection = moveInput.x < -.12 ? 'left' : moveInput.x > .12 ? 'right' : moveInput.y < 0 ? 'up' : 'down';
-                    if (time - lastMoveSent > 95 && !dungeonMoving && !tickBusy) {
-                        lastMoveSent = time;
-                        moveDungeon();
-                    }
+                }
+                // Finish syncing the last predicted step after the joystick is
+                // released. Only one request may be in flight at a time.
+                const unsentMovement = heroPosition && confirmedHeroPosition &&
+                    Math.hypot(heroPosition.x - confirmedHeroPosition.x,
+                               heroPosition.y - confirmedHeroPosition.y) > .05;
+                if (unsentMovement && time - lastMoveSent > 160 && !dungeonMoving && !tickBusy) {
+                    lastMoveSent = time;
+                    moveDungeon();
                 }
                 reminder.classList.toggle('hidden', time - lastMoveAt < 20000 || magnitude > .1);
-                positionActors(time);
+                // SVG filters and image swaps are costly on mobile GPUs; keep
+                // controls responsive at display rate and draw at up to 30 fps.
+                if (time - lastSceneFrame >= 33) {
+                    lastSceneFrame = time;
+                    positionActors(time);
+                }
             }
             requestAnimationFrame(movementFrame);
         }
         async function tickRoaming() {
-            if (tickBusy || dungeonMoving || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
+            if (tickBusy || dungeonMoving || Math.hypot(moveInput.x, moveInput.y) > .1 ||
+                    (heroPosition && confirmedHeroPosition &&
+                     Math.hypot(heroPosition.x - confirmedHeroPosition.x,
+                                heroPosition.y - confirmedHeroPosition.y) > .05) ||
+                    !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
             tickBusy = true;
             const data = await postJson('/api/dungeon/tick', {});
             tickBusy = false;
@@ -892,7 +914,8 @@
         async function moveDungeon() {
             if (dungeonMoving || tickBusy || !dungeonScene || document.getElementById('dungeon-screen').classList.contains('hidden')) return;
             dungeonMoving = true;
-            const data = await postJson('/api/dungeon/move', {x:heroPosition.x, y:heroPosition.y});
+            const requestedPosition = {...heroPosition};
+            const data = await postJson('/api/dungeon/move', requestedPosition);
             dungeonMoving = false;
             if (!data) return;
             if (data.message) document.getElementById('dungeon-message').textContent = data.message;
@@ -904,9 +927,8 @@
             }
             if (data.pending !== 'dungeon') { await processGameState(data); return; }
             dungeonScene = data.dungeon;
+            confirmedHeroPosition = {...data.dungeon.player};
             syncArenaHud(data);
-            if (Math.hypot(heroPosition.x - data.dungeon.player.x, heroPosition.y - data.dungeon.player.y) > .36)
-                heroPosition = {...data.dungeon.player};
         }
 
         function playBattleTransition() {
@@ -1638,20 +1660,25 @@
         }
 
         async function postJson(url, body) {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                const error = document.getElementById('decision-error');
-                error.textContent = data.error || 'The action could not be completed.';
-                error.classList.remove('hidden');
-                showToast(data.error || 'Action failed');
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = document.getElementById('decision-error');
+                    error.textContent = data.error || 'The action could not be completed.';
+                    error.classList.remove('hidden');
+                    showToast(data.error || 'Action failed');
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                showToast('Connection interrupted. Retrying when you move.');
                 return null;
             }
-            return data;
         }
 
         function showToast(message, duration = 2500) {
@@ -1713,7 +1740,7 @@
         window.addEventListener('blur', () => heldKeys.clear());
         window.addEventListener('resize', followCamera);
         requestAnimationFrame(movementFrame);
-        setInterval(tickRoaming, 250);
+        setInterval(tickRoaming, 750);
     </script>
 </body>
 </html>

@@ -2,12 +2,16 @@ import json
 import math
 import os
 import random
+import time
 
 from flask import Flask, has_request_context, jsonify, render_template, request, session
 
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
+# Animation images change only when the app is deployed. Avoid revalidating a
+# frame with the server on every SVG image swap.
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 3600
 
 TOTAL_ROOMS = 15
 INVENTORY_LIMIT = 4
@@ -559,7 +563,8 @@ def create_dungeon_floor(state):
         "width": 18, "height": 11, "theme": theme, "mode": "combat", "layout_id": stage,
         "seed": random.randint(0, 999999999), "obstacles": LEVEL_OBSTACLES[stage - 1],
         "floor_bounds": FLOOR_BOUNDS,
-        "player": {"x": 1.6, "y": 9.4}, "exit": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
+        "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(),
+        "exit": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
         "portal_visual": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
         "enemies": enemies, "decor": decor,
         "chests": [{"x": chest_x, "y": chest_y, "opened": False}] if not boss_floor and random.random() < .38 else [],
@@ -579,7 +584,8 @@ def create_market_floor(state):
         "width": 18, "height": 11, "theme": "market", "mode": "market", "layout_id": "market",
         "seed": random.randint(0, 999999999),
         "obstacles": (), "floor_bounds": FLOOR_BOUNDS,
-        "player": {"x": 1.6, "y": 9.4}, "exit": {"x": 14.45, "y": 2.6},
+        "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(),
+        "exit": {"x": 14.45, "y": 2.6},
         "portal_visual": {"x": 14.45, "y": 2.6},
         "enemies": [], "chests": [], "decor": [],
         "feature": {"x": 9.0, "y": 6.35, "type": "shop", "used": False},
@@ -1051,17 +1057,26 @@ def move_in_dungeon():
     player = dungeon["player"]
     dx, dy = x - player["x"], y - player["y"]
     distance = math.hypot(dx, dy)
-    if distance > .48:
-        dx, dy = dx / distance * .48, dy / distance * .48
-    next_x = player["x"] + dx
-    next_y = player["y"] + dy
-    if not walkable(dungeon, next_x, next_y):
-        if walkable(dungeon, next_x, player["y"]):
-            next_y = player["y"]
-        elif walkable(dungeon, player["x"], next_y):
-            next_x = player["x"]
-        else:
-            next_x, next_y = player["x"], player["y"]
+    now = time.monotonic()
+    elapsed = max(0, min(.5, now - dungeon.get("last_move_at", now)))
+    dungeon["last_move_at"] = now
+    # A phone may wait hundreds of milliseconds for a response from a hosted
+    # instance. Permit the distance traveled during that wait while keeping a
+    # hard cap, then check intermediate positions so walls cannot be crossed.
+    max_distance = min(.98, max(.48, 2.6 * elapsed + .15))
+    if distance > max_distance:
+        dx, dy = dx / distance * max_distance, dy / distance * max_distance
+    next_x, next_y = player["x"], player["y"]
+    steps = max(1, math.ceil(math.hypot(dx, dy) / .14))
+    for _ in range(steps):
+        step_x, step_y = dx / steps, dy / steps
+        if walkable(dungeon, next_x + step_x, next_y + step_y):
+            next_x += step_x
+            next_y += step_y
+        elif walkable(dungeon, next_x + step_x, next_y):
+            next_x += step_x
+        elif walkable(dungeon, next_x, next_y + step_y):
+            next_y += step_y
     player["x"], player["y"] = round(next_x, 3), round(next_y, 3)
     marker = next((enemy for enemy in dungeon["enemies"] if not enemy["defeated"]
                    and math.hypot(enemy["x"] - player["x"], enemy["y"] - player["y"]) <

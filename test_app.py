@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from app import app, create_enemy, load_questions
+from app import app, create_enemy, load_questions, walkable
 
 
 class RoguelikeGameTests(unittest.TestCase):
@@ -134,6 +134,30 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertAlmostEqual(moved["dungeon"]["player"]["y"], before["y"] + .12)
         self.assertEqual(self.client.post("/api/dungeon/move", json={"x": "NaN", "y": 2}).status_code, 400)
 
+    def test_slow_mobile_reply_allows_elapsed_movement_without_tunneling(self):
+        self.client.post('/api/start')
+        with self.client.session_transaction() as flask_session:
+            state = flask_session['game_state']
+            state['dungeon']['last_move_at'] = 100
+            before = dict(state['dungeon']['player'])
+            flask_session['game_state'] = state
+        with patch('app.time.monotonic', return_value=100.35):
+            result = self.client.post('/api/dungeon/move', json={
+                'x':before['x']+.75, 'y':before['y']}).get_json()
+        self.assertEqual(result['status'], 'moved')
+        self.assertAlmostEqual(result['dungeon']['player']['x'], before['x']+.75)
+
+        with patch('app.time.monotonic', return_value=101):
+            result = self.client.post('/api/dungeon/move', json={
+                'x':before['x']+5, 'y':before['y']}).get_json()
+        self.assertLessEqual(result['dungeon']['player']['x'], before['x']+.75+.98+.001)
+
+    def test_animated_frames_can_be_reused_from_browser_cache(self):
+        response = self.client.get('/static/assets/dungeon/hero-smooth-0.webp')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.cache_control.max_age, 3600)
+        response.close()
+
     def test_dungeon_exit_requires_every_enemy_and_advances_floor(self):
         self.client.post("/api/start")
         with self.client.session_transaction() as flask_session:
@@ -227,7 +251,9 @@ class RoguelikeGameTests(unittest.TestCase):
             state['dungeon']['player'] = {'x':1.6,'y':3.2}
             flask_session['game_state'] = state
         result = self.client.post('/api/dungeon/move',json={'x':.9,'y':3.2}).get_json()
-        self.assertEqual(result['dungeon']['player'], {'x':1.6,'y':3.2})
+        self.assertTrue(walkable(result['dungeon'], **result['dungeon']['player']))
+        self.assertGreaterEqual(result['dungeon']['player']['x'], 1.23)
+        self.assertEqual(result['dungeon']['player']['y'], 3.2)
 
     def test_obstacles_stop_player_and_enemies(self):
         self.client.post('/api/start')
