@@ -141,7 +141,7 @@
     </section>
 
     <section id="dungeon-screen" class="dungeon-screen hidden" aria-label="Dungeon exploration">
-        <p id="dungeon-message" class="dungeon-message" role="status">Defeat all enemies · Find the exit</p>
+        <p id="dungeon-message" class="dungeon-message" role="status">Defeat enemies · Find exit</p>
         <header class="dungeon-hud" aria-label="Stage, health and coins">
             <div class="map-stage"><span>STAGE</span><strong id="dungeon-floor">1/15</strong></div>
             <div><span>HP</span><strong id="dungeon-hp">12 / 12</strong></div>
@@ -814,7 +814,7 @@
             document.querySelector('.game-shell').classList.remove('battle-active');
             document.getElementById('dungeon-screen').classList.remove('hidden');
             syncArenaHud(data);
-            document.getElementById('dungeon-message').textContent = dungeon.mode === 'market' ? 'Visit the shop · Exit at the east gate' : dungeon.exit_unlocked ? 'Portal open · Go to the exit' : [5,10,15].includes(data.room) ? 'Defeat the boss · Open the portal' : 'Defeat all enemies · Find the exit';
+            document.getElementById('dungeon-message').textContent = dungeon.mode === 'market' ? 'Visit shop · Exit east' : dungeon.exit_unlocked ? 'Portal open · Exit ahead' : [5,10,15].includes(data.room) ? 'Defeat boss · Open portal' : 'Defeat enemies · Find exit';
             const key = `${data.room}:${dungeon.seed}`;
             const map = document.getElementById('dungeon-map');
             const changed = dungeon.enemies.some(enemy => enemy.defeated && sceneNodes.has(enemy.uid)) ||
@@ -831,7 +831,7 @@
             if (dungeon.mode === 'combat' && dungeon.exit_unlocked && dungeonScene &&
                     dungeonScene.seed === dungeon.seed && !dungeonScene.exit_unlocked) {
                 showToast('PORTAL OPEN — GO TO THE EXIT', 4800);
-                document.getElementById('dungeon-message').textContent = 'Portal open · Go to the exit';
+                document.getElementById('dungeon-message').textContent = 'Portal open · Exit ahead';
             }
             dungeonFloorKey = key;
             dungeonScene = dungeon;
@@ -1104,7 +1104,7 @@
             if (data.status === 'floor_advanced') {
                 cancelBattleContact();
                 heroPosition = null;
-                document.getElementById('dungeon-message').textContent = data.dungeon.mode === 'market' ? 'Visit the shop · Exit at the east gate' : 'Defeat all enemies · Find the exit';
+                document.getElementById('dungeon-message').textContent = data.dungeon.mode === 'market' ? 'Visit shop · Exit east' : 'Defeat enemies · Find exit';
                 await processGameState(data); return;
             }
             if (data.pending !== 'dungeon') { cancelBattleContact(); await processGameState(data); return; }
