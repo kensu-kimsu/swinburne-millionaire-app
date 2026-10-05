@@ -6,6 +6,7 @@ import random
 import time
 
 from flask import Flask, has_request_context, jsonify, render_template, request, session
+from stage_layouts import STAGES, CELL
 
 
 app = Flask(__name__)
@@ -21,8 +22,6 @@ ELITE_SPAWN_CHANCE = 0.22
 
 QUESTION_FILES = {
     "EASY": "questions.json",
-    "MEDIUM": "questions_medium.json",
-    "HARD": "questions_hard.json",
 }
 
 ITEMS = {
@@ -302,13 +301,9 @@ EVENTS = {
 
 
 def load_questions(tier=None):
-    if tier:
-        with open(QUESTION_FILES[tier], "r", encoding="utf-8") as file:
-            return json.load(file)
-    questions = []
-    for difficulty in QUESTION_FILES:
-        questions.extend(load_questions(difficulty))
-    return questions
+    # All encounters draw from the single beginner bank. Enemy tiers are separate.
+    with open(QUESTION_FILES["EASY"], "r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 def get_tier(room):
@@ -475,81 +470,28 @@ def _floor_distances(tiles, start):
 
 # Each entry is an authored arena. Rectangles are x, y, width, height in world units.
 # They leave winding routes around the center rather than a straight lane to the exit.
-LEVEL_LAYOUTS = (
-    ((4, 2, 2, 4), (8, 6, 2, 3), (12, 1, 2, 4), (13, 7, 2, 2)),
-    ((3, 4, 3, 2), (7, 1, 2, 4), (10, 6, 3, 2), (14, 3, 2, 3)),
-    ((4, 1, 2, 4), (6, 7, 3, 2), (10, 3, 2, 4), (14, 6, 2, 2)),
-    ((3, 3, 2, 4), (7, 6, 2, 3), (10, 1, 3, 3), (14, 4, 2, 3)),
-    ((3, 2, 2, 3), (4, 7, 3, 2), (12, 7, 3, 2), (14, 2, 2, 3)),
-    ((3, 2, 3, 3), (7, 6, 2, 3), (11, 1, 2, 4), (14, 7, 2, 2)),
-    ((3, 5, 3, 2), (7, 2, 2, 3), (11, 6, 3, 2), (14, 2, 2, 3)),
-    ((4, 2, 2, 4), (7, 7, 3, 2), (11, 3, 2, 3), (14, 6, 2, 2)),
-    ((3, 3, 2, 3), (6, 7, 3, 2), (10, 1, 2, 4), (14, 5, 2, 3)),
-    ((3, 2, 2, 4), (5, 7, 3, 2), (12, 7, 3, 2), (14, 2, 2, 4)),
-    ((4, 1, 2, 4), (7, 6, 3, 3), (11, 2, 2, 4), (14, 7, 2, 2)),
-    ((3, 4, 2, 3), (6, 1, 3, 3), (10, 6, 2, 3), (14, 2, 2, 4)),
-    ((4, 2, 2, 4), (7, 7, 2, 2), (10, 2, 3, 3), (14, 6, 2, 3)),
-    ((3, 2, 3, 3), (7, 5, 2, 4), (11, 1, 2, 4), (14, 7, 2, 2)),
-    ((3, 2, 2, 4), (4, 7, 3, 2), (12, 7, 3, 2), (14, 2, 2, 4)),
-)
-
-# Props and collision share these footprints. The paintings themselves provide
-# the floor; only small, explicitly placed objects interrupt movement.
-LEVEL_OBSTACLES = tuple(tuple((round(x + w / 2 - .58, 2),
-                                round(y + h / 2 - .5, 2), 1.16, 1.0)
-                               for x, y, w, h in layout)
-                        for layout in LEVEL_LAYOUTS)
-# Interior partitions create connected chambers with broad doorways. Boss
-# arenas remain open so the giant opponent and ritual floor stay visible.
-LEVEL_WALLS = tuple(() if stage%5==0 else (
-    ((2.4,6.8,3.2,.45),(8.5,6.8,2.8,.45),(14.0,6.8,2.6,.45)) if stage%3==1 else
-    ((5.3,2.2,.45,2.8),(5.3,7.2,.45,2.7),(12.3,2.2,.45,2.8)) if stage%3==2 else
-    ((2.5,4.8,3.0,.45),(8.5,4.8,3.0,.45),(12.3,7.5,.45,2.2))
-) for stage in range(1,16))
-FLOOR_BOUNDS = (1.0, 1.75, 17.0, 10.25)
-LEVEL_DOORS = (16.15, 16.0, 15.95, 15.9, 16.2,
-               16.25, 15.95, 16.2, 15.9, 9.0,
-               16.55, 15.75, 16.5, 16.35, 16.4)
-
-# Coordinates of the actual warm torches, braziers and burning sconces in
-# each painted arena. Keep effects on exposed flames rather than scattering
-# them across the floor. Enclosed lanterns and magical lights retain the glow
-# painted into their backgrounds.
-FIRE_FIXTURES = (
-    ((14.95, .95), (16.58, 1.15)),
-    ((.35, 3.25), (2.7, 2.3), (7.0, .85), (11.4, .75),
-     (14.8, .85), (16.4, 1.1), (17.65, 2.35), (1.25, 8.0), (17.1, 9.9)),
-    ((.25, 3.25), (2.9, 1.65), (4.9, .55), (9.0, 1.05),
-     (10.6, 1.3), (14.4, .8), (15.85, 1.05), (17.65, 2.0),
-     (1.2, 6.5), (15.0, 8.4)),
-    (),
-    (),
-    (),
-    (),
-    (),
-    (),
-    (),
-    ((.25, 2.7), (3.85, .52), (5.6, .75), (13.9, 1.65), (16.25, 2.0)),
-    ((.6, 4.65), (1.4, 2.65), (3.1, .55), (5.55, .9), (8.9, .65),
-     (12.4, .75), (14.25, 1.35), (16.2, 1.9), (17.6, 4.7)),
-    ((.2, 2.2), (4.65, 1.35), (8.95, 1.3), (13.95, 1.45),
-     (16.35, 1.4), (17.75, 2.0), (1.3, 9.0), (16.75, 9.1)),
-    ((.1, 3.8), (1.0, 2.2), (3.95, 1.5), (5.95, 1.0), (7.2, 1.5),
-     (10.8, 1.55), (12.0, 1.1), (14.15, 1.55), (16.5, 2.1),
-     (17.9, 3.75), (1.7, 9.9), (5.5, 10.8), (12.4, 10.8), (16.25, 9.9)),
-    ((.1, 2.0), (1.95, 1.45), (4.2, 1.1), (7.0, 1.5), (10.8, 1.5),
-     (13.8, 1.1), (16.3, 1.45), (17.9, 2.0), (0.1, 7.7),
-     (1.9, 9.65), (16.25, 9.65), (17.9, 7.7)),
-)
-
-# Every new room has paired, animated wall torches.
-FIRE_FIXTURES = tuple(tuple((x,1.5) for x in (3.0,7.0,11.0,15.0)) for _ in range(15))
+LEVEL_OBSTACLES = tuple(tuple((p["x"],p["y"],p["w"],p["h"]) for p in stage["props"]) for stage in STAGES)
+LEVEL_WALLS = tuple(() for _ in STAGES)
+LEVEL_DOORS = tuple(stage["exit"][0] for stage in STAGES)
+FLOOR_BOUNDS = (1.0, 1.5, 17.0, 10.5)
+FIRE_FIXTURES = tuple(((4.5,2.0),(14.5,2.0)) if stage<=5 else () for stage in range(1,16))
 
 
 def walkable(dungeon, x, y, clearance=.23):
     left, top, right, bottom = dungeon.get("floor_bounds", (0, 0, dungeon["width"], dungeon["height"]))
     if not (left + clearance < x < right - clearance and top + clearance < y < bottom - clearance):
         return False
+    # Test the player's circular feet against every nearby blocked floor cell.
+    tiles=dungeon.get("walk_tiles")
+    if tiles:
+        for row in range(math.floor((y-clearance)/CELL),math.floor((y+clearance)/CELL)+1):
+            for col in range(math.floor((x-clearance)/CELL),math.floor((x+clearance)/CELL)+1):
+                if 0<=row<len(tiles) and 0<=col<len(tiles[row]) and tiles[row][col]=="1":
+                    continue
+                nearest_x=max(col*CELL,min(x,(col+1)*CELL))
+                nearest_y=max(row*CELL,min(y,(row+1)*CELL))
+                if math.hypot(x-nearest_x,y-nearest_y)<clearance:
+                    return False
     if any(ox-clearance < x < ox+width+clearance and oy-clearance < y < oy+height+clearance
            for ox,oy,width,height in dungeon.get("solid_walls", ())):
         return False
@@ -570,9 +512,8 @@ def create_dungeon_floor(state):
     """Load one of the fifteen fixed maps; encounters and chest chances vary."""
     stage = state["current_room"]
     boss_floor = stage in BOSSES
-    theme = {5: "atlantis", 10: "graveyard", 15: "inferno"}.get(stage)
-    if not theme:
-        theme = ("catacomb", "temple", "foundry")[(stage - 1) // 5]
+    geometry = STAGES[stage-1]
+    theme = geometry["theme"]
     enemies = []
     if boss_floor:
         boss = BOSSES[stage]
@@ -585,9 +526,15 @@ def create_dungeon_floor(state):
         candidate_pool = ((6.5, 5.5), (10, 4.5), (13.5, 6),
                           (7, 3.5), (11.5, 8.5), (15.5, 6.5), (8, 8))
         arena = {"width": 18, "height": 11, "floor_bounds": FLOOR_BOUNDS,
-                 "obstacles": LEVEL_OBSTACLES[stage - 1], "solid_walls":LEVEL_WALLS[stage-1]}
-        candidates = [(x, y) for x, y in candidate_pool
-                      if walkable(arena, x, y, .5)][:3]
+                 "obstacles": LEVEL_OBSTACLES[stage - 1], "solid_walls":LEVEL_WALLS[stage-1],
+                 "walk_tiles":geometry["walk_tiles"]}
+        candidates = [(x, y) for x, y in candidate_pool if walkable(arena, x, y, .4)]
+        for y in (3.5,5.5,8.5):
+            for x in (4,7,10,13.5,15.5):
+                if walkable(arena,x,y,.4) and all(math.hypot(x-a,y-b)>2 for a,b in candidates):
+                    candidates.append((x,y))
+        assert len(candidates)>=3, "Stage needs three accessible enemy positions"
+        candidates=candidates[:3]
         for index in range(3):
             template = random.choice(NORMAL_ENEMIES[get_tier(stage)])
             x, y = candidates[index]
@@ -601,14 +548,15 @@ def create_dungeon_floor(state):
     decor = [{"x": x, "y": y, "kind": "flame", "phase": index * .79 + stage * .37,
               "size": 26 if theme == "inferno" else 15}
              for index, (x, y) in enumerate(FIRE_FIXTURES[stage - 1])]
-    chest_candidates = ((8, 3.0), (3, 3.1), (11, 9.2), (15, 8.8))
-    chest_x, chest_y = next((x, y) for x, y in chest_candidates if all(
-        not (ox - .4 < x < ox + width + .4 and oy - .4 < y < oy + height + .4)
-        for ox, oy, width, height in (*LEVEL_OBSTACLES[stage - 1],*LEVEL_WALLS[stage-1])))
+    chest_candidates = ((8, 3.0), (4, 5.0), (10, 9.2), (15, 8.8), (3,8.5))
+    chest_arena={"width":18,"height":11,"floor_bounds":FLOOR_BOUNDS,
+                 "obstacles":LEVEL_OBSTACLES[stage-1],"walk_tiles":geometry["walk_tiles"]}
+    chest_x,chest_y=next((x,y) for x,y in chest_candidates if walkable(chest_arena,x,y,.4))
     state["dungeon"] = {
         "width": 18, "height": 11, "theme": theme, "mode": "combat", "layout_id": stage,
         "seed": random.randint(0, 999999999), "obstacles": LEVEL_OBSTACLES[stage - 1],
-        "solid_walls":LEVEL_WALLS[stage-1],
+        "solid_walls":LEVEL_WALLS[stage-1], "walk_tiles":geometry["walk_tiles"],
+        "stage_name":geometry["name"], "layout_version":2,
         "floor_bounds": FLOOR_BOUNDS,
         "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(), "last_roam_at": time.monotonic(),
         "exit": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
@@ -697,8 +645,8 @@ def shuffled_question_orders():
 
 
 def current_question(state):
-    tier = get_tier(state["current_room"])
-    questions = load_questions(tier)
+    tier = "EASY"
+    questions = load_questions()
     order = state["question_orders"][tier]
     position = state["question_positions"][tier]
     if position >= len(order):
@@ -1295,14 +1243,12 @@ def get_question():
 def battle_question_payload(state):
     """Return the first question with encounter confirmation to save a round trip."""
     question = current_question(state)
-    tier = get_tier(state["current_room"])
     kind = state["enemy"]["kind"]
     time_limit = 15 if kind == "FINAL BOSS" else 20 if "BOSS" in kind else (
         25 if "haste" in state["enemy"]["abilities"] else 30)
     if question.get("domain") == "Networking" and "wireshark" in state["relics"]:
         time_limit += 5
     return {
-        "tier": tier,
         "domain": question.get("domain", "General Security"),
         "question": question["question"],
         "options": question["options"],
@@ -1330,8 +1276,7 @@ def submit_answer():
     state["answer_lock_source"] = None
     question = current_question(state)
     correct_answer = question.get("answer") or question.get("correct")
-    tier = get_tier(state["current_room"])
-    state["question_positions"][tier] += 1
+    state["question_positions"]["EASY"] += 1
     state["stats"]["questions_answered"] += 1
     enemy = state["enemy"]
     is_correct = not is_timeout and user_answer == correct_answer

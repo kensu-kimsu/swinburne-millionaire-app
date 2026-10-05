@@ -6,3 +6,5 @@
 - Leviathan, Death and Dragon four-frame idle sprites — generated for this game using Pixel Crawler as the visual reference.
 
 The supplied ZIP archives are not redistributed. These selected runtime assets form part of the game, not a reusable asset pack.
+
+- Craftpix — supplied Free 2D Top Down Pixel Dungeon, Free Undead Tileset, Free Cursed Land Tileset and Free Pixel Art Fantasy 2D Battlegrounds. Source: https://craftpix.net/. Supplied license notices are included beside the selected runtime images.

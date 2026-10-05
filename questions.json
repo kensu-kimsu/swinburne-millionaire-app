@@ -2,7 +2,7 @@
   {
     "id": 1,
     "domain": "Networking",
-    "question": "What does IP stand for in networking?",
+    "question": "What does IP stand for?",
     "options": {
       "A": "Internal Protocol",
       "B": "Internet Protocol",
@@ -15,7 +15,7 @@
   {
     "id": 2,
     "domain": "Networking",
-    "question": "Which default port is used for unencrypted HTTP web traffic?",
+    "question": "Which port does HTTP use by default?",
     "options": {
       "A": "21",
       "B": "22",
@@ -28,7 +28,7 @@
   {
     "id": 3,
     "domain": "Networking",
-    "question": "Which protocol provides encrypted secure web browsing?",
+    "question": "Which protocol encrypts web browsing?",
     "options": {
       "A": "FTP",
       "B": "HTTPS",
@@ -41,7 +41,7 @@
   {
     "id": 4,
     "domain": "Networking",
-    "question": "What is the primary role of a DNS server?",
+    "question": "What does DNS do?",
     "options": {
       "A": "Assign IP addresses automatically",
       "B": "Translate domain names to IP addresses",
@@ -54,7 +54,7 @@
   {
     "id": 5,
     "domain": "Networking",
-    "question": "Which device connects multiple local network devices and broadcasts traffic to ALL connected ports?",
+    "question": "Which device sends incoming traffic to every port?",
     "options": {
       "A": "Switch",
       "B": "Router",
@@ -67,7 +67,7 @@
   {
     "id": 6,
     "domain": "Networking",
-    "question": "Which protocol automatically assigns IP addresses to devices on a network?",
+    "question": "Which protocol assigns IP addresses automatically?",
     "options": {
       "A": "DNS",
       "B": "DHCP",
@@ -80,7 +80,7 @@
   {
     "id": 7,
     "domain": "Networking",
-    "question": "What port does SSH (Secure Shell) use by default?",
+    "question": "Which port does SSH use by default?",
     "options": {
       "A": "20",
       "B": "22",
@@ -93,7 +93,7 @@
   {
     "id": 8,
     "domain": "Networking",
-    "question": "Which network topology connects every device to a central switch or hub?",
+    "question": "Which topology uses a central switch?",
     "options": {
       "A": "Bus",
       "B": "Ring",
@@ -106,7 +106,7 @@
   {
     "id": 9,
     "domain": "Networking",
-    "question": "What standard address format consists of 4 octets separated by dots (e.g., 192.168.1.1)?",
+    "question": "Which address uses four numbers, such as 192.168.1.1?",
     "options": {
       "A": "IPv4",
       "B": "IPv6",
@@ -119,7 +119,7 @@
   {
     "id": 10,
     "domain": "Networking",
-    "question": "Which utility is used to test basic network connectivity between two hosts?",
+    "question": "Which tool tests whether a host responds?",
     "options": {
       "A": "ping",
       "B": "grep",
@@ -132,7 +132,7 @@
   {
     "id": 11,
     "domain": "Networking",
-    "question": "What type of address is a permanent 48-bit physical hardware address burned into a network card?",
+    "question": "Which address identifies a network interface at Layer 2?",
     "options": {
       "A": "IP Address",
       "B": "MAC Address",
@@ -145,7 +145,7 @@
   {
     "id": 12,
     "domain": "Networking",
-    "question": "How many layers are in the OSI Reference Model?",
+    "question": "How many layers are in the OSI model?",
     "options": {
       "A": "4",
       "B": "5",
@@ -158,7 +158,7 @@
   {
     "id": 13,
     "domain": "Networking",
-    "question": "Which protocol is connectionless and does not guarantee packet delivery order?",
+    "question": "Which protocol sends data without delivery guarantees?",
     "options": {
       "A": "TCP",
       "B": "UDP",
@@ -171,7 +171,7 @@
   {
     "id": 14,
     "domain": "Networking",
-    "question": "Which layer of the OSI model deals with physical cabling, network cards, and bit transmission?",
+    "question": "Which OSI layer handles cables and signals?",
     "options": {
       "A": "Layer 1 - Physical",
       "B": "Layer 3 - Network",
@@ -184,7 +184,7 @@
   {
     "id": 15,
     "domain": "Networking",
-    "question": "Which standard loopback IP address refers back to the local host machine?",
+    "question": "Which IPv4 address refers to your own computer?",
     "options": {
       "A": "0.0.0.0",
       "B": "127.0.0.1",
@@ -197,7 +197,7 @@
   {
     "id": 16,
     "domain": "Networking",
-    "question": "What is the primary function of a network router?",
+    "question": "What does a router do?",
     "options": {
       "A": "Connect multiple devices within the exact same LAN segment",
       "B": "Route traffic between different IP subnetworks",
@@ -210,7 +210,7 @@
   {
     "id": 17,
     "domain": "Networking",
-    "question": "Which port does FTP (File Transfer Protocol) control communication use by default?",
+    "question": "Which port does FTP use for control commands?",
     "options": {
       "A": "21",
       "B": "23",
@@ -223,7 +223,7 @@
   {
     "id": 18,
     "domain": "Networking",
-    "question": "Which connector type is standard for Ethernet network patch cables?",
+    "question": "Which connector is commonly used for Ethernet?",
     "options": {
       "A": "RJ-11",
       "B": "RJ-45",
@@ -249,7 +249,7 @@
   {
     "id": 20,
     "domain": "Networking",
-    "question": "Which network protocol is used to transmit outgoing email messages between servers?",
+    "question": "Which protocol sends email between servers?",
     "options": {
       "A": "POP3",
       "B": "IMAP",
@@ -262,7 +262,7 @@
   {
     "id": 21,
     "domain": "Networking",
-    "question": "What protocol is used by the 'ping' command to check reachability?",
+    "question": "Which protocol does ping use?",
     "options": {
       "A": "ICMP",
       "B": "IGMP",
@@ -275,7 +275,7 @@
   {
     "id": 22,
     "domain": "Networking",
-    "question": "Which Wi-Fi security protocol is currently considered the most secure standard for home networks?",
+    "question": "Which Wi-Fi security standard is newer than WPA2?",
     "options": {
       "A": "WEP",
       "B": "WPA",
@@ -288,7 +288,7 @@
   {
     "id": 23,
     "domain": "Networking",
-    "question": "Which default port does DNS use for name resolution queries?",
+    "question": "Which port does DNS usually use?",
     "options": {
       "A": "22",
       "B": "53",
@@ -301,7 +301,7 @@
   {
     "id": 24,
     "domain": "Networking",
-    "question": "What type of network cable is immune to electrical and magnetic interference?",
+    "question": "Which cable uses light instead of electrical signals?",
     "options": {
       "A": "Coaxial Cable",
       "B": "Unshielded Twisted Pair (UTP)",
@@ -314,7 +314,7 @@
   {
     "id": 25,
     "domain": "Networking",
-    "question": "What is the private IP address range for Class A networks?",
+    "question": "Which range is the private 10.x IPv4 range?",
     "options": {
       "A": "10.0.0.0 to 10.255.255.255",
       "B": "172.16.0.0 to 172.31.255.255",
@@ -327,7 +327,7 @@
   {
     "id": 26,
     "domain": "Networking",
-    "question": "Which device directs network traffic using MAC addresses at OSI Layer 2?",
+    "question": "Which device forwards frames using MAC addresses?",
     "options": {
       "A": "Router",
       "B": "Switch",
@@ -340,7 +340,7 @@
   {
     "id": 27,
     "domain": "Networking",
-    "question": "What command line tool displays network path hop-by-hop to a destination on Windows?",
+    "question": "Which Windows tool shows network hops?",
     "options": {
       "A": "tracert",
       "B": "traceroute",
@@ -353,7 +353,7 @@
   {
     "id": 28,
     "domain": "Networking",
-    "question": "What is the primary purpose of NAT (Network Address Translation)?",
+    "question": "What does NAT do?",
     "options": {
       "A": "Translate private IPs to a public IP for internet access",
       "B": "Encrypt hard drive files",
@@ -366,7 +366,7 @@
   {
     "id": 29,
     "domain": "Networking",
-    "question": "Which layer in the TCP/IP model corresponds to the OSI Transport layer?",
+    "question": "Which TCP/IP layer handles TCP and UDP?",
     "options": {
       "A": "Network Interface",
       "B": "Internetwork",
@@ -392,7 +392,7 @@
   {
     "id": 31,
     "domain": "Networking",
-    "question": "Which wireless frequency band provides longer range but slower data speeds?",
+    "question": "Which Wi-Fi band generally has longer range?",
     "options": {
       "A": "2.4 GHz",
       "B": "5 GHz",
@@ -405,7 +405,7 @@
   {
     "id": 32,
     "domain": "Networking",
-    "question": "What protocol resolves IP addresses to physical MAC addresses on a local network?",
+    "question": "Which protocol finds a MAC address from an IPv4 address?",
     "options": {
       "A": "DNS",
       "B": "ARP",
@@ -418,7 +418,7 @@
   {
     "id": 33,
     "domain": "Networking",
-    "question": "What is the default subnet mask for a Class C network?",
+    "question": "What mask is commonly used for a /24 IPv4 network?",
     "options": {
       "A": "255.0.0.0",
       "B": "255.255.0.0",
@@ -431,7 +431,7 @@
   {
     "id": 34,
     "domain": "Linux",
-    "question": "Which Linux command displays your current working directory path?",
+    "question": "Which Linux command shows your current directory?",
     "options": {
       "A": "ls",
       "B": "cd",
@@ -444,7 +444,7 @@
   {
     "id": 35,
     "domain": "Linux",
-    "question": "Which command lists files and directories in the current folder?",
+    "question": "Which command lists files?",
     "options": {
       "A": "dir",
       "B": "ls",
@@ -457,7 +457,7 @@
   {
     "id": 36,
     "domain": "Linux",
-    "question": "Which Linux command is used to change directories?",
+    "question": "Which command changes directory?",
     "options": {
       "A": "mov",
       "B": "cd",
@@ -470,7 +470,7 @@
   {
     "id": 37,
     "domain": "Linux",
-    "question": "Who is the administrative superuser account in Linux with full system privileges?",
+    "question": "Who is the Linux superuser?",
     "options": {
       "A": "admin",
       "B": "administrator",
@@ -483,7 +483,7 @@
   {
     "id": 38,
     "domain": "Linux",
-    "question": "Which prefix lets an approved user run commands as administrator?",
+    "question": "Which command runs an approved task as administrator?",
     "options": {
       "A": "runas",
       "B": "sudo",
@@ -496,7 +496,7 @@
   {
     "id": 39,
     "domain": "Linux",
-    "question": "Which command creates a new empty directory in Linux?",
+    "question": "Which command creates a directory?",
     "options": {
       "A": "newdir",
       "B": "mkdir",
@@ -509,7 +509,7 @@
   {
     "id": 40,
     "domain": "Linux",
-    "question": "Which command is used to display the contents of a plain text file to the terminal screen?",
+    "question": "Which command prints a text file?",
     "options": {
       "A": "type",
       "B": "cat",
@@ -522,7 +522,7 @@
   {
     "id": 41,
     "domain": "Linux",
-    "question": "Which Linux command is used to remove or delete files?",
+    "question": "Which command removes a file?",
     "options": {
       "A": "del",
       "B": "rm",
@@ -535,7 +535,7 @@
   {
     "id": 42,
     "domain": "Linux",
-    "question": "Which option with 'ls' shows hidden files (files starting with a dot)?",
+    "question": "Which ls option includes hidden files?",
     "options": {
       "A": "ls -h",
       "B": "ls -a",
@@ -548,7 +548,7 @@
   {
     "id": 43,
     "domain": "Linux",
-    "question": "Which Linux utility is used to modify file and directory permissions?",
+    "question": "Which command changes file permissions?",
     "options": {
       "A": "chown",
       "B": "chmod",
@@ -561,7 +561,7 @@
   {
     "id": 44,
     "domain": "Linux",
-    "question": "Which command changes file ownership to a new user account?",
+    "question": "Which command changes file ownership?",
     "options": {
       "A": "chmod",
       "B": "chown",
@@ -574,7 +574,7 @@
   {
     "id": 45,
     "domain": "Linux",
-    "question": "Which directory in Linux stores configuration files for system services?",
+    "question": "Which Linux directory stores system settings?",
     "options": {
       "A": "/bin",
       "B": "/etc",
@@ -587,7 +587,7 @@
   {
     "id": 46,
     "domain": "Linux",
-    "question": "Where are user home directories typically stored in Linux by default?",
+    "question": "Where are ordinary Linux user home directories usually stored?",
     "options": {
       "A": "/users",
       "B": "/home",
@@ -600,7 +600,7 @@
   {
     "id": 47,
     "domain": "Linux",
-    "question": "Which command creates a blank file or updates the timestamp of an existing file?",
+    "question": "Which command can create an empty file?",
     "options": {
       "A": "create",
       "B": "touch",
@@ -613,7 +613,7 @@
   {
     "id": 48,
     "domain": "Linux",
-    "question": "Which Linux command searches for text patterns inside files using regular expressions?",
+    "question": "Which command searches file contents for text?",
     "options": {
       "A": "find",
       "B": "grep",
@@ -626,7 +626,7 @@
   {
     "id": 49,
     "domain": "Linux",
-    "question": "Which command copies files from one directory location to another?",
+    "question": "Which command copies files?",
     "options": {
       "A": "mv",
       "B": "cp",
@@ -639,7 +639,7 @@
   {
     "id": 50,
     "domain": "Linux",
-    "question": "Which command is used to move or rename a file in Linux?",
+    "question": "Which command moves or renames files?",
     "options": {
       "A": "mv",
       "B": "rn",
@@ -652,7 +652,7 @@
   {
     "id": 51,
     "domain": "Linux",
-    "question": "Which file stores user account information like usernames and user IDs (UIDs)?",
+    "question": "Which file lists local Linux user accounts?",
     "options": {
       "A": "/etc/shadow",
       "B": "/etc/passwd",
@@ -665,7 +665,7 @@
   {
     "id": 52,
     "domain": "Linux",
-    "question": "Which file securely stores encrypted password hashes on Linux systems?",
+    "question": "Which file usually stores Linux password hashes?",
     "options": {
       "A": "/etc/passwd",
       "B": "/etc/shadow",
@@ -678,7 +678,7 @@
   {
     "id": 53,
     "domain": "Linux",
-    "question": "What numeric value represents read (r), write (w), and execute (x) permissions in chmod (7)?",
+    "question": "What permission number means read, write and execute?",
     "options": {
       "A": "r=4, w=2, x=1",
       "B": "r=1, w=2, x=3",
@@ -691,7 +691,7 @@
   {
     "id": 54,
     "domain": "Linux",
-    "question": "Which command shows actively running system processes in real-time?",
+    "question": "Which command shows processes updating live?",
     "options": {
       "A": "ps",
       "B": "top",
@@ -704,7 +704,7 @@
   {
     "id": 55,
     "domain": "Linux",
-    "question": "Which command displays your active username in the terminal?",
+    "question": "Which command prints your username?",
     "options": {
       "A": "whoami",
       "B": "id",
@@ -717,7 +717,7 @@
   {
     "id": 56,
     "domain": "Linux",
-    "question": "Which character symbol represents a user's home directory path shortcut in Linux?",
+    "question": "Which symbol means your home directory?",
     "options": {
       "A": "#",
       "B": "~",
@@ -730,7 +730,7 @@
   {
     "id": 57,
     "domain": "Linux",
-    "question": "Which command displays manual pages and usage documentation for terminal commands?",
+    "question": "Which command opens a command manual?",
     "options": {
       "A": "help",
       "B": "man",
@@ -743,7 +743,7 @@
   {
     "id": 58,
     "domain": "Linux",
-    "question": "Which command terminates or stops a running process using its Process ID (PID)?",
+    "question": "Which command sends a signal to a process?",
     "options": {
       "A": "stop",
       "B": "kill",
@@ -756,7 +756,7 @@
   {
     "id": 59,
     "domain": "Linux",
-    "question": "Where are variable data files like system log files stored in Linux?",
+    "question": "Which directory commonly stores Linux logs?",
     "options": {
       "A": "/bin",
       "B": "/var/log",
@@ -769,7 +769,7 @@
   {
     "id": 60,
     "domain": "Linux",
-    "question": "Which command is used on Debian/Ubuntu systems to install software packages?",
+    "question": "Which tool installs Ubuntu packages?",
     "options": {
       "A": "yum install",
       "B": "apt install",
@@ -782,7 +782,7 @@
   {
     "id": 61,
     "domain": "Linux",
-    "question": "Which directory contains essential system binary commands required for basic user operations?",
+    "question": "Which directory traditionally holds essential command binaries?",
     "options": {
       "A": "/bin",
       "B": "/sbin",
@@ -795,7 +795,7 @@
   {
     "id": 62,
     "domain": "Linux",
-    "question": "Which character redirects command output into a file, replacing existing file content?",
+    "question": "Which symbol replaces a file with command output?",
     "options": {
       "A": ">",
       "B": ">>",
@@ -808,7 +808,7 @@
   {
     "id": 63,
     "domain": "Linux",
-    "question": "Which symbol pipes the output of one Linux command directly into the input of another?",
+    "question": "Which symbol passes output to another command?",
     "options": {
       "A": "&",
       "B": "|",
@@ -821,7 +821,7 @@
   {
     "id": 64,
     "domain": "Linux",
-    "question": "Which simple command displays text lines passed to it in the terminal output?",
+    "question": "Which command prints supplied text?",
     "options": {
       "A": "print",
       "B": "echo",
@@ -834,7 +834,7 @@
   {
     "id": 65,
     "domain": "Linux",
-    "question": "Which package format is natively used by Red Hat Enterprise Linux and Fedora?",
+    "question": "Which package format does Fedora use?",
     "options": {
       "A": ".deb",
       "B": ".rpm",
@@ -847,7 +847,7 @@
   {
     "id": 66,
     "domain": "Linux",
-    "question": "Which text editor is built into most Linux command-line terminals by default?",
+    "question": "Which editor is common on many Linux terminals?",
     "options": {
       "A": "Notepad++",
       "B": "nano / vi",
@@ -860,7 +860,7 @@
   {
     "id": 67,
     "domain": "Security",
-    "question": "What three core principles form the fundamental CIA Triad model in security?",
+    "question": "What does the CIA security triad stand for?",
     "options": {
       "A": "Control, Inspection, Audit",
       "B": "Confidentiality, Integrity, Availability",
@@ -873,7 +873,7 @@
   {
     "id": 68,
     "domain": "Security",
-    "question": "Which principle of the CIA Triad guarantees data is protected from unauthorized access?",
+    "question": "Which CIA principle prevents unauthorised disclosure?",
     "options": {
       "A": "Confidentiality",
       "B": "Integrity",
@@ -886,7 +886,7 @@
   {
     "id": 69,
     "domain": "Security",
-    "question": "Which CIA Triad principle keeps data accurate and unaltered?",
+    "question": "Which CIA principle protects data accuracy?",
     "options": {
       "A": "Confidentiality",
       "B": "Integrity",
@@ -899,7 +899,7 @@
   {
     "id": 70,
     "domain": "Security",
-    "question": "Which attack uses deceptive emails to steal passwords?",
+    "question": "Which attack uses fake emails to steal information?",
     "options": {
       "A": "DDoS",
       "B": "Phishing",
@@ -912,7 +912,7 @@
   {
     "id": 71,
     "domain": "Security",
-    "question": "Malware that locks user files using encryption and demands money for the key is called what?",
+    "question": "Which malware encrypts files and demands payment?",
     "options": {
       "A": "Spyware",
       "B": "Ransomware",
@@ -925,7 +925,7 @@
   {
     "id": 72,
     "domain": "Security",
-    "question": "What security control requires users to provide two separate authentication methods to log in?",
+    "question": "Which control uses more than one authentication factor?",
     "options": {
       "A": "Single Sign-On (SSO)",
       "B": "Multi-Factor Authentication (MFA)",
@@ -938,7 +938,7 @@
   {
     "id": 73,
     "domain": "Security",
-    "question": "Which authentication factor category does a hardware token or smartphone fall under?",
+    "question": "A hardware token belongs to which factor?",
     "options": {
       "A": "Something you know",
       "B": "Something you have",
@@ -951,7 +951,7 @@
   {
     "id": 74,
     "domain": "Security",
-    "question": "Which authentication factor category includes fingerprints and iris scans?",
+    "question": "A fingerprint belongs to which authentication factor?",
     "options": {
       "A": "Something you know",
       "B": "Something you have",
@@ -964,7 +964,7 @@
   {
     "id": 75,
     "domain": "Security",
-    "question": "Which malware self-replicates across networks without a host?",
+    "question": "Which malware spreads without attaching to a host file?",
     "options": {
       "A": "Virus",
       "B": "Worm",
@@ -977,7 +977,7 @@
   {
     "id": 76,
     "domain": "Security",
-    "question": "What software hides inside a seemingly legitimate program to trick users into installing it?",
+    "question": "Which malware pretends to be a useful program?",
     "options": {
       "A": "Worm",
       "B": "Trojan",
@@ -990,7 +990,7 @@
   {
     "id": 77,
     "domain": "Security",
-    "question": "Which principle gives users only the permissions they need?",
+    "question": "Which principle grants only necessary permissions?",
     "options": {
       "A": "Separation of Duties",
       "B": "Principle of Least Privilege",
@@ -1003,7 +1003,7 @@
   {
     "id": 78,
     "domain": "Security",
-    "question": "Which attack tries every possible password combination?",
+    "question": "Which attack tries every password combination?",
     "options": {
       "A": "Dictionary Attack",
       "B": "Brute-Force Attack",
@@ -1016,7 +1016,7 @@
   {
     "id": 79,
     "domain": "Security",
-    "question": "What filters network traffic using security rules?",
+    "question": "What filters traffic using security rules?",
     "options": {
       "A": "Switch",
       "B": "Firewall",
@@ -1029,7 +1029,7 @@
   {
     "id": 80,
     "domain": "Security",
-    "question": "Which attack floods a service until it becomes unavailable?",
+    "question": "Which attack overwhelms a service with traffic?",
     "options": {
       "A": "Man-in-the-Middle",
       "B": "Denial of Service (DoS)",
@@ -1042,7 +1042,7 @@
   {
     "id": 81,
     "domain": "Security",
-    "question": "What is the process of scrambling plain text into unreadable ciphertext called?",
+    "question": "What turns readable data into ciphertext?",
     "options": {
       "A": "Decryption",
       "B": "Encryption",
@@ -1055,7 +1055,7 @@
   {
     "id": 82,
     "domain": "Security",
-    "question": "Which one-way process cannot be reversed to recover data?",
+    "question": "Which process creates a one-way data fingerprint?",
     "options": {
       "A": "Symmetric Cipher",
       "B": "Hashing",
@@ -1068,7 +1068,7 @@
   {
     "id": 83,
     "domain": "Security",
-    "question": "Which attack involves intercepting communication between two parties without their knowledge?",
+    "question": "Which attack secretly intercepts a conversation?",
     "options": {
       "A": "Man-in-the-Middle (MitM)",
       "B": "Phishing",
@@ -1081,7 +1081,7 @@
   {
     "id": 84,
     "domain": "Security",
-    "question": "Which tactic follows an employee into a secure building?",
+    "question": "What is following someone through a secure door called?",
     "options": {
       "A": "Shoulder Surfing",
       "B": "Tailgating / Piggybacking",
@@ -1094,7 +1094,7 @@
   {
     "id": 85,
     "domain": "Security",
-    "question": "Which tactic watches someone enter a PIN or password?",
+    "question": "What is watching someone enter a PIN called?",
     "options": {
       "A": "Dumpster Diving",
       "B": "Shoulder Surfing",
@@ -1107,7 +1107,7 @@
   {
     "id": 86,
     "domain": "Security",
-    "question": "What type of attack searches through workplace paper trash bins for confidential documents?",
+    "question": "What is searching discarded rubbish for secrets called?",
     "options": {
       "A": "Pretexting",
       "B": "Dumpster Diving",
@@ -1120,7 +1120,7 @@
   {
     "id": 87,
     "domain": "Security",
-    "question": "What security tactic uses multiple layers of defense controls to protect assets across a system?",
+    "question": "What uses several layers of security controls?",
     "options": {
       "A": "Defense in Depth",
       "B": "Single Point of Failure",
@@ -1133,7 +1133,7 @@
   {
     "id": 88,
     "domain": "Security",
-    "question": "What security software monitors user inputs and records every keystroke pressed on a keyboard?",
+    "question": "Which malware records typed keys?",
     "options": {
       "A": "Rootkit",
       "B": "Keylogger",
@@ -1146,7 +1146,7 @@
   {
     "id": 89,
     "domain": "Security",
-    "question": "Which phishing attack targets executives?",
+    "question": "Which phishing attack targets senior executives?",
     "options": {
       "A": "Spear Phishing",
       "B": "Whaling",
@@ -1159,7 +1159,7 @@
   {
     "id": 90,
     "domain": "Security",
-    "question": "What is phishing conducted over SMS text messages called?",
+    "question": "What is SMS phishing called?",
     "options": {
       "A": "Vishing",
       "B": "Smishing",
@@ -1172,7 +1172,7 @@
   {
     "id": 91,
     "domain": "Security",
-    "question": "What is phishing conducted over phone calls called?",
+    "question": "What is phishing by phone call called?",
     "options": {
       "A": "Vishing",
       "B": "Smishing",
@@ -1185,7 +1185,7 @@
   {
     "id": 92,
     "domain": "Security",
-    "question": "Which hidden malware gives an attacker root access?",
+    "question": "Which malware can hide privileged access?",
     "options": {
       "A": "Rootkit",
       "B": "Adware",
@@ -1198,7 +1198,7 @@
   {
     "id": 93,
     "domain": "Security",
-    "question": "What type of data backup method makes an exact copy of ALL selected files every time it runs?",
+    "question": "Which backup copies every selected file each time?",
     "options": {
       "A": "Incremental Backup",
       "B": "Differential Backup",
@@ -1211,7 +1211,7 @@
   {
     "id": 94,
     "domain": "Security",
-    "question": "Which cryptographic method uses ONE identical secret key to both encrypt and decrypt data?",
+    "question": "Which encryption uses the same key to encrypt and decrypt?",
     "options": {
       "A": "Symmetric Encryption",
       "B": "Asymmetric Encryption",
@@ -1224,7 +1224,7 @@
   {
     "id": 95,
     "domain": "Security",
-    "question": "Which cryptographic scheme uses a Public Key to encrypt and a Private Key to decrypt?",
+    "question": "Which encryption uses a public and private key pair?",
     "options": {
       "A": "Symmetric Encryption",
       "B": "Asymmetric Encryption",
@@ -1237,7 +1237,7 @@
   {
     "id": 96,
     "domain": "Security",
-    "question": "What practice involves hiding secret text messages or files INSIDE standard image files?",
+    "question": "What hides secret data inside another file?",
     "options": {
       "A": "Hashing",
       "B": "Steganography",
@@ -1250,7 +1250,7 @@
   {
     "id": 97,
     "domain": "Security",
-    "question": "What is an exploited flaw unknown to its vendor?",
+    "question": "What is an exploited flaw unknown to its vendor called?",
     "options": {
       "A": "Zero-Day Vulnerability",
       "B": "Known Vulnerability",
@@ -1263,7 +1263,7 @@
   {
     "id": 98,
     "domain": "Security",
-    "question": "Which firewall checks only packet IPs and ports?",
+    "question": "Which firewall checks packet addresses and ports?",
     "options": {
       "A": "Stateless Packet Filter",
       "B": "Stateful Inspection Firewall",
@@ -1276,7 +1276,7 @@
   {
     "id": 99,
     "domain": "Security",
-    "question": "Which network segment isolates public servers from the LAN?",
+    "question": "Which network zone separates public servers from the LAN?",
     "options": {
       "A": "VPN",
       "B": "DMZ (Demilitarized Zone)",
@@ -1289,7 +1289,7 @@
   {
     "id": 100,
     "domain": "Security",
-    "question": "Which tool encrypts traffic to a remote network?",
+    "question": "What encrypts a connection to a remote network?",
     "options": {
       "A": "VPN (Virtual Private Network)",
       "B": "VLAN",
@@ -1298,5 +1298,1305 @@
     },
     "answer": "A",
     "explanation": "A VPN builds an encrypted tunnel over untrusted networks to secure data transmission."
+  },
+  {
+    "id": 101,
+    "domain": "Hardware",
+    "question": "Which component runs a computer's instructions?",
+    "options": {
+      "A": "CPU",
+      "B": "Speaker",
+      "C": "Keyboard",
+      "D": "Monitor"
+    },
+    "answer": "A",
+    "explanation": "The CPU executes program instructions."
+  },
+  {
+    "id": 102,
+    "domain": "Hardware",
+    "question": "Which memory normally loses its contents when power is off?",
+    "options": {
+      "A": "RAM",
+      "B": "USB drive",
+      "C": "DVD",
+      "D": "SSD"
+    },
+    "answer": "A",
+    "explanation": "RAM is temporary working memory."
+  },
+  {
+    "id": 103,
+    "domain": "Hardware",
+    "question": "Which device stores files without moving parts?",
+    "options": {
+      "A": "Fan",
+      "B": "SSD",
+      "C": "CPU",
+      "D": "RAM"
+    },
+    "answer": "B",
+    "explanation": "A solid state drive stores persistent data electronically."
+  },
+  {
+    "id": 104,
+    "domain": "Hardware",
+    "question": "Which device is mainly used to enter text?",
+    "options": {
+      "A": "Monitor",
+      "B": "Speaker",
+      "C": "Projector",
+      "D": "Keyboard"
+    },
+    "answer": "D",
+    "explanation": "A keyboard is an input device for text."
+  },
+  {
+    "id": 105,
+    "domain": "Hardware",
+    "question": "Which device displays a computer's visual output?",
+    "options": {
+      "A": "Microphone",
+      "B": "Monitor",
+      "C": "Mouse",
+      "D": "Scanner"
+    },
+    "answer": "B",
+    "explanation": "A monitor shows visual output."
+  },
+  {
+    "id": 106,
+    "domain": "Hardware",
+    "question": "Which component provides power to desktop computer parts?",
+    "options": {
+      "A": "Router",
+      "B": "Webcam",
+      "C": "Power supply",
+      "D": "Sound card"
+    },
+    "answer": "C",
+    "explanation": "The power supply converts electrical power for computer components."
+  },
+  {
+    "id": 107,
+    "domain": "Hardware",
+    "question": "Which computer part helps remove heat?",
+    "options": {
+      "A": "Cooling fan",
+      "B": "Network switch",
+      "C": "Keyboard",
+      "D": "USB cable"
+    },
+    "answer": "A",
+    "explanation": "A cooling fan moves air to help remove heat."
+  },
+  {
+    "id": 108,
+    "domain": "Hardware",
+    "question": "Which connection commonly links a monitor to a computer?",
+    "options": {
+      "A": "Audio jack",
+      "B": "HDMI",
+      "C": "SATA power",
+      "D": "RJ11"
+    },
+    "answer": "B",
+    "explanation": "HDMI can carry digital video and audio to a display."
+  },
+  {
+    "id": 109,
+    "domain": "Hardware",
+    "question": "Which device captures sound as computer input?",
+    "options": {
+      "A": "Printer",
+      "B": "Speaker",
+      "C": "Microphone",
+      "D": "Monitor"
+    },
+    "answer": "C",
+    "explanation": "A microphone captures audio input."
+  },
+  {
+    "id": 110,
+    "domain": "Hardware",
+    "question": "Which action should come before opening a desktop case?",
+    "options": {
+      "A": "Spray water inside",
+      "B": "Shut down and unplug",
+      "C": "Remove the CPU live",
+      "D": "Shake the case"
+    },
+    "answer": "B",
+    "explanation": "Shutting down and disconnecting power reduces electrical risk."
+  },
+  {
+    "id": 111,
+    "domain": "Files",
+    "question": "What does a file extension usually indicate?",
+    "options": {
+      "A": "File type",
+      "B": "Screen size",
+      "C": "Battery level",
+      "D": "Owner's age"
+    },
+    "answer": "A",
+    "explanation": "An extension such as .pdf helps identify a file's format."
+  },
+  {
+    "id": 112,
+    "domain": "Files",
+    "question": "Which extension normally identifies a PDF document?",
+    "options": {
+      "A": ".pdf",
+      "B": ".mp3",
+      "C": ".jpg",
+      "D": ".exe"
+    },
+    "answer": "A",
+    "explanation": "PDF documents commonly use the .pdf extension."
+  },
+  {
+    "id": 113,
+    "domain": "Files",
+    "question": "Which extension commonly identifies an image?",
+    "options": {
+      "A": ".wav",
+      "B": ".txt",
+      "C": ".exe",
+      "D": ".png"
+    },
+    "answer": "D",
+    "explanation": "PNG is an image file format."
+  },
+  {
+    "id": 114,
+    "domain": "Files",
+    "question": "Which extension commonly identifies a plain text file?",
+    "options": {
+      "A": ".zip",
+      "B": ".txt",
+      "C": ".png",
+      "D": ".mp4"
+    },
+    "answer": "B",
+    "explanation": "A .txt file usually contains plain text."
+  },
+  {
+    "id": 115,
+    "domain": "Files",
+    "question": "What is the main purpose of a folder?",
+    "options": {
+      "A": "Cool the CPU",
+      "B": "Charge a battery",
+      "C": "Organise files",
+      "D": "Encrypt all traffic"
+    },
+    "answer": "C",
+    "explanation": "Folders help organise files and other folders."
+  },
+  {
+    "id": 116,
+    "domain": "Files",
+    "question": "What does copying a file normally do?",
+    "options": {
+      "A": "Deletes the original",
+      "B": "Changes your password",
+      "C": "Creates another copy",
+      "D": "Formats the disk"
+    },
+    "answer": "C",
+    "explanation": "Copying keeps the original and creates another copy."
+  },
+  {
+    "id": 117,
+    "domain": "Files",
+    "question": "What does renaming a file change?",
+    "options": {
+      "A": "The CPU speed",
+      "B": "Your IP address",
+      "C": "Its name",
+      "D": "All its contents"
+    },
+    "answer": "C",
+    "explanation": "Renaming changes the file name rather than rewriting its contents."
+  },
+  {
+    "id": 118,
+    "domain": "Files",
+    "question": "What is a ZIP file commonly used for?",
+    "options": {
+      "A": "Power management",
+      "B": "Bundling compressed files",
+      "C": "Network routing",
+      "D": "Live video calls"
+    },
+    "answer": "B",
+    "explanation": "ZIP archives can package files and compress them."
+  },
+  {
+    "id": 119,
+    "domain": "Files",
+    "question": "What does saving a document do?",
+    "options": {
+      "A": "Cleans the keyboard",
+      "B": "Deletes all folders",
+      "C": "Writes your changes",
+      "D": "Restarts the router"
+    },
+    "answer": "C",
+    "explanation": "Saving writes document changes to storage."
+  },
+  {
+    "id": 120,
+    "domain": "Files",
+    "question": "Which name makes a work document easier to identify?",
+    "options": {
+      "A": "file",
+      "B": "untitled",
+      "C": "Invoice-2026-10.pdf",
+      "D": "newnewfinal2"
+    },
+    "answer": "C",
+    "explanation": "A clear descriptive name helps people identify a document."
+  },
+  {
+    "id": 121,
+    "domain": "Windows",
+    "question": "Which Windows tool shows running apps and processes?",
+    "options": {
+      "A": "Calculator",
+      "B": "Paint",
+      "C": "Notepad",
+      "D": "Task Manager"
+    },
+    "answer": "D",
+    "explanation": "Task Manager lists processes and resource use."
+  },
+  {
+    "id": 122,
+    "domain": "Windows",
+    "question": "Which Windows app browses files and folders?",
+    "options": {
+      "A": "File Explorer",
+      "B": "Weather",
+      "C": "Camera",
+      "D": "Clock"
+    },
+    "answer": "A",
+    "explanation": "File Explorer is used to manage files and folders."
+  },
+  {
+    "id": 123,
+    "domain": "Windows",
+    "question": "Which Windows feature temporarily holds many deleted files?",
+    "options": {
+      "A": "Taskbar",
+      "B": "Start menu",
+      "C": "Clipboard",
+      "D": "Recycle Bin"
+    },
+    "answer": "D",
+    "explanation": "The Recycle Bin lets you restore many deleted files before emptying it."
+  },
+  {
+    "id": 124,
+    "domain": "Windows",
+    "question": "Which shortcut commonly copies selected text?",
+    "options": {
+      "A": "Ctrl+V",
+      "B": "Ctrl+C",
+      "C": "Ctrl+P",
+      "D": "Ctrl+Z"
+    },
+    "answer": "B",
+    "explanation": "Ctrl+C copies the selection to the clipboard."
+  },
+  {
+    "id": 125,
+    "domain": "Windows",
+    "question": "Which shortcut commonly pastes copied text?",
+    "options": {
+      "A": "Ctrl+S",
+      "B": "Ctrl+F",
+      "C": "Ctrl+V",
+      "D": "Ctrl+C"
+    },
+    "answer": "C",
+    "explanation": "Ctrl+V pastes clipboard contents."
+  },
+  {
+    "id": 126,
+    "domain": "Windows",
+    "question": "Which shortcut commonly saves the current document?",
+    "options": {
+      "A": "Ctrl+X",
+      "B": "Ctrl+P",
+      "C": "Ctrl+A",
+      "D": "Ctrl+S"
+    },
+    "answer": "D",
+    "explanation": "Ctrl+S commonly saves a document."
+  },
+  {
+    "id": 127,
+    "domain": "Windows",
+    "question": "Which shortcut commonly undoes the last edit?",
+    "options": {
+      "A": "Ctrl+C",
+      "B": "Ctrl+F",
+      "C": "Ctrl+P",
+      "D": "Ctrl+Z"
+    },
+    "answer": "D",
+    "explanation": "Ctrl+Z commonly undoes the latest edit."
+  },
+  {
+    "id": 128,
+    "domain": "Windows",
+    "question": "Which Windows shortcut locks your session?",
+    "options": {
+      "A": "Windows+L",
+      "B": "Alt+Tab",
+      "C": "Ctrl+P",
+      "D": "Windows+E"
+    },
+    "answer": "A",
+    "explanation": "Windows+L locks your session without signing you out."
+  },
+  {
+    "id": 129,
+    "domain": "Windows",
+    "question": "Why install trusted operating system updates?",
+    "options": {
+      "A": "Disable every firewall",
+      "B": "Remove all passwords",
+      "C": "Fix bugs and security flaws",
+      "D": "Make backups obsolete"
+    },
+    "answer": "C",
+    "explanation": "Updates can fix errors and security vulnerabilities."
+  },
+  {
+    "id": 130,
+    "domain": "Windows",
+    "question": "Which Windows tool displays installed hardware devices?",
+    "options": {
+      "A": "Device Manager",
+      "B": "Calculator",
+      "C": "Notepad",
+      "D": "Snipping Tool"
+    },
+    "answer": "A",
+    "explanation": "Device Manager lists hardware devices and their drivers."
+  },
+  {
+    "id": 131,
+    "domain": "Internet",
+    "question": "What does a web browser help you access?",
+    "options": {
+      "A": "Power sockets",
+      "B": "Websites",
+      "C": "CPU temperature only",
+      "D": "Paper documents only"
+    },
+    "answer": "B",
+    "explanation": "A browser opens and displays web content."
+  },
+  {
+    "id": 132,
+    "domain": "Internet",
+    "question": "Which part of an email address separates name and domain?",
+    "options": {
+      "A": "&",
+      "B": "#",
+      "C": "@",
+      "D": "%"
+    },
+    "answer": "C",
+    "explanation": "The @ symbol separates the local name from the domain."
+  },
+  {
+    "id": 133,
+    "domain": "Internet",
+    "question": "What is an email attachment?",
+    "options": {
+      "A": "A file sent with email",
+      "B": "A screen setting",
+      "C": "A router password",
+      "D": "A browser bookmark"
+    },
+    "answer": "A",
+    "explanation": "An attachment is a file included with an email."
+  },
+  {
+    "id": 134,
+    "domain": "Internet",
+    "question": "What does a browser bookmark save?",
+    "options": {
+      "A": "Your whole computer",
+      "B": "A website link",
+      "C": "A new email account",
+      "D": "A network cable"
+    },
+    "answer": "B",
+    "explanation": "A bookmark stores a link for later access."
+  },
+  {
+    "id": 135,
+    "domain": "Internet",
+    "question": "What does downloading normally mean?",
+    "options": {
+      "A": "Receiving a file",
+      "B": "Sending a file",
+      "C": "Renaming a file",
+      "D": "Deleting a file"
+    },
+    "answer": "A",
+    "explanation": "Downloading transfers data from a remote source to your device."
+  },
+  {
+    "id": 136,
+    "domain": "Internet",
+    "question": "What does uploading normally mean?",
+    "options": {
+      "A": "Receiving a file",
+      "B": "Sending a file",
+      "C": "Printing a file",
+      "D": "Closing a file"
+    },
+    "answer": "B",
+    "explanation": "Uploading transfers data from your device to a remote service."
+  },
+  {
+    "id": 137,
+    "domain": "Internet",
+    "question": "What is a hyperlink used for?",
+    "options": {
+      "A": "Changing RAM",
+      "B": "Cooling hardware",
+      "C": "Charging devices",
+      "D": "Opening another location"
+    },
+    "answer": "D",
+    "explanation": "A hyperlink points to another page, document or location."
+  },
+  {
+    "id": 138,
+    "domain": "Internet",
+    "question": "What does the domain in a web address identify?",
+    "options": {
+      "A": "The website's name",
+      "B": "Your battery health",
+      "C": "A file's size",
+      "D": "Your keyboard model"
+    },
+    "answer": "A",
+    "explanation": "A domain is a human-readable name for an internet resource."
+  },
+  {
+    "id": 139,
+    "domain": "Internet",
+    "question": "Does HTTPS alone prove a website is honest?",
+    "options": {
+      "A": "Only at night",
+      "B": "Always",
+      "C": "Only on phones",
+      "D": "No"
+    },
+    "answer": "D",
+    "explanation": "HTTPS protects the connection, but a dishonest website can also use it."
+  },
+  {
+    "id": 140,
+    "domain": "Internet",
+    "question": "What should you check before entering a password on a site?",
+    "options": {
+      "A": "The advert count",
+      "B": "The page's colour",
+      "C": "The logo size",
+      "D": "The actual domain"
+    },
+    "answer": "D",
+    "explanation": "Check the real domain because fake pages can copy logos and colours."
+  },
+  {
+    "id": 141,
+    "domain": "Passwords",
+    "question": "Which password practice is safest?",
+    "options": {
+      "A": "Share it with friends",
+      "B": "Reuse one everywhere",
+      "C": "Use your birthday",
+      "D": "Use a unique password"
+    },
+    "answer": "D",
+    "explanation": "Unique passwords limit the damage if one account is compromised."
+  },
+  {
+    "id": 142,
+    "domain": "Passwords",
+    "question": "What helps create and store unique passwords?",
+    "options": {
+      "A": "Image editor",
+      "B": "Screen saver",
+      "C": "Password manager",
+      "D": "Audio player"
+    },
+    "answer": "C",
+    "explanation": "A password manager can generate and store strong unique passwords."
+  },
+  {
+    "id": 143,
+    "domain": "Passwords",
+    "question": "Should you share a one-time login code with a caller?",
+    "options": {
+      "A": "If they claim to be IT",
+      "B": "If they know your name",
+      "C": "No",
+      "D": "If they sound urgent"
+    },
+    "answer": "C",
+    "explanation": "Login codes are secrets and should not be shared with a caller."
+  },
+  {
+    "id": 144,
+    "domain": "Passwords",
+    "question": "What should you do with an unexpected MFA approval request?",
+    "options": {
+      "A": "Disable your password",
+      "B": "Approve it quickly",
+      "C": "Deny and report it",
+      "D": "Forward it to friends"
+    },
+    "answer": "C",
+    "explanation": "An unexpected request may mean someone is trying to sign in as you."
+  },
+  {
+    "id": 145,
+    "domain": "Passwords",
+    "question": "Which is usually a stronger passphrase?",
+    "options": {
+      "A": "Your first name",
+      "B": "Several unrelated words",
+      "C": "123456",
+      "D": "Your birthday"
+    },
+    "answer": "B",
+    "explanation": "A long passphrase using unrelated words is harder to guess."
+  },
+  {
+    "id": 146,
+    "domain": "Passwords",
+    "question": "Why lock your computer when leaving your desk?",
+    "options": {
+      "A": "Increase disk size",
+      "B": "Charge the battery",
+      "C": "Prevent unauthorised use",
+      "D": "Improve Wi-Fi speed"
+    },
+    "answer": "C",
+    "explanation": "Locking helps stop others using your signed-in session."
+  },
+  {
+    "id": 147,
+    "domain": "Passwords",
+    "question": "What should you do after learning your password was leaked?",
+    "options": {
+      "A": "Change it and reused copies",
+      "B": "Publish it",
+      "C": "Turn off updates",
+      "D": "Keep using it"
+    },
+    "answer": "A",
+    "explanation": "Replace the compromised password and any reused copies."
+  },
+  {
+    "id": 148,
+    "domain": "Passwords",
+    "question": "Which login method uses a cryptographic key on your device?",
+    "options": {
+      "A": "Screen saver",
+      "B": "Passkey",
+      "C": "Email signature",
+      "D": "Bookmark"
+    },
+    "answer": "B",
+    "explanation": "A passkey uses public key cryptography rather than a shared password."
+  },
+  {
+    "id": 149,
+    "domain": "Passwords",
+    "question": "What is authentication checking?",
+    "options": {
+      "A": "Your printer speed",
+      "B": "What colour you like",
+      "C": "Your monitor size",
+      "D": "Who you are"
+    },
+    "answer": "D",
+    "explanation": "Authentication verifies an identity."
+  },
+  {
+    "id": 150,
+    "domain": "Passwords",
+    "question": "What is authorisation deciding?",
+    "options": {
+      "A": "Your screen brightness",
+      "B": "What you may access",
+      "C": "Who made your monitor",
+      "D": "How loud audio is"
+    },
+    "answer": "B",
+    "explanation": "Authorisation decides what an authenticated identity is allowed to do."
+  },
+  {
+    "id": 151,
+    "domain": "Safety",
+    "question": "What should you do with a suspicious work email?",
+    "options": {
+      "A": "Reply with your password",
+      "B": "Report it using policy",
+      "C": "Open every attachment",
+      "D": "Forward it widely"
+    },
+    "answer": "B",
+    "explanation": "Report suspicious messages through your workplace's approved process."
+  },
+  {
+    "id": 152,
+    "domain": "Safety",
+    "question": "A caller demands your password urgently. What should you do?",
+    "options": {
+      "A": "Give them the password",
+      "B": "Verify via trusted contact",
+      "C": "Disable the firewall",
+      "D": "Install their tool"
+    },
+    "answer": "B",
+    "explanation": "Use an independently trusted contact method to verify the request."
+  },
+  {
+    "id": 153,
+    "domain": "Safety",
+    "question": "How should you handle an unknown USB drive found outside?",
+    "options": {
+      "A": "Plug it into work",
+      "B": "Test it on every PC",
+      "C": "Give it to authorised IT",
+      "D": "Take it home and open it"
+    },
+    "answer": "C",
+    "explanation": "Unknown USB devices may be malicious and should go to authorised IT."
+  },
+  {
+    "id": 154,
+    "domain": "Safety",
+    "question": "Which source is safer for installing an app?",
+    "options": {
+      "A": "Official trusted source",
+      "B": "Unknown email link",
+      "C": "Unverified chat link",
+      "D": "Random pop-up"
+    },
+    "answer": "A",
+    "explanation": "Use an official trusted source and follow workplace rules."
+  },
+  {
+    "id": 155,
+    "domain": "Safety",
+    "question": "What should you do before clicking an unexpected email link?",
+    "options": {
+      "A": "Check it independently",
+      "B": "Trust the logo",
+      "C": "Disable antivirus",
+      "D": "Ignore the address"
+    },
+    "answer": "A",
+    "explanation": "Verify unexpected requests independently rather than trusting appearance."
+  },
+  {
+    "id": 156,
+    "domain": "Safety",
+    "question": "What is social engineering trying to exploit?",
+    "options": {
+      "A": "Printer ink",
+      "B": "People's trust",
+      "C": "Monitor resolution",
+      "D": "CPU cooling"
+    },
+    "answer": "B",
+    "explanation": "Social engineering manipulates people into revealing information or taking actions."
+  },
+  {
+    "id": 157,
+    "domain": "Safety",
+    "question": "Which request is a common scam warning sign?",
+    "options": {
+      "A": "Routine team meeting",
+      "B": "Scheduled software update",
+      "C": "Urgent secret payment",
+      "D": "Known support ticket"
+    },
+    "answer": "C",
+    "explanation": "Pressure for urgent secrecy or unusual payment is a warning sign."
+  },
+  {
+    "id": 158,
+    "domain": "Safety",
+    "question": "What should you do after sending a file to the wrong person?",
+    "options": {
+      "A": "Wait several weeks",
+      "B": "Delete every log",
+      "C": "Report it promptly",
+      "D": "Hide the mistake"
+    },
+    "answer": "C",
+    "explanation": "Prompt reporting helps contain a possible data breach."
+  },
+  {
+    "id": 159,
+    "domain": "Safety",
+    "question": "What should you do before allowing remote support access?",
+    "options": {
+      "A": "Share all passwords",
+      "B": "Trust any pop-up",
+      "C": "Verify the support person",
+      "D": "Turn off logging"
+    },
+    "answer": "C",
+    "explanation": "Verify identity and use your organisation's approved support process."
+  },
+  {
+    "id": 160,
+    "domain": "Safety",
+    "question": "What does security awareness training help people recognise?",
+    "options": {
+      "A": "Only CPU models",
+      "B": "Only keyboard brands",
+      "C": "Only font styles",
+      "D": "Threats and safe actions"
+    },
+    "answer": "D",
+    "explanation": "Awareness training helps people recognise threats and respond safely."
+  },
+  {
+    "id": 161,
+    "domain": "Privacy",
+    "question": "Which example is personal information?",
+    "options": {
+      "A": "A random test number",
+      "B": "A person's home address",
+      "C": "A public weather forecast",
+      "D": "A blank template"
+    },
+    "answer": "B",
+    "explanation": "A home address linked to a person is personal information."
+  },
+  {
+    "id": 162,
+    "domain": "Privacy",
+    "question": "How should confidential paper records be disposed of?",
+    "options": {
+      "A": "Public rubbish bin",
+      "B": "Post them online",
+      "C": "Leave them on a train",
+      "D": "Approved secure shredding"
+    },
+    "answer": "D",
+    "explanation": "Secure shredding or an approved disposal process protects confidential records."
+  },
+  {
+    "id": 163,
+    "domain": "Privacy",
+    "question": "What should you collect when a task needs personal data?",
+    "options": {
+      "A": "Every possible detail",
+      "B": "Only what is necessary",
+      "C": "All old passwords",
+      "D": "Unrelated medical records"
+    },
+    "answer": "B",
+    "explanation": "Collect only the information needed for the legitimate task."
+  },
+  {
+    "id": 164,
+    "domain": "Privacy",
+    "question": "Who should access confidential work files?",
+    "options": {
+      "A": "Any email sender",
+      "B": "Everyone online",
+      "C": "All visitors",
+      "D": "Authorised people only"
+    },
+    "answer": "D",
+    "explanation": "Confidential files should be available only to authorised people."
+  },
+  {
+    "id": 165,
+    "domain": "Privacy",
+    "question": "What should you check before emailing a sensitive file?",
+    "options": {
+      "A": "The screen size",
+      "B": "Their favourite colour",
+      "C": "Your wallpaper",
+      "D": "Recipient and permission"
+    },
+    "answer": "D",
+    "explanation": "Check the recipient and whether sharing is authorised."
+  },
+  {
+    "id": 166,
+    "domain": "Privacy",
+    "question": "What is a clean desk practice?",
+    "options": {
+      "A": "Secure sensitive documents",
+      "B": "Print all passwords",
+      "C": "Keep unlocked USBs out",
+      "D": "Leave passwords visible"
+    },
+    "answer": "A",
+    "explanation": "Secure sensitive documents when they are not being used."
+  },
+  {
+    "id": 167,
+    "domain": "Privacy",
+    "question": "Why avoid posting your live location publicly?",
+    "options": {
+      "A": "Reduce file size",
+      "B": "Improve typing speed",
+      "C": "Protect personal privacy",
+      "D": "Increase CPU speed"
+    },
+    "answer": "C",
+    "explanation": "Public live location can expose personal movements and routines."
+  },
+  {
+    "id": 168,
+    "domain": "Privacy",
+    "question": "What should you follow when handling customer data?",
+    "options": {
+      "A": "An advert's instructions",
+      "B": "Random online advice",
+      "C": "A stranger's request",
+      "D": "Workplace privacy policy"
+    },
+    "answer": "D",
+    "explanation": "Follow authorised privacy and data handling policies."
+  },
+  {
+    "id": 169,
+    "domain": "Privacy",
+    "question": "Which sharing choice usually provides less exposure?",
+    "options": {
+      "A": "Anyone with the link",
+      "B": "Named authorised users",
+      "C": "All anonymous visitors",
+      "D": "Public internet access"
+    },
+    "answer": "B",
+    "explanation": "Sharing with named authorised users limits exposure."
+  },
+  {
+    "id": 170,
+    "domain": "Privacy",
+    "question": "What does data retention describe?",
+    "options": {
+      "A": "How long data is kept",
+      "B": "How fast a screen refreshes",
+      "C": "How loud a speaker is",
+      "D": "How heavy a laptop is"
+    },
+    "answer": "A",
+    "explanation": "Retention rules specify how long information should be kept."
+  },
+  {
+    "id": 171,
+    "domain": "Recovery",
+    "question": "Why make backups?",
+    "options": {
+      "A": "Prevent all phishing",
+      "B": "Recover lost data",
+      "C": "Replace every password",
+      "D": "Increase screen size"
+    },
+    "answer": "B",
+    "explanation": "Backups help restore data after deletion, failure or an incident."
+  },
+  {
+    "id": 172,
+    "domain": "Recovery",
+    "question": "Why test a backup restore?",
+    "options": {
+      "A": "Make files public",
+      "B": "Erase the backup",
+      "C": "Confirm recovery works",
+      "D": "Disable updates"
+    },
+    "answer": "C",
+    "explanation": "A restore test checks that the backup can actually be recovered."
+  },
+  {
+    "id": 173,
+    "domain": "Recovery",
+    "question": "Which backup is better protected from ransomware on your PC?",
+    "options": {
+      "A": "Disconnected backup",
+      "B": "Desktop shortcut",
+      "C": "Always writable shared folder",
+      "D": "Same infected disk"
+    },
+    "answer": "A",
+    "explanation": "A disconnected backup is harder for ransomware on the PC to alter."
+  },
+  {
+    "id": 174,
+    "domain": "Recovery",
+    "question": "What should you do if a work device shows ransomware?",
+    "options": {
+      "A": "Hide the warning",
+      "B": "Share infected files",
+      "C": "Pay immediately",
+      "D": "Contact IT and follow procedure"
+    },
+    "answer": "D",
+    "explanation": "Notify IT promptly and follow the incident response procedure."
+  },
+  {
+    "id": 175,
+    "domain": "Recovery",
+    "question": "What does availability mean in security?",
+    "options": {
+      "A": "All data is public",
+      "B": "Passwords never change",
+      "C": "Data is accessible when needed",
+      "D": "Files have no owners"
+    },
+    "answer": "C",
+    "explanation": "Availability means authorised users can access systems and data when needed."
+  },
+  {
+    "id": 176,
+    "domain": "Recovery",
+    "question": "What is an incident response plan for?",
+    "options": {
+      "A": "Choosing wallpaper",
+      "B": "Picking fonts",
+      "C": "Buying speakers",
+      "D": "Handling security incidents"
+    },
+    "answer": "D",
+    "explanation": "An incident response plan defines how to handle security incidents."
+  },
+  {
+    "id": 177,
+    "domain": "Recovery",
+    "question": "Why keep security logs?",
+    "options": {
+      "A": "Investigate events",
+      "B": "Replace backups",
+      "C": "Prevent power failures",
+      "D": "Make passwords public"
+    },
+    "answer": "A",
+    "explanation": "Logs record events that help monitoring and investigations."
+  },
+  {
+    "id": 178,
+    "domain": "Recovery",
+    "question": "Which information helps IT investigate an error?",
+    "options": {
+      "A": "An unrelated screenshot",
+      "B": "Your favourite music",
+      "C": "Only the case colour",
+      "D": "Time and exact message"
+    },
+    "answer": "D",
+    "explanation": "The time, exact error and relevant context help IT investigate."
+  },
+  {
+    "id": 179,
+    "domain": "Recovery",
+    "question": "What should you do before a major system change?",
+    "options": {
+      "A": "Share administrator access",
+      "B": "Disable all logging",
+      "C": "Back up and plan recovery",
+      "D": "Delete all backups"
+    },
+    "answer": "C",
+    "explanation": "Backups and a recovery plan reduce the impact of failed changes."
+  },
+  {
+    "id": 180,
+    "domain": "Recovery",
+    "question": "What is a software patch?",
+    "options": {
+      "A": "A printed manual",
+      "B": "A new monitor",
+      "C": "An update fixing a problem",
+      "D": "A physical cable"
+    },
+    "answer": "C",
+    "explanation": "A patch changes software to fix a bug or vulnerability."
+  },
+  {
+    "id": 181,
+    "domain": "Networking",
+    "question": "What does Wi-Fi allow devices to do?",
+    "options": {
+      "A": "Run without power",
+      "B": "Print without a printer",
+      "C": "Store infinite files",
+      "D": "Connect wirelessly"
+    },
+    "answer": "D",
+    "explanation": "Wi-Fi provides wireless local network connectivity."
+  },
+  {
+    "id": 182,
+    "domain": "Networking",
+    "question": "Which device commonly provides a wireless network?",
+    "options": {
+      "A": "Scanner",
+      "B": "Wireless access point",
+      "C": "Keyboard",
+      "D": "USB charger"
+    },
+    "answer": "B",
+    "explanation": "A wireless access point connects Wi-Fi devices to a network."
+  },
+  {
+    "id": 183,
+    "domain": "Networking",
+    "question": "What is an SSID?",
+    "options": {
+      "A": "A CPU model",
+      "B": "A file extension",
+      "C": "A password hash",
+      "D": "A Wi-Fi network name"
+    },
+    "answer": "D",
+    "explanation": "The SSID is the name identifying a Wi-Fi network."
+  },
+  {
+    "id": 184,
+    "domain": "Networking",
+    "question": "What does a guest Wi-Fi network help separate?",
+    "options": {
+      "A": "Files from folders",
+      "B": "CPU from memory",
+      "C": "Visitors from private devices",
+      "D": "Audio from video"
+    },
+    "answer": "C",
+    "explanation": "Guest Wi-Fi can keep visitors separate from private devices."
+  },
+  {
+    "id": 185,
+    "domain": "Networking",
+    "question": "Which address is private IPv4?",
+    "options": {
+      "A": "8.8.8.8",
+      "B": "1.1.1.1",
+      "C": "9.9.9.9",
+      "D": "192.168.1.20"
+    },
+    "answer": "D",
+    "explanation": "192.168.0.0/16 is reserved for private networks."
+  },
+  {
+    "id": 186,
+    "domain": "Networking",
+    "question": "What is a default gateway used for?",
+    "options": {
+      "A": "Reaching other networks",
+      "B": "Editing photos",
+      "C": "Storing passwords",
+      "D": "Cooling the router"
+    },
+    "answer": "A",
+    "explanation": "A default gateway forwards traffic to destinations outside the local network."
+  },
+  {
+    "id": 187,
+    "domain": "Networking",
+    "question": "What is bandwidth commonly measuring?",
+    "options": {
+      "A": "Disk temperature",
+      "B": "Data transfer capacity",
+      "C": "Screen brightness",
+      "D": "Battery charge"
+    },
+    "answer": "B",
+    "explanation": "Bandwidth describes the capacity of a network connection."
+  },
+  {
+    "id": 188,
+    "domain": "Networking",
+    "question": "What does network latency describe?",
+    "options": {
+      "A": "Screen width",
+      "B": "Communication delay",
+      "C": "Storage capacity",
+      "D": "File name length"
+    },
+    "answer": "B",
+    "explanation": "Latency is the time delay in network communication."
+  },
+  {
+    "id": 189,
+    "domain": "Networking",
+    "question": "What can improve a weak Wi-Fi signal?",
+    "options": {
+      "A": "Move closer to the access point",
+      "B": "Increase font size",
+      "C": "Rename a document",
+      "D": "Mute the speakers"
+    },
+    "answer": "A",
+    "explanation": "Moving closer can reduce distance and obstacles that weaken Wi-Fi."
+  },
+  {
+    "id": 190,
+    "domain": "Networking",
+    "question": "Should you use an unknown public Wi-Fi for sensitive work?",
+    "options": {
+      "A": "Share your password",
+      "B": "Disable encryption",
+      "C": "Trust its name alone",
+      "D": "Follow approved secure access rules"
+    },
+    "answer": "D",
+    "explanation": "Follow workplace rules and use approved protections for sensitive work."
+  },
+  {
+    "id": 191,
+    "domain": "Cloud",
+    "question": "What is cloud storage used for?",
+    "options": {
+      "A": "Storing files on remote servers",
+      "B": "Cooling laptops",
+      "C": "Changing keyboard keys",
+      "D": "Adding physical RAM"
+    },
+    "answer": "A",
+    "explanation": "Cloud storage keeps files on a provider's remote systems."
+  },
+  {
+    "id": 192,
+    "domain": "Cloud",
+    "question": "What does synchronising files usually do?",
+    "options": {
+      "A": "Turn off networking",
+      "B": "Keep copies updated",
+      "C": "Destroy every backup",
+      "D": "Print all files"
+    },
+    "answer": "B",
+    "explanation": "Synchronisation updates files across connected locations."
+  },
+  {
+    "id": 193,
+    "domain": "Cloud",
+    "question": "Is file synchronisation always a separate backup?",
+    "options": {
+      "A": "Only on Mondays",
+      "B": "Always",
+      "C": "No",
+      "D": "Only with large files"
+    },
+    "answer": "C",
+    "explanation": "Synchronisation may also copy deletions or damage, so it is not always a separate backup."
+  },
+  {
+    "id": 194,
+    "domain": "Cloud",
+    "question": "What does read-only access normally allow?",
+    "options": {
+      "A": "Delete every file",
+      "B": "Become an administrator",
+      "C": "Change all permissions",
+      "D": "View without changing"
+    },
+    "answer": "D",
+    "explanation": "Read-only access allows viewing while restricting changes."
+  },
+  {
+    "id": 195,
+    "domain": "Cloud",
+    "question": "Why review access when someone leaves a workplace?",
+    "options": {
+      "A": "Keep all accounts active",
+      "B": "Publish their password",
+      "C": "Remove unneeded access",
+      "D": "Disable everyone's MFA"
+    },
+    "answer": "C",
+    "explanation": "Remove access that is no longer authorised or needed."
+  },
+  {
+    "id": 196,
+    "domain": "Cloud",
+    "question": "What should you check before making a cloud file public?",
+    "options": {
+      "A": "Its window size",
+      "B": "Its font colour",
+      "C": "Its zoom level",
+      "D": "Whether public sharing is approved"
+    },
+    "answer": "D",
+    "explanation": "Public sharing can expose information and needs appropriate authorisation."
+  },
+  {
+    "id": 197,
+    "domain": "Cloud",
+    "question": "Which account is safer for routine everyday tasks?",
+    "options": {
+      "A": "Shared administrator account",
+      "B": "Unknown guest administrator",
+      "C": "Someone else's account",
+      "D": "Standard user account"
+    },
+    "answer": "D",
+    "explanation": "A standard account limits privileges for everyday work."
+  },
+  {
+    "id": 198,
+    "domain": "Cloud",
+    "question": "What is an audit trail?",
+    "options": {
+      "A": "A file format",
+      "B": "A keyboard shortcut",
+      "C": "A cooling method",
+      "D": "A record of actions"
+    },
+    "answer": "D",
+    "explanation": "An audit trail records actions so they can be reviewed."
+  },
+  {
+    "id": 199,
+    "domain": "Cloud",
+    "question": "Which action reduces risk from an unused account?",
+    "options": {
+      "A": "Disable it under policy",
+      "B": "Share its password",
+      "C": "Make it public",
+      "D": "Grant it admin rights"
+    },
+    "answer": "A",
+    "explanation": "Unused accounts should be managed or disabled according to policy."
+  },
+  {
+    "id": 200,
+    "domain": "Cloud",
+    "question": "What should you do before using AI with confidential work data?",
+    "options": {
+      "A": "Upload everything",
+      "B": "Ignore privacy policy",
+      "C": "Share customer passwords",
+      "D": "Check approved data rules"
+    },
+    "answer": "D",
+    "explanation": "Follow workplace rules on approved AI tools and permitted data."
   }
 ]

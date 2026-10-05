@@ -205,7 +205,6 @@
             <section class="question-card">
                 <div class="question-meta">
                     <span id="domain">DOMAIN: ---</span>
-                    <span id="tier" class="tier easy">EASY</span>
                 </div>
                 <div class="combat-actions" id="combat-actions">
                     <button data-action="attack" onclick="selectCombatAction('attack')"><strong><img src="/static/assets/pixel/icon-1.png" alt=""> ATTACK</strong><span>2 damage and +1 Focus; surviving enemies hit back</span></button>
@@ -575,7 +574,7 @@
         function renderEnemy(enemy) {
             const card = document.getElementById('enemy-card');
             const stage = Math.max(1,Math.min(15,currentState?.room || 1));
-            card.style.backgroundImage = `linear-gradient(#17233066,#17233088),url('/static/assets/pixel/level-${String(stage).padStart(2,'0')}.png?v=${ASSET_REVISION}')`;
+            card.style.backgroundImage = `url('/static/assets/pixel/battle-${Math.ceil(stage/5)}.png?v=${ASSET_REVISION}')`;
             if (!enemy) {
                 document.getElementById('enemy-icon').innerHTML = gameAsset('ui', 'event', 'enemy-portrait');
                 document.getElementById('enemy-kind').textContent = 'EXPLORING';
@@ -742,6 +741,16 @@
         function walkableLocal(dungeon, x, y) {
             const r = .23;
             const [left,top,right,bottom] = dungeon.floor_bounds || [0,0,dungeon.width,dungeon.height];
+            if (dungeon.walk_tiles) {
+                for(let row=Math.floor((y-r)/.5);row<=Math.floor((y+r)/.5);row++) {
+                    for(let col=Math.floor((x-r)/.5);col<=Math.floor((x+r)/.5);col++) {
+                        if(dungeon.walk_tiles[row]?.[col]==='1')continue;
+                        const nx=Math.max(col*.5,Math.min(x,(col+1)*.5));
+                        const ny=Math.max(row*.5,Math.min(y,(row+1)*.5));
+                        if(Math.hypot(x-nx,y-ny)<r)return false;
+                    }
+                }
+            }
             return x > left+r && y > top+r && x < right-r && y < bottom-r &&
                 (dungeon.solid_walls||[]).every(([ox,oy,w,h])=>!(x>ox-r&&x<ox+w+r&&y>oy-r&&y<oy+h+r)) &&
                 dungeon.obstacles.every(([ox, oy, w, h]) =>
@@ -751,7 +760,8 @@
             if (!heroPosition || !dungeonScene) return;
             const map = document.getElementById('dungeon-map');
             const p = arenaPoint(heroPosition.x, heroPosition.y);
-            const viewportHeight = map.clientHeight > map.clientWidth ? 620 : 400;
+            // Portrait phones show a broad navigable area rather than a giant sprite.
+            const viewportHeight = Math.min(dungeonScene.height * 72, map.clientHeight > map.clientWidth ? 900 : 680);
             const viewportWidth = viewportHeight * map.clientWidth / Math.max(1,map.clientHeight);
             const x = Math.max(0, Math.min(dungeonScene.width * 72 - viewportWidth, p.x - viewportWidth/2));
             const y = Math.max(0, Math.min(dungeonScene.height * 72 - viewportHeight, p.y - viewportHeight/2));
@@ -765,7 +775,7 @@
             document.getElementById('dungeon-remaining').textContent = data.dungeon.remaining;
             document.getElementById('dungeon-status').textContent = data.dungeon.mode === 'market' ? 'THE LANTERN MARKET' : data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
                 [5, 10, 15].includes(data.room) ? 'THE BOSS AWAITS' : 'HUNT EVERY ENEMY';
-            document.getElementById('dungeon-theme-label').textContent = data.dungeon.mode === 'market' ? 'THE LANTERN MARKET' : `${data.dungeon.theme.toUpperCase()} · LEVEL ${data.room}`;
+            document.getElementById('dungeon-theme-label').textContent = data.dungeon.mode === 'market' ? 'THE LANTERN MARKET' : `${data.dungeon.stage_name || data.dungeon.theme.toUpperCase()} · ${data.room}`;
         }
         function renderDungeon(data) {
             const dungeon = data.dungeon;
@@ -866,7 +876,7 @@
             for (const enemy of dungeon.enemies) {
                 if (enemy.defeated) continue;
                 const boss = enemy.kind.includes('BOSS');
-                actorNode(enemy,boss?'boss':'enemy',enemy.enemy_id,boss?205:132,boss?205:132,true);
+                actorNode(enemy,boss?'boss':'enemy',enemy.enemy_id,boss?180:96,boss?180:96,true);
                 roamVisuals.set(enemy.uid, {x: enemy.x, y: enemy.y});
             }
             if (dungeon.mode === 'market' && dungeon.feature) {
@@ -879,7 +889,7 @@
             for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', `/static/assets/pixel/chest.png?v=${ASSET_REVISION}`, 48, 48);
             actorNode(dungeon.exit,
                 'exit', 'portal', 80, 80,true);
-            actorNode(dungeon.player, 'hero', 'hero', 132, 132,true);
+            actorNode(dungeon.player, 'hero', 'hero', 96, 96,true);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
                 const p = arenaPoint(pendingDefeat.x, pendingDefeat.y);
                 const meta = PIXEL_ASSETS.actors[pendingDefeat.id];
@@ -1102,9 +1112,6 @@
 
         function renderQuestion(data) {
             document.getElementById('domain').textContent = `DOMAIN: ${data.domain}`;
-            const tier = document.getElementById('tier');
-            tier.textContent = data.tier;
-            tier.className = `tier ${data.tier.toLowerCase()}`;
             document.getElementById('question').textContent = data.question;
             const area = document.getElementById('options');
             area.innerHTML = '';

@@ -282,4 +282,7 @@ save(title,'title-room.png');save(Image.open(OUT/'level-05.png'),'battle-room.pn
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 (OUT/'effects-license.txt').write_bytes((FX/'license.txt').read_bytes())
 (ROOT/'ASSET_CREDITS.md').write_text('''# Game asset credits\n\n- Pixel Crawler Free Pack 2.11 — Anokolisa. Source: https://anokolisa.itch.io/dungeon-crawler-pixel-art-asset-pack\n- Super Pixel Effects Gigapack Free Version 3.0.0 — Will Tice / unTied Games. Selected effects are integrated into the game at their original 15 FPS. See static/assets/pixel/effects-license.txt.\n- VT323 — Peter Hull; Silkscreen — Jason Kottke. SIL Open Font License; included under static/fonts.\n- Leviathan, Death and Dragon four-frame idle sprites — generated for this game using Pixel Crawler as the visual reference.\n\nThe supplied ZIP archives are not redistributed. These selected runtime assets form part of the game, not a reusable asset pack.\n''')
+if (ROOT.parent/'craftpix').exists():
+ from build_craftpix_stages import build_stages
+ build_stages(ROOT.parent/'craftpix')
 print('Built',len(list(OUT.glob('*.png'))),'pixel assets')

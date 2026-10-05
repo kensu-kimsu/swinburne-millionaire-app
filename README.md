@@ -88,18 +88,16 @@ statistics remain available until the player resets all progress.
 
 | Stages | Area | Questions | Boss |
 |---|---|---|---|
-| 1–5 | Network Perimeter | Easy | Cyber Leviathan |
-| 6–10 | Internal Network | Medium | Death Protocol |
-| 11–15 | Root Layer | Hard | The Root Dragon |
+| 1–5 | Craftpix Dungeon | Beginner pool | Cyber Leviathan |
+| 6–10 | Craftpix Undead | Beginner pool | Death Protocol |
+| 11–15 | Craftpix Cursed Land | Beginner pool | The Root Dragon |
 
-The game contains 300 questions:
-
-- `questions.json`: 100 Easy questions
-- `questions_medium.json`: 100 Medium questions
-- `questions_hard.json`: 100 Hard questions
-
-All prompts are capped at 100 characters and every answer choice at 60
-characters. Standard battles allow 45 seconds; Time Compression allows 30.
+`questions.json` contains the only active bank: 200 beginner questions. The
+original 100 prompts have concise wording and 100 new questions cover hardware,
+files, Windows, internet use, passwords, privacy, recovery, networking and cloud
+basics. Medium and hard banks are disabled and removed. Battles show the subject
+without a difficulty badge. Normal battles allow 30 seconds, haste enemies 25,
+bosses 20 and the final boss 15.
 
 ## Dungeon floors and encounters
 
@@ -108,19 +106,16 @@ Elite status is rolled independently at a 22% chance. Floors 5, 10, and 15
 contain only the centered boss, with no ordinary monsters or support encounters.
 The exit remains sealed until every encounter on the floor is defeated.
 
-All fifteen levels have unique painted backgrounds and fixed obstacle layouts
-in an 18 by 11 world. A camera follows the hero around the full-screen arena;
-the visible floor boundary and small obstacles stop the hero and roaming
-enemies. Floors 1–5 use catacombs, 6–10 the temple, and 11–15 the foundry,
-with special Atlantis, graveyard and inferno paintings on boss levels.
-Painted ruins and volcanic rubble share the same footprint as their collision.
-The market has no obstacles. Each level's portal animation sits in front of
+The 15 authored tile maps use connected chambers, loops, broad corridors and
+side rooms in an 18 by 11 world. `stage_layouts.py` supplies the same half-unit
+floor grid to the renderer, server collision and browser collision. Pools and
+void tiles are blocked; props have solid collision at their bases. Boss floors
+have open ritual arenas and four corner pools. Each level's portal sits at
 its painted door, stays dim until enemies are defeated, and announces when open.
 
-Supply chests appear on normal floors with a 38% chance and contain item or
-relic choices. Battles award recovery, and dungeon loot is collected from chests.
-After a cleared floor, a 30% chance opens a separate desolated market interlude.
-The market has its own map and merchant near its exit; entering and leaving it
+Supply chests appear on normal floors with a 38% chance and grant a random item, relic or credits immediately. Battles award recovery, and dungeon loot is collected from chests.
+After a cleared floor, a 30% chance opens a separate lively market interlude.
+The market has its own map and merchant in a central shop; entering and leaving it
 does not add to the fifteen-level counter. The merchant sells items for credits.
 
 ## Consumable items
@@ -256,7 +251,7 @@ The automated suite checks the authored maps, map collision,
 locked exits, battle-to-map return, Focus requirements, hidden intentions,
 danger and lethal warnings, post-fight healing, support encounter rules,
 question-length limits, all three combat actions, simultaneous damage, Zero
-Trust, boss phases, combos, question difficulty,
+Trust, boss phases, combos, the single beginner question bank,
 question-bank integrity, rewards, routes, inventory, enemy abilities, boss
 timers, random elite ambushes, boss crowd-control spells, encyclopedia detail
 data, progress reset, browser session size, and the custom audiovisual asset
@@ -266,9 +261,8 @@ bundle.
 
 ```text
 app.py                    Flask routes, authored dungeon layouts, combat and progression
-questions.json            100 Easy questions
-questions_medium.json     100 Medium questions
-questions_hard.json       100 Hard questions
+questions.json            200 beginner questions (only active bank)
+stage_layouts.py          Shared authored floor grid and prop bases
 templates/index.html      Game interface and browser logic
 static/style.css          Responsive exploration and battle design
 static/assets/audio/      Original generated adventure sound set
@@ -363,11 +357,31 @@ Music and SFX use one Web Audio context resumed directly by a user gesture,
 with HTML audio as a fallback. Tracks, mute and ticking cleanup are tested.
 This follows MDN's Web Audio autoplay guidance, including Firefox activation.
 
-Interior walls use the same rectangular collision coordinates in the renderer
-and server. A reachability test checks every enemy, chest and exit in all 15
+Floor cells and prop bases share collision coordinates in the renderer,
+browser and server. A reachability test checks every enemy, chest and exit in all 15
 rooms. Boss arenas retain open ritual floors; the market has grass paths,
 shops, trees and animated villagers.
 
 For a manual phone viewport check open `/static/mobile-check.html`, choose a
 portrait or landscape size, and play inside the frame. Run the existing checks
 plus `node scripts/test_combat_upgrade.cjs`.
+
+## Craftpix stages and mobile layout
+
+Extract each of the four supplied Craftpix ZIPs into a directory under
+`../craftpix` named after its ZIP (without `.zip`). Rebuild selected stage assets:
+
+```bash
+python scripts/build_craftpix_stages.py --packs ../craftpix
+python -m unittest -q
+node scripts/test_tile_collision.cjs
+```
+
+The pack's castle, graveyard and forest side-view battlegrounds are used for
+combat rather than zooming a top-down dungeon painting behind fighters. Phone
+battle grids explicitly use zero minimum column widths, wrap answer text and
+keep the enemy and all four commands within the viewport. The portrait camera
+is bounded by the map height, and exploration sprites leave more paths visible.
+Reachability checks include all 15 spawns, enemies, chests and exits; browser and
+server collision are compared at 47,520 positions. Runtime art and supplied
+license notices are shipped; source archives remain outside the repository.

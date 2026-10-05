@@ -31,12 +31,7 @@ class RoguelikeGameTests(unittest.TestCase):
     def answer_for_current_question(self):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
-            if state["current_room"] <= 5:
-                tier = "EASY"
-            elif state["current_room"] <= 10:
-                tier = "MEDIUM"
-            else:
-                tier = "HARD"
+            tier = "EASY"
             position = state["question_positions"][tier]
             question_index = state["question_orders"][tier][position]
         return load_questions(tier)[question_index]["answer"]
@@ -104,13 +99,13 @@ class RoguelikeGameTests(unittest.TestCase):
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
             state['dungeon']['last_roam_at'] = 100
-            state['dungeon']['enemies'][0].update(x=6.5, y=5.5, vx=.001, vy=0)
+            state['dungeon']['enemies'][0].update(x=6.5, y=8.5, vx=.001, vy=0)
             flask_session['game_state'] = state
         with patch('app.time.monotonic', return_value=101), patch('app.random.random', return_value=1):
             result = self.client.post('/api/dungeon/move', json={'x':1.8, 'y':9.4}).get_json()
         enemy = result['dungeon']['enemies'][0]
         self.assertAlmostEqual(enemy['x'], 7.15)
-        self.assertAlmostEqual(enemy['y'], 5.5)
+        self.assertAlmostEqual(enemy['y'], 8.5)
         self.assertTrue(walkable(result['dungeon'], enemy['x'], enemy['y'], .35))
 
     def test_illustrated_arenas_and_joystick_assets_are_available(self):
@@ -126,9 +121,9 @@ class RoguelikeGameTests(unittest.TestCase):
 
     def test_boss_arena_has_only_the_centered_boss(self):
         from app import create_dungeon_floor
-        for stage, theme, boss in ((5, "atlantis", "phishing_king"),
-                                   (10, "graveyard", "ransomware_overlord"),
-                                   (15, "inferno", "root_admin")):
+        for stage, theme, boss in ((5, "dungeon", "phishing_king"),
+                                   (10, "undead", "ransomware_overlord"),
+                                   (15, "cursedland", "root_admin")):
             with self.client.session_transaction() as flask_session:
                 state = flask_session["game_state"]
                 state["current_room"] = stage
@@ -229,9 +224,10 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertTrue(returned["dungeon"]["enemies"][0]["defeated"])
 
     def test_fifteen_authored_maps_have_reachable_exits_and_distinct_layouts(self):
-        from app import LEVEL_LAYOUTS, create_dungeon_floor, walkable
-        self.assertEqual(len(LEVEL_LAYOUTS), 15)
-        self.assertEqual(len({tuple(layout) for layout in LEVEL_LAYOUTS}), 15)
+        from app import create_dungeon_floor, walkable
+        from stage_layouts import STAGES
+        self.assertEqual(len(STAGES), 15)
+        self.assertEqual(len({stage["name"] for stage in STAGES}), 15)
         self.client.post('/api/start')
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
@@ -247,28 +243,27 @@ class RoguelikeGameTests(unittest.TestCase):
                 self.assertFalse(walkable(dungeon, 9, 1), stage)
                 self.assertFalse(walkable(dungeon, .2, 5), stage)
                 self.assertLessEqual(max(w for x,y,w,h in dungeon['obstacles']), 1.16)
-                self.assertGreater((Path(__file__).parent/f'static/assets/dungeon/level-{stage:02}.webp').stat().st_size, 10000)
+                self.assertGreater((Path(__file__).parent/f'static/assets/pixel/level-{stage:02}.png').stat().st_size, 1000)
                 self.assertEqual(len(dungeon['enemies']), 1 if stage % 5 == 0 else 3)
                 self.assertEqual(dungeon['theme'],
-                    {5:'atlantis',10:'graveyard',15:'inferno'}.get(stage,
-                    ('catacomb','temple','foundry')[(stage-1)//5]))
+                    ('dungeon','undead','cursedland')[(stage-1)//5])
             flask_session['game_state'] = state
 
     def test_every_background_is_unique_and_off_floor_movement_is_rejected(self):
         import hashlib
-        root = Path(__file__).parent/'static/assets/dungeon'
-        digests = {hashlib.sha256((root/f'level-{i:02}.webp').read_bytes()).hexdigest()
+        root = Path(__file__).parent/'static/assets/pixel'
+        digests = {hashlib.sha256((root/f'level-{i:02}.png').read_bytes()).hexdigest()
                    for i in range(1,16)}
         self.assertEqual(len(digests),15)
         self.client.post('/api/start')
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
-            state['dungeon']['player'] = {'x':1.6,'y':3.2}
+            state['dungeon']['player'] = {'x':1.6,'y':9.4}
             flask_session['game_state'] = state
-        result = self.client.post('/api/dungeon/move',json={'x':.9,'y':3.2}).get_json()
+        result = self.client.post('/api/dungeon/move',json={'x':.9,'y':9.4}).get_json()
         self.assertTrue(walkable(result['dungeon'], **result['dungeon']['player']))
         self.assertGreaterEqual(result['dungeon']['player']['x'], 1.23)
-        self.assertEqual(result['dungeon']['player']['y'], 3.2)
+        self.assertEqual(result['dungeon']['player']['y'], 9.4)
 
     def test_obstacles_stop_player_and_enemies(self):
         self.client.post('/api/start')
@@ -457,8 +452,8 @@ class RoguelikeGameTests(unittest.TestCase):
                 self.assertEqual(arena['portal_visual']['x'], arena['exit']['x'])
                 self.assertEqual(arena['portal_visual']['y'], arena['exit']['y'])
                 self.assertEqual(len(arena['decor']), len(FIRE_FIXTURES[stage-1]))
-                if stage == 10: self.assertEqual(arena['exit']['x'], 9.0)
-            self.assertEqual(state['dungeon']['exit']['x'], 16.4)
+                self.assertEqual(arena['exit']['x'], 16.0)
+            self.assertEqual(state['dungeon']['exit']['x'], 16.0)
 
     def test_first_boss_portal_advances_when_approached_from_below(self):
         from app import create_dungeon_floor
@@ -541,7 +536,7 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertIsNone(data["enemy"])
         self.assertEqual(data["pending"], "complete")
 
-    def test_rooms_use_the_correct_difficulty_bank(self):
+    def test_all_rooms_use_only_beginner_questions(self):
         expected_tiers = [(1, "EASY"), (6, "MEDIUM"), (11, "HARD")]
 
         for room, expected_tier in expected_tiers:
@@ -554,10 +549,28 @@ class RoguelikeGameTests(unittest.TestCase):
             response = self.client.get("/api/question")
             data = response.get_json()
 
-            self.assertEqual(data["tier"], expected_tier)
+            self.assertNotIn("tier", data)
+            self.assertIn(data["question"], {q["question"] for q in load_questions()})
+
+    def test_beginner_bank_is_the_only_active_bank_and_label_is_absent(self):
+        from app import QUESTION_FILES
+        self.assertEqual(QUESTION_FILES, {"EASY":"questions.json"})
+        self.assertEqual(len(load_questions()),200)
+        with self.client.session_transaction() as flask_session:
+            state=flask_session['game_state']
+            self.assertEqual(set(state['question_orders']),{'EASY'})
+            self.assertEqual(len(state['question_orders']['EASY']),200)
+        page=self.client.get('/').get_data(as_text=True)
+        self.assertNotIn('id="tier"',page)
+
+    def test_floor_grid_rejects_void_and_player_can_use_a_visible_corridor(self):
+        data=self.client.post('/api/start').get_json()['dungeon']
+        self.assertFalse(walkable(data,6.5,5.5))
+        self.assertTrue(walkable(data,8,8.5))
+        self.assertTrue(walkable(data,**data['player']))
 
     def test_question_banks_are_complete_and_valid(self):
-        expected_counts = {"EASY": 100, "MEDIUM": 100, "HARD": 100}
+        expected_counts = {"EASY": 200}
         all_ids = set()
 
         for tier, expected_count in expected_counts.items():
@@ -918,8 +931,8 @@ class RoguelikeGameTests(unittest.TestCase):
         self.client.post('/api/start')
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
-            state['dungeon']['player'] = {'x':5, 'y':5.5}
-            state['dungeon']['enemies'][0].update(x=6.5, y=5.5, vx=1, vy=0)
+            state['dungeon']['player'] = {'x':5, 'y':8.8}
+            state['dungeon']['enemies'][0].update(x=6.5, y=8.8, vx=1, vy=0)
             uid = state['dungeon']['enemies'][0]['uid']
             state['dungeon']['last_roam_at'] = 100
             flask_session['game_state'] = state
@@ -928,10 +941,10 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(older_reply['status'], 'roaming')
         self.assertGreater(older_reply['dungeon']['enemies'][0]['x'], 7)
         with patch('app.time.monotonic', return_value=101.1), patch('app.random.random', return_value=1):
-            contact = self.client.post('/api/dungeon/move', json={'x':6, 'y':5.5, 'contact_uid':uid}).get_json()
+            contact = self.client.post('/api/dungeon/move', json={'x':6, 'y':8.8, 'contact_uid':uid}).get_json()
         self.assertEqual(contact['status'], 'moved')  # First movement is capped.
         with patch('app.time.monotonic', return_value=101.3), patch('app.random.random', return_value=1):
-            contact = self.client.post('/api/dungeon/move', json={'x':6, 'y':5.5, 'contact_uid':uid}).get_json()
+            contact = self.client.post('/api/dungeon/move', json={'x':6, 'y':8.8, 'contact_uid':uid}).get_json()
         self.assertEqual(contact['status'], 'encounter_started')
         with self.client.session_transaction() as flask_session:
             self.assertEqual(flask_session['game_state']['current_enemy_uid'], uid)
