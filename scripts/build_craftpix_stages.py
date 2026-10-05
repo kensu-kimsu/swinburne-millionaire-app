@@ -53,6 +53,7 @@ def build_stages(packs):
     for px in range(x*16,(x+w)*16,32):
      ripple=water.crop((0,0,32,16))
      if theme: ripple=ImageEnhance.Color(ripple).enhance(.15)
+     ripple=ripple.crop((0,0,min(32,(x+w)*16-px),min(16,(y+h)*16-py)))
      canvas.alpha_composite(ripple,(px,py))
   # Edge tiles on blocked cells make the walking boundaries visible. Dungeon
   # uses stone; outdoors uses the pack's cliff faces and broken root edges.
@@ -67,10 +68,18 @@ def build_stages(packs):
      canvas.alpha_composite(tile,(x*16,y*16))
      if neighbours[0]:draw.line((x*16,y*16+15,x*16+15,y*16+15),fill='#292b40',width=2)
     else:
-     if neighbours[1]:tile=cell(sheet,7,9 if theme==1 else 4)
-     elif neighbours[0]:tile=cell(sheet,7,1 if theme==1 else 0)
-     else:tile=cell(sheet,5 if neighbours[2] else 8,3 if theme==1 else 4)
-     canvas.alpha_composite(tile,(x*16,y*16))
+     if neighbours[1]:
+      # Three native cliff/root pieces form a connected drop below the floor.
+      for depth in range(3):
+       if y+depth>=HEIGHT or floor(x,y+depth):break
+       tile=cell(sheet,16 if theme==1 else 8,(1+depth) if theme==1 else (4+depth))
+       canvas.alpha_composite(tile,(x*16,(y+depth)*16))
+     elif neighbours[0]:
+      # A narrow dark rim does not pretend to be another walkable floor tile.
+      draw.line((x*16,y*16+15,x*16+15,y*16+15),fill=('#4b5551','#653530')[theme-1],width=2)
+     else:
+      tile=cell(sheet,5 if neighbours[2] else 9,2 if theme==1 else 4)
+      canvas.alpha_composite(tile,(x*16,y*16))
   # Dress the dungeon walls with alcoves, door niches, sacks and treasures.
   if theme==0:
    arch=sheet.crop((48,288,80,336))

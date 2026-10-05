@@ -1006,7 +1006,11 @@ def index():
         pixel_assets = json.load(asset_file)
     with open(os.path.join(app.static_folder, "pixel.css"), "rb") as css_file:
         revision_bytes = css_file.read()
-    for filename in ("combat.js", "assets/pixel/manifest.json"):
+    # Art-only deployments also invalidate phone/browser image caches.
+    revision_files = ["combat.js", "assets/pixel/manifest.json"]
+    revision_files += [f"assets/pixel/level-{stage:02}.png" for stage in range(1,16)]
+    revision_files += [f"assets/pixel/battle-{theme}.png" for theme in range(1,4)]
+    for filename in revision_files:
         with open(os.path.join(app.static_folder, filename), "rb") as revision_file:
             revision_bytes += revision_file.read()
     pixel_revision = hashlib.sha256(revision_bytes).hexdigest()[:12]

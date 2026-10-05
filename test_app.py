@@ -392,14 +392,22 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(result['damage_dealt'],2)
 
     def test_pixel_styles_are_versioned_for_deployments(self):
-        import hashlib
-        css = b''.join((Path(__file__).parent/'static'/name).read_bytes() for name in ('pixel.css','combat.js','assets/pixel/manifest.json'))
-        revision = hashlib.sha256(css).hexdigest()[:12]
-        page = self.client.get('/').get_data(as_text=True)
-        url = f'/static/pixel.css?v={revision}'
-        self.assertIn(url,page)
-        with self.client.get(url) as response:
+        import re,io,builtins
+        page=self.client.get('/').get_data(as_text=True)
+        revision=re.search(r'/static/pixel.css\?v=([0-9a-f]{12})',page).group(1)
+        self.assertIn(f'/static/combat.js?v={revision}',page)
+        with self.client.get(f'/static/pixel.css?v={revision}') as response:
             self.assertEqual(response.status_code,200)
+        # An artwork-only update must invalidate the same revision too.
+        original_open=builtins.open
+        def changed_art(path,*args,**kwargs):
+            if str(path).endswith('level-06.png'):
+                with original_open(path,'rb') as image:return io.BytesIO(image.read()+b'changed-art')
+            return original_open(path,*args,**kwargs)
+        with patch('app.open',side_effect=changed_art,create=True):
+            updated=self.client.get('/').get_data(as_text=True)
+        updated_revision=re.search(r'/static/pixel.css\?v=([0-9a-f]{12})',updated).group(1)
+        self.assertNotEqual(revision,updated_revision)
 
     def test_portal_and_battle_art_share_map_enemies(self):
         from pathlib import Path
