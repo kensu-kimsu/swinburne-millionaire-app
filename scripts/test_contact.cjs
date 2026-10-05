@@ -11,7 +11,7 @@ const c=vm.createContext({Math,performance:{now:()=>32},setTimeout:fn=>fn(),
  dungeonScene:{enemies:[{x:2.76,y:5,kind:'ENEMY',enemy_id:'spam_bot',uid:'s1-e0',defeated:false}]},
  heroPosition:{x:2,y:5},confirmedHeroPosition:{x:2,y:5},dungeonMoving:false,tickBusy:false,
  encounterPending:false,contactEnemyUid:null,contactRetryAfter:0,battleEntering:false,contactStartedAt:0,heldKeys:new Set(['d']),joystick:{x:0,y:0},
- moveInput:{x:0,y:0},lastFrame:0,lastMoveSent:0,lastMoveAt:0,lastSceneFrame:0});
+ moveInput:{x:0,y:0},lastFrame:0,lastMoveSent:0,lastMoveAt:0,lastSceneFrame:0,lastPortraitFrame:0,animatePixelPortraits(){}});
 vm.runInContext(code,c);
 (async()=>{
  c.movementFrame(16);c.movementFrame(32);

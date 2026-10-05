@@ -211,6 +211,34 @@ ENEMY_PATTERNS = {
     "root_admin": [["meteor", "defend", "heal"], ["heavy_attack", "time_stop", "meteor"]],
 }
 
+# Each enemy keeps its own named signature skill and matching pixel effect.
+SIGNATURE_SKILLS = {
+    "spam_bot": ("credit_drain", "Junk Toll", "junk_toll"),
+    "phishing_email": ("jammer", "False Beacon", "false_beacon"),
+    "adware_bug": ("heal", "Ad Bloom", "ad_bloom"),
+    "botnet_node": ("defend", "Node Bastion", "node_bastion"),
+    "credential_thief": ("credit_drain", "Key Siphon", "key_siphon"),
+    "malware_loader": ("heavy_attack", "Payload Detonation", "payload_burst"),
+    "ransomware": ("encrypt", "Ransom Seal", "ransom_seal"),
+    "insider_threat": ("heavy_attack", "Backdoor Cleave", "backdoor_cleave"),
+    "zero_day_exploit": ("heal", "Zero-Day Rewrite", "zero_rewrite"),
+}
+PIXEL_ENEMY_DESIGNS = {
+    "spam_bot": ("Spam Goblin", "A dungeon goblin who charges a Junk Toll on every delivery."),
+    "phishing_email": ("Phishing Rogue", "A skeletal deceiver whose False Beacon jams your scanner."),
+    "adware_bug": ("Adware Hexer", "An orc shaman who restores vitality with Ad Bloom."),
+    "botnet_node": ("Botnet Sentinel", "An armored skeleton who fortifies the Node Bastion."),
+    "credential_thief": ("Credential Cutpurse", "An orc rogue who steals credits with Key Siphon."),
+    "malware_loader": ("Payload Brute", "An orc warrior whose Payload Detonation delivers a heavy strike."),
+    "ransomware": ("Ransom Lich", "A skeletal mage whose Ransom Seal destroys an inventory item."),
+    "insider_threat": ("Insider Knight", "A fallen violet knight whose Backdoor Cleave punishes weak defenses."),
+    "zero_day_exploit": ("Zero-Day Sorcerer", "An arcane wizard who heals through Zero-Day Rewrite."),
+}
+for tier_enemies in NORMAL_ENEMIES.values():
+    for template in tier_enemies:
+        template["name"], template["description"] = PIXEL_ENEMY_DESIGNS[template["id"]]
+
+
 ROOMS = {
     "combat": {"name": "Combat", "icon": "⚔️", "description": "Fight a normal enemy."},
     "elite": {"name": "Elite Ambush", "icon": "💀", "description": "A 22% surprise upgrade to a Combat encounter, with more HP, damage, and abilities."},
@@ -345,6 +373,10 @@ def room_view(room_id):
 
 def intent_view(intent_id, enemy=None):
     view = {"id": intent_id, **INTENTS[intent_id]}
+    if enemy and enemy["id"] in SIGNATURE_SKILLS:
+        trigger, name, effect = SIGNATURE_SKILLS[enemy["id"]]
+        if intent_id == trigger:
+            view.update(name=name, pixel_effect=effect)
     if enemy and intent_id in {"attack", "heavy_attack"}:
         view["amount"] = enemy["attack"] + (1 if intent_id == "heavy_attack" else 0)
     return view
@@ -899,7 +931,7 @@ def resolve_enemy_intent(state, combat_action, canceled=False):
     detail = intent_view(intent_id, enemy)
     result = {
         "id": intent_id, "name": detail["name"], "icon": detail["icon"],
-        "enemy_id": enemy["id"],
+        "enemy_id": enemy["id"], "pixel_effect": detail.get("pixel_effect"),
         "canceled": canceled, "damage_taken": 0, "blocked_by": None,
         "destroyed_item": None, "answer_lock_seconds": 0,
     }
@@ -984,7 +1016,9 @@ def resolve_enemy_intent(state, combat_action, canceled=False):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    with open(os.path.join(app.static_folder, "assets/pixel/manifest.json")) as asset_file:
+        pixel_assets = json.load(asset_file)
+    return render_template("index.html", pixel_assets=pixel_assets)
 
 
 @app.route("/api/start", methods=["POST"])
@@ -1561,7 +1595,7 @@ def encyclopedia():
                 "attack": enemy_catalog[key].get("attack", 1),
                 "abilities": [ability_view(ability) for ability in enemy_catalog[key]["abilities"]],
                 "patterns": [
-                    [intent_view(intent_id) for intent_id in pattern]
+                    [intent_view(intent_id, {"id":enemy["id"], "attack":1}) for intent_id in pattern]
                     for pattern in ENEMY_PATTERNS[key]
                 ],
             }

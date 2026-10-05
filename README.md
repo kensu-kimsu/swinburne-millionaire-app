@@ -312,15 +312,33 @@ confirmation feedback, victory, defeat, and answer feedback sounds.
 - CSS3
 - Flask signed-cookie sessions for current-run and discovery progress
 
-## Illustrated exploration
+## Pixel dungeon overhaul
 
-The hero moves with a touch or mouse joystick, WASD, or arrow keys.
-A camera follows free movement across each of fifteen authored maps; there is
-no visible tile grid. Painterly four-frame flames and flying fairies animate while
-enemies wander and switch between individual idle and moving frames. The enemy
-sheets are split into four standalone images each to prevent the browser from
-drawing several poses at once. The battle portrait uses the same illustrated
-frame as the map actor. A movement reminder fades in after 20 seconds
-without input. Bosses wait alone at the center of their arenas with particle
-auras. Combat retains readable turn summaries, victory music, and a distinct
-boss fanfare.
+The current game uses Pixel Crawler characters, furniture and tiles with Super
+Pixel Effects in combat. All text uses local VT323 and Silkscreen fonts. The
+battle menu, title, inventory, encyclopedia and merchant screens share the same
+pixel palette. Nine normal enemies have named signature skills and individual
+effects; the three bosses use custom four-frame idle sprites.
+
+The map and battle view share each character's sprite atlas. Idle, run and death
+animations crop one frame at a time, with nearest-neighbor rendering. Maps bake
+obstacles at their collision coordinates. The market has a physical counter,
+shelving and an animated merchant. Effects retain the supplied 15 FPS timing.
+
+See ASSET_CREDITS.md for creator attribution. The original archives are not
+shipped. To rebuild assets, extract the supplied ZIPs into a folder containing
+`Pixel Crawler - Free Pack` and `Super Pixel Effects Gigapack (Free Version)`, then:
+
+```bash
+python -m pip install Pillow
+python scripts/build_pixel_assets.py --packs ../asset-packs
+python -m unittest test_app.py
+node scripts/test_mobile_movement.cjs
+node scripts/test_contact.cjs
+node scripts/test_contact_retry.cjs
+node scripts/test_patrol_audio.cjs
+```
+
+Generated boss-source.png is retained so the build is repeatable. Only current
+actors and looping effects preload during exploration; combat atlases load when
+used to keep mobile downloads small.

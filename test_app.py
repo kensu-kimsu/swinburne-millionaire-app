@@ -341,20 +341,34 @@ class RoguelikeGameTests(unittest.TestCase):
         from pathlib import Path
         root = Path(__file__).parent
         page = (root/'templates/index.html').read_text()
-        self.assertIn("'exit', '/static/assets/dungeon/fx-portal-0.webp'",page)
-        self.assertIn('actorNode(dungeon.exit,', page)
-        self.assertIn('src="/static/assets/dungeon/run-${id}-0.webp"',page)
-        self.assertGreater((root/'static/assets/dungeon/fx-portal-0.webp').stat().st_size,1000)
-        for enemy in ('spam_bot','insider_threat','zero_day_exploit'):
-            for frame in range(4):
-                self.assertGreater((root/f'static/assets/dungeon/run-{enemy}-{frame}.webp').stat().st_size,1000)
-            for frame in range(8):
-                self.assertGreater((root/f'static/assets/dungeon/move-{enemy}-{frame}.webp').stat().st_size,1000)
-        for frame in range(16):
-            self.assertGreater((root/f'static/assets/dungeon/hero-smooth-{frame}.webp').stat().st_size,1000)
-        for frame in range(8):
-            self.assertGreater((root/f'static/assets/dungeon/fx-flame-{frame}.webp').stat().st_size,1000)
-        self.assertGreater((root/'static/assets/dungeon/market-stall.webp').stat().st_size,1000)
+        import json
+        from PIL import Image
+        from app import NORMAL_ENEMIES, BOSSES, SIGNATURE_SKILLS, ENEMY_PATTERNS, intent_view
+        manifest = json.loads((root/'static/assets/pixel/manifest.json').read_text())
+        self.assertIn("'exit', 'portal', 80, 80,true", page)
+        self.assertIn("actorNode(enemy,boss?'boss':'enemy',enemy.enemy_id", page)
+        self.assertIn("return pixelSprite(id,className)", page)
+        ids = {e['id'] for tier in NORMAL_ENEMIES.values() for e in tier} | {e['id'] for e in BOSSES.values()}
+        for actor_id in ids | {'hero','merchant'}:
+            actor = manifest['actors'][actor_id]
+            self.assertGreaterEqual(actor['idle']['frames'],4)
+            for atlas in actor.values():
+                with Image.open(root/atlas['src'].lstrip('/')) as image:
+                    self.assertEqual(image.size,(atlas['width']*atlas['frames'],atlas['height']))
+                    frames = [image.crop((i*atlas['width'],0,(i+1)*atlas['width'],atlas['height'])).tobytes() for i in range(atlas['frames'])]
+                    self.assertGreater(len(set(frames)),1,actor_id)
+        for atlas in manifest['effects'].values():
+            self.assertEqual(atlas['fps'],15)
+            with Image.open(root/atlas['src'].lstrip('/')) as image:
+                self.assertEqual(image.size,(atlas['width']*atlas['frames'],atlas['height']))
+        for enemy_id,(trigger,name,effect) in SIGNATURE_SKILLS.items():
+            self.assertIn(trigger,ENEMY_PATTERNS[enemy_id][0])
+            self.assertIn(effect,manifest['effects'])
+            view=intent_view(trigger,{'id':enemy_id,'attack':2})
+            self.assertEqual((view['name'],view['pixel_effect']),(name,effect))
+        for stage in range(1,16):
+            with Image.open(root/f'static/assets/pixel/level-{stage:02}.png') as image:
+                self.assertEqual(image.size,(576,352))
 
     def test_movement_listeners_do_not_accumulate_and_portal_faces_door(self):
         page = (Path(__file__).parent/'templates/index.html').read_text()

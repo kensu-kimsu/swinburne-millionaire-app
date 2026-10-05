@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swinburne Cyber Dungeon</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pixel.css') }}">
 </head>
 <body>
     <button id="sound-toggle" type="button" aria-label="Enable sound">Enable sound</button>
@@ -47,12 +48,12 @@
     <audio id="music-shop" class="music" src="{{ url_for('static', filename='assets/audio/music_shop.wav') }}" loop preload="none"></audio>
 
     <section id="title-screen" class="screen-overlay">
-        <img class="title-knight" src="{{ url_for('static', filename='assets/dungeon/hero-illustrated.webp') }}" alt="" aria-hidden="true">
+        <img class="title-knight" src="{{ url_for('static', filename='assets/pixel/title-room.png') }}" alt="" aria-hidden="true">
         <p class="eyebrow">A CYBERSECURITY QUIZ ROGUELITE</p>
         <h1>SWINBURNE<br><span>CYBER DUNGEON</span></h1>
         <p class="intro-copy">
-            Move through 15 hand-painted arenas, challenge roaming monsters with
-            your knowledge, and face the leviathan, death and the root dragon.
+            Explore fifteen pixel dungeons. Battle corrupted crews with your knowledge
+            and challenge the Leviathan, Death, and the Root Dragon.
         </p>
         <div class="rules">
             <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-heal"></use></svg>Survive</span>
@@ -94,7 +95,7 @@
         <div class="modal-card shop-card">
             <div class="shop-aurora" aria-hidden="true"></div>
             <header class="merchant-intro">
-                <img src="{{ url_for('static', filename='assets/npcs/cipher_merchant.webp') }}" alt="Cipher the Relic Merchant">
+                <div id="merchant-portrait" aria-label="Cipher the Relic Merchant"></div>
                 <div>
                     <p class="eyebrow">THE DARK WEB MARKET</p>
                     <h2>CIPHER'S RELIC EMPORIUM</h2>
@@ -138,7 +139,7 @@
             <h2 id="dungeon-status">HUNT EVERY ENEMY</h2>
         </div>
         <div class="dungeon-map-wrap">
-            <svg id="dungeon-map" class="dungeon-map" viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Illustrated open arena with roaming enemies"></svg>
+            <svg id="dungeon-map" class="dungeon-map" viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Pixel dungeon with roaming enemies"></svg>
         </div>
         <p id="dungeon-message" class="dungeon-message">Explore the arena. Defeat every enemy to open the exit.</p>
         <div id="move-reminder" class="move-reminder hidden" role="status">Move with WASD / arrow keys or drag the joystick</div>
@@ -154,7 +155,7 @@
             <header class="player-hud">
                 <div class="stat">
                     <span class="stat-label">PLAYER HP</span>
-                    <strong id="player-hp">❤️ 12 / 12</strong>
+                    <strong id="player-hp">HP 12 / 12</strong>
                 </div>
                 <div class="stat">
                     <span class="stat-label">CREDITS</span>
@@ -178,6 +179,7 @@
             <div class="timer-track"><div id="timer-bar"></div></div>
 
             <section class="enemy-card" id="enemy-card">
+                <div class="battle-hero" id="battle-hero" aria-label="Your knight"></div>
                 <div class="enemy-icon" id="enemy-icon">?</div>
                 <div class="enemy-info">
                     <div class="enemy-heading">
@@ -191,7 +193,7 @@
                     <div class="ability-list" id="enemy-abilities"></div>
                     <div class="intent-panel" id="intent-panel">
                         <span>ENEMY ACTION</span>
-                        <strong id="enemy-intent">❓ Hidden</strong>
+                        <strong id="enemy-intent">HIDDEN</strong>
                         <p id="enemy-intent-description">The action is revealed after your turn.</p>
                     </div>
                 </div>
@@ -257,6 +259,7 @@
     </main>
 
     <script>
+        const PIXEL_ASSETS = {{ pixel_assets|tojson }};
         let selectedAnswer = null;
         let selectedCombatAction = null;
         let timerInterval = null;
@@ -298,12 +301,9 @@
         let heroFramePath = '';
         const arenaFrameCache = new Map();
         function preloadArenaFrames(dungeon) {
-            const paths = Array.from({length:16}, (_,i) => `/static/assets/dungeon/hero-smooth-${i}.webp`);
-            if (dungeon.decor?.some(item => item.kind === 'flame'))
-                for (let i=0;i<8;i++) paths.push(`/static/assets/dungeon/fx-flame-${i}.webp`);
-            for (const id of new Set(dungeon.enemies.filter(enemy => !enemy.defeated && !enemy.kind.includes('BOSS'))
-                    .map(enemy => enemy.enemy_id)))
-                for (let i=0;i<8;i++) paths.push(`/static/assets/dungeon/move-${id}-${i}.webp`);
+            const actors = ['hero','merchant',...dungeon.enemies.filter(enemy => !enemy.defeated).map(enemy => enemy.enemy_id)];
+            const paths = actors.flatMap(id => Object.values(PIXEL_ASSETS.actors[id] || {}).map(meta => meta.src));
+            paths.push(PIXEL_ASSETS.effects.portal.src, PIXEL_ASSETS.effects.fire.src);
             for (const path of paths) if (!arenaFrameCache.has(path)) {
                 const asset = new Image(); asset.src = path;
                 arenaFrameCache.set(path, asset);
@@ -314,6 +314,7 @@
         let soundEnabled = true;
         let effectsUnlocked = false;
         let lastActorTime = 0;
+        let lastPortraitFrame = 0;
         const ICON_SPRITE = "{{ url_for('static', filename='assets/ui/game-icons.svg') }}";
         const ENEMY_ART_BASE = "{{ url_for('static', filename='assets/enemies/') }}";
         const ILLUSTRATED_ENEMIES = new Set([
@@ -440,15 +441,38 @@
             setMusic('music-hard');
         }
 
+        function pixelSprite(id, className = '') {
+            const meta = PIXEL_ASSETS.actors[id]?.idle;
+            if (!meta) return '';
+            return `<svg class="game-asset pixel-sprite ${className}" data-actor="${id}" viewBox="0 0 ${meta.width} ${meta.height}" aria-hidden="true"><image href="${meta.src}" width="${meta.width*meta.frames}" height="${meta.height}" /></svg>`;
+        }
+
         function gameAsset(kind, id, className = '') {
-            const illustratedBosses = {phishing_king: 'boss-leviathan', ransomware_overlord: 'boss-death', root_admin: 'boss-dragon'};
-            if (kind === 'enemy' && illustratedBosses[id]) {
-                return `<img class="game-asset ${className}" src="/static/assets/dungeon/${illustratedBosses[id]}.webp" alt="">`;
-            }
-            if (kind === 'enemy' && ILLUSTRATED_ENEMIES.has(id)) {
-                return `<img class="game-asset ${className}" src="/static/assets/dungeon/run-${id}-0.webp" alt="">`;
-            }
-            return `<svg class="game-asset ${className}" aria-hidden="true"><use href="${ICON_SPRITE}#${kind}-${id}"></use></svg>`;
+            if (kind === 'enemy' && PIXEL_ASSETS.actors[id]) return pixelSprite(id,className);
+            let hash = 0;
+            for (const char of `${kind}-${id}`) hash = (hash*31 + char.charCodeAt(0)) >>> 0;
+            return `<img class="game-asset pixel-icon ${className}" src="${PIXEL_ASSETS.icons[String(hash%12)]}" alt="">`;
+        }
+
+        function updateAtlas(image, meta, time) {
+            if (!image || !meta) return;
+            if (image.getAttribute('href') !== meta.src) image.setAttribute('href',meta.src);
+            image.setAttribute('width',meta.width*meta.frames);
+            image.setAttribute('height',meta.height);
+            const x = -(Math.floor(time*meta.fps/1000)%meta.frames)*meta.width;
+            if (image.getAttribute('x') !== String(x)) image.setAttribute('x',x);
+        }
+
+        function setArenaSprite(group, id, action, time) {
+            const meta = PIXEL_ASSETS.actors[id]?.[action] || PIXEL_ASSETS.actors[id]?.idle;
+            if (group && meta) updateAtlas(group.querySelector('.pixel-frame'),meta,time);
+        }
+
+        function animatePixelPortraits(time) {
+            document.querySelectorAll('svg.pixel-sprite').forEach(node => {
+                if (node.closest('.hidden')) return;
+                updateAtlas(node.querySelector('image'),PIXEL_ASSETS.actors[node.dataset.actor]?.idle,time);
+            });
         }
 
         function stopTimer() {
@@ -519,7 +543,7 @@
 
         function renderState(data) {
             currentState = data;
-            document.getElementById('player-hp').textContent = `❤️ ${data.hp} / ${data.max_hp}`;
+            document.getElementById('player-hp').textContent = `HP ${data.hp} / ${data.max_hp}`;
             document.getElementById('credits').textContent = data.credits;
             document.getElementById('combo').textContent = `x${data.combo}`;
             document.getElementById('focus').textContent = '◆'.repeat(data.focus) + '◇'.repeat(data.max_focus - data.focus);
@@ -547,6 +571,7 @@
                 return;
             }
             document.getElementById('enemy-icon').innerHTML = gameAsset('enemy', enemy.id, 'enemy-portrait');
+            document.getElementById('battle-hero').innerHTML = pixelSprite('hero');
             document.getElementById('enemy-kind').textContent = enemy.kind;
             document.getElementById('enemy-name').textContent = enemy.name;
             document.getElementById('enemy-hp-text').textContent = `${enemy.hp} / ${enemy.max_hp} HP`;
@@ -620,8 +645,8 @@
 
         function renderEffects(effects) {
             const active = [];
-            if (effects.firewall) active.push(`🛡️ Firewall ×${effects.firewall}`);
-            if (effects.sandbox) active.push(`🧪 Sandbox ×${effects.sandbox}`);
+            if (effects.firewall) active.push(`Firewall ×${effects.firewall}`);
+            if (effects.sandbox) active.push(`Sandbox ×${effects.sandbox}`);
             document.getElementById('active-effects').textContent = active.join(' • ') || 'None';
         }
 
@@ -719,9 +744,9 @@
             document.getElementById('dungeon-floor').textContent = data.dungeon.mode === 'market' ? `MARKET · ${data.room} / ${data.total_rooms}` : `${data.room} / ${data.total_rooms}`;
             document.getElementById('dungeon-hp').textContent = `${data.hp} / ${data.max_hp}`;
             document.getElementById('dungeon-remaining').textContent = data.dungeon.remaining;
-            document.getElementById('dungeon-status').textContent = data.dungeon.mode === 'market' ? 'THE DESOLATED MARKET' : data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
+            document.getElementById('dungeon-status').textContent = data.dungeon.mode === 'market' ? 'THE LANTERN MARKET' : data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
                 [5, 10, 15].includes(data.room) ? 'THE BOSS AWAITS' : 'HUNT EVERY ENEMY';
-            document.getElementById('dungeon-theme-label').textContent = data.dungeon.mode === 'market' ? 'THE DESOLATED MARKET' : `${data.dungeon.theme.toUpperCase()} · LEVEL ${data.room}`;
+            document.getElementById('dungeon-theme-label').textContent = data.dungeon.mode === 'market' ? 'THE LANTERN MARKET' : `${data.dungeon.theme.toUpperCase()} · LEVEL ${data.room}`;
         }
         function renderDungeon(data) {
             const dungeon = data.dungeon;
@@ -765,26 +790,19 @@
                 for (const [attribute, value] of Object.entries(attrs)) node.setAttribute(attribute, value);
                 parent.appendChild(node); return node;
             };
-            const background = dungeon.mode === 'market' ? 'arena-market' : `level-${String(data.room).padStart(2,'0')}`;
-            svg('image', {href: `/static/assets/dungeon/${background}.webp`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
+            const background = dungeon.mode === 'market' ? 'market' : `level-${String(data.room).padStart(2,'0')}`;
+            svg('image', {href: `/static/assets/pixel/${background}.png`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
                 preserveAspectRatio: 'none', class: 'stage-painting'});
-            const obstacleLayer = svg('g', {class:`arena-obstacles obstacles-${dungeon.theme}`});
-            const obstacleArt = ['inferno','foundry'].includes(dungeon.theme) ? 'inferno' : 'ruins';
-            for (const [ox,oy,w,h] of dungeon.obstacles) {
-                svg('image', {href:`/static/assets/dungeon/obstacle-${obstacleArt}.webp`,
-                    x:ox*72,y:oy*72,width:w*72,height:h*72,preserveAspectRatio:'none',
-                    class:'painted-obstacle'},obstacleLayer);
-            }
             const ambience = svg('g',{class:`arena-ambience ambience-${dungeon.theme}`});
             for (const item of dungeon.decor || []) {
                 if (!['flame','fairy'].includes(item.kind)) continue;
                 const p = arenaPoint(item.x,item.y);
                 const node = svg('g',{class:`environment-${item.kind}`},ambience);
                 const size = item.size || (item.kind === 'flame' ? 13 : 19);
-                svg('image',{href:`/static/assets/dungeon/fx-${item.kind}-0.webp`,
-                    x:-size/2,y:item.kind === 'flame' ? -size * 1.35 : -size/2,
-                    width:size,height:item.kind === 'flame' ? size * 1.4 : size,
-                    class:'effect-frame'},node);
+                const meta = PIXEL_ASSETS.effects.fire;
+                const frame = svg('svg',{x:-size/2,y:-size*1.4,width:size,height:size*1.4,
+                    viewBox:`0 0 ${meta.width} ${meta.height}`,overflow:'hidden'},node);
+                svg('image',{href:meta.src,width:meta.width*meta.frames,height:meta.height,class:'effect-frame'},frame);
                 node.setAttribute('transform',`translate(${p.x} ${p.y})`);
                 decorNodes.push({node,x:p.x,y:p.y,phase:item.phase,kind:item.kind});
             }
@@ -802,8 +820,13 @@
                     svg('circle', {cx: Math.cos(i * 2.4) * 63, cy: -48 + Math.sin(i * 2.4) * 55,
                         r: 2 + i % 3, class: 'boss-aura', style: `animation-delay:-${i * .17}s`}, group);
                 }
-                if (sheet) svg('image', {href: art.replace('.webp', '-0.webp'), x:-width/2,
-                    y:-height+6, width, height, preserveAspectRatio:'xMidYMax meet', class:'actor-frame'}, group);
+                if (sheet) {
+                    const meta = PIXEL_ASSETS.actors[art]?.idle || PIXEL_ASSETS.effects[art];
+                    const sprite = svg('svg',{x:-width/2,y:-height+6,width,height,
+                        viewBox:`0 0 ${meta.width} ${meta.height}`,overflow:'hidden'},group);
+                    svg('image',{href:meta.src,width:meta.width*meta.frames,height:meta.height,
+                        class:kind==='exit'?'portal-frame pixel-frame':'pixel-frame'},sprite);
+                }
                 else if (art) svg('image', {href: art, x: -width / 2, y: -height + 6, width, height,
                     preserveAspectRatio: 'xMidYMax meet',class:kind === 'exit' ? 'portal-frame' : ''}, group);
                 else if (kind === 'chest') {
@@ -823,28 +846,33 @@
             }
             for (const enemy of dungeon.enemies) {
                 if (enemy.defeated) continue;
-                const bossArt = {phishing_king:'boss-leviathan', ransomware_overlord:'boss-death', root_admin:'boss-dragon'}[enemy.enemy_id];
-                const size = enemy.enemy_id === 'zero_day_exploit' ? [150,133] :
-                    enemy.enemy_id === 'credential_thief' ? [125,105] : [110,100];
-                actorNode(enemy, bossArt ? 'boss' : 'enemy', bossArt ? `/static/assets/dungeon/${bossArt}.webp`
-                    : `/static/assets/dungeon/run-${enemy.enemy_id}.webp`, bossArt ? 215 : size[0], bossArt ? 205 : size[1], !bossArt);
+                const boss = enemy.kind.includes('BOSS');
+                actorNode(enemy,boss?'boss':'enemy',enemy.enemy_id,boss?205:88,boss?205:88,true);
                 roamVisuals.set(enemy.uid, {x: enemy.x, y: enemy.y});
             }
             if (dungeon.mode === 'market' && dungeon.feature) {
                 actorNode({x:dungeon.feature.x,y:dungeon.feature.y-.25,name:'Cipher Market Stall'},
-                    'stall','/static/assets/dungeon/market-stall.webp',260,184);
-                actorNode(dungeon.feature,'merchant','/static/assets/npcs/cipher_merchant.webp',77,102);
+                    'stall','/static/assets/pixel/market-stall.png',216,144);
+                actorNode(dungeon.feature,'merchant','merchant',120,120,true);
             }
-            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', '/static/assets/dungeon/treasure-chest.webp', 68, 57);
+            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', '/static/assets/pixel/chest.png', 48, 48);
             actorNode(dungeon.exit,
-                'exit', '/static/assets/dungeon/fx-portal-0.webp', 56, 73);
-            actorNode(dungeon.player, 'hero', '/static/assets/dungeon/hero-illustrated.webp', 70, 78);
+                'exit', 'portal', 80, 80,true);
+            actorNode(dungeon.player, 'hero', 'hero', 88, 88,true);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
                 const p = arenaPoint(pendingDefeat.x, pendingDefeat.y);
-                const ghost = svg('image', {href: pendingDefeat.href, x: p.x - (pendingDefeat.boss ? 95 : 48),
-                    y: p.y - (pendingDefeat.boss ? 175 : 85), width: pendingDefeat.boss ? 190 : 95,
-                    height: pendingDefeat.boss ? 180 : 90, class: 'actor-death'}, actorLayer);
-                setTimeout(() => ghost.remove(), 1300);
+                const meta = PIXEL_ASSETS.actors[pendingDefeat.id];
+                const frame = meta.death || meta.idle;
+                const size = pendingDefeat.boss ? 190 : 88;
+                const ghost = svg('svg',{x:p.x-size/2,y:p.y-size+6,width:size,height:size,
+                    viewBox:`0 0 ${frame.width} ${frame.height}`,overflow:'hidden',class:'actor-death'},actorLayer);
+                const image = svg('image',{href:frame.src,width:frame.width*frame.frames,height:frame.height},ghost);
+                const started = performance.now();
+                function deathFrame(time) {
+                    updateAtlas(image,frame,Math.min(time-started,(frame.frames-1)*1000/frame.fps));
+                    if (time-started<1200) requestAnimationFrame(deathFrame); else ghost.remove();
+                }
+                requestAnimationFrame(deathFrame);
                 pendingDefeat = null;
             }
             followCamera();
@@ -861,12 +889,7 @@
                 const running = Math.hypot(moveInput.x, moveInput.y) > .12;
                 hero.classList.toggle('running', running);
                 hero.classList.toggle('facing-left', heroDirection === 'left');
-                const sprite = running ? `/static/assets/dungeon/hero-smooth-${Math.floor(time / 48) % 16}.webp`
-                    : '/static/assets/dungeon/hero-illustrated.webp';
-                if (sprite !== heroFramePath) {
-                    hero.querySelector('image')?.setAttribute('href', sprite);
-                    heroFramePath = sprite;
-                }
+                setArenaSprite(hero,'hero',running && !encounterPending ? 'run' : 'idle',time);
             }
             for (const enemy of dungeonScene.enemies) {
                 if (enemy.defeated) continue;
@@ -886,26 +909,18 @@
                 node.setAttribute('transform', `translate(${p.x} ${p.y}) scale(${facing} 1)`);
                 const moving = Math.hypot(enemy.x - visual.x, enemy.y - visual.y) > .008;
                 node.classList.toggle('roaming', moving);
-                const frame = node.querySelector('.actor-frame');
-                if (frame) {
-                    const href = `/static/assets/dungeon/move-${enemy.enemy_id}-${moving ? Math.floor(time / 100) % 8 : 0}.webp`;
-                    if (frame.getAttribute('href') !== href) frame.setAttribute('href', href);
-                }
+                setArenaSprite(node,enemy.enemy_id,moving?'run':'idle',time);
             }
             const portal = sceneNodes.get('exit')?.querySelector('.portal-frame');
-            if (portal) {
-                const href = `/static/assets/dungeon/fx-portal-${Math.floor(time/180)%4}.webp`;
-                if (portal.getAttribute('href') !== href) portal.setAttribute('href',href);
-            }
+            if (portal) updateAtlas(portal,PIXEL_ASSETS.effects.portal,time);
+            setArenaSprite(sceneNodes.get('merchant'),'merchant','idle',time);
             followCamera();
             for (const {node,x,y,phase,kind} of decorNodes) {
                 const sway = Math.sin(time*.0017+phase);
                 const location = `translate(${Math.round(x+sway*(kind==='fairy'?18:0))} ${Math.round(y+Math.cos(time*.002+phase)*(kind==='fairy'?14:0))})`;
                 if (node.getAttribute('transform') !== location) node.setAttribute('transform',location);
                 const frame = node.querySelector('.effect-frame');
-                const count = kind === 'flame' ? 8 : 4;
-                const href = `/static/assets/dungeon/fx-${kind}-${Math.floor(time/130+phase)%count}.webp`;
-                if (frame && frame.getAttribute('href') !== href) frame.setAttribute('href',href);
+                if (frame) updateAtlas(frame,PIXEL_ASSETS.effects.fire,time+phase*1000);
             }
         }
         function beginBattleContact(enemy = null) {
@@ -988,6 +1003,9 @@
                     lastSceneFrame = time;
                     positionActors(time);
                 }
+            }
+            if (time - lastPortraitFrame >= 66) {
+                lastPortraitFrame = time; animatePixelPortraits(time);
             }
             requestAnimationFrame(movementFrame);
         }
@@ -1275,7 +1293,7 @@
                 const killed = dungeonScene?.enemies.find(enemy => enemy.enemy_id === data.defeated_enemy_id && !enemy.defeated);
                 if (killed) {
                     const art = {phishing_king: 'boss-leviathan', ransomware_overlord: 'boss-death', root_admin: 'boss-dragon'}[killed.enemy_id];
-                    pendingDefeat = {x: killed.x, y: killed.y, floor: data.room, boss: !!art, href: art ? `/static/assets/dungeon/${art}.webp` : `/static/assets/dungeon/run-${killed.enemy_id}-0.webp`};
+                    pendingDefeat = {x:killed.x,y:killed.y,floor:data.room,boss:!!art,id:killed.enemy_id};
                 }
                 const bossKinds = ['MINIBOSS', 'MAJOR BOSS', 'FINAL BOSS'];
                 const fanfare = bossKinds.includes(data.defeated_enemy_kind) ? 'snd-major-victory' : 'snd-victory';
@@ -1362,41 +1380,35 @@
             }, 850);
         }
 
+        function playPixelEffect(effect, label, target = 'enemy') {
+            const meta = PIXEL_ASSETS.effects[effect] || PIXEL_ASSETS.effects.strike;
+            const layer = document.getElementById('combat-fx-layer');
+            const scene = document.createElement('div');
+            scene.className = `pixel-effect target-${target}`;
+            const sprite = document.createElement('div');
+            sprite.className = 'pixel-effect-sprite';
+            sprite.style.backgroundImage = `url("${meta.src}")`;
+            sprite.style.backgroundSize = `${meta.frames*100}% 100%`;
+            sprite.style.setProperty('--effect-steps',meta.frames-1);
+            sprite.style.setProperty('--effect-duration',`${meta.frames/meta.fps}s`);
+            const caption = document.createElement('strong');caption.textContent=label;
+            scene.append(sprite,caption);layer.appendChild(scene);
+            setTimeout(()=>scene.remove(),meta.frames/meta.fps*1000+120);
+        }
+
         function spawnActionCinematic(action, succeeded) {
-            const labels = {attack: 'BLADE STRIKE', defend: 'AEGIS GUARD', exploit: 'ULTIMATE EXPLOIT'};
-            spawnBattleCinematic(`action-${action}${succeeded ? '' : ' action-failed'}`, labels[action] || 'ACTION');
+            if (!succeeded) return;
+            playPixelEffect({attack:'strike',defend:'guard',exploit:'exploit'}[action],
+                {attack:'BLADE STRIKE',defend:'AEGIS GUARD',exploit:'ARCANE EXPLOIT'}[action],action==='defend'?'hero':'enemy');
         }
 
         function spawnSkillCinematic(enemyAction) {
-            const skill = enemyAction.id || 'attack';
-            const enemyClass = enemyAction.enemy_id ? ` enemy-${enemyAction.enemy_id}` : '';
-            const canceled = enemyAction.canceled ? ' skill-canceled' : '';
-            spawnBattleCinematic(`skill-${skill}${enemyClass}${canceled}`, enemyAction.canceled ? `${enemyAction.name} SHATTERED` : enemyAction.name);
-        }
-
-        function spawnBattleCinematic(effectClass, label) {
-            const layer = document.getElementById('combat-fx-layer');
-            const scene = document.createElement('div');
-            scene.className = `battle-cinematic ${effectClass}`;
-            scene.innerHTML = `
-                <div class="cinematic-vignette"></div>
-                <div class="element-ring"></div>
-                <div class="element-core"></div>
-                <div class="slash-trail"></div>
-                <div class="shield-dome"></div>
-                <div class="smoke smoke-a"></div><div class="smoke smoke-b"></div><div class="smoke smoke-c"></div>
-                <strong>${escapeHtml(label)}</strong>
-            `;
-            for (let index = 0; index < 22; index++) {
-                const particle = document.createElement('i');
-                particle.className = index % 4 === 0 ? 'ember' : 'magic-particle';
-                particle.style.setProperty('--particle-angle', `${index * 16.36}deg`);
-                particle.style.setProperty('--particle-distance', `${65 + (index % 6) * 18}px`);
-                particle.style.setProperty('--particle-delay', `${(index % 5) * 35}ms`);
-                scene.appendChild(particle);
-            }
-            layer.appendChild(scene);
-            setTimeout(() => scene.remove(), effectClass.includes('action-exploit') ? 1500 : 1150);
+            if (enemyAction.canceled) {playPixelEffect('guard',`${enemyAction.name} INTERRUPTED`,'hero');return;}
+            const fallback = {attack:'strike',heavy_attack:'payload_burst',defend:'guard',heal:'heal',
+                credit_drain:'key_siphon',jammer:'false_beacon',encrypt:'ransom_seal',root_lock:'petrify',
+                tsunami:'tsunami',petrify:'petrify',meteor:'meteor',time_stop:'time_stop'};
+            playPixelEffect(enemyAction.pixel_effect || fallback[enemyAction.id],enemyAction.name,
+                ['heal','defend'].includes(enemyAction.id)?'enemy':'hero');
         }
 
         function spawnCombatFx(label, className, kind, id) {
@@ -1797,6 +1809,7 @@
             return element.innerHTML;
         }
 
+        document.getElementById('merchant-portrait').innerHTML = pixelSprite('merchant');
         buildPath();
         updatePath(1);
         setMusic('music-menu');
@@ -1847,5 +1860,6 @@
         requestAnimationFrame(movementFrame);
         setInterval(tickRoaming, 750);
     </script>
+<footer class="asset-credits">PIXEL CRAWLER · ANOKOLISA / SUPER PIXEL EFFECTS · WILL TICE, UNTIED GAMES</footer>
 </body>
 </html>

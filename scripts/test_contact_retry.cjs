@@ -11,7 +11,7 @@ const c=vm.createContext({Math,performance:{now:()=>32},setTimeout:fn=>fn(),
  processGameState:async()=>{entered=true;}, dungeonScene:{enemies:[enemy]},
  heroPosition:{x:1.5,y:5},confirmedHeroPosition:{x:1.5,y:5},dungeonMoving:false,tickBusy:false,
  encounterPending:false,contactEnemyUid:null,contactRetryAfter:0,battleEntering:false,contactStartedAt:0,
- heldKeys:new Set(),joystick:{x:0,y:0},moveInput:{x:0,y:0},lastFrame:0,lastMoveSent:0,lastMoveAt:0,lastSceneFrame:0});
+ heldKeys:new Set(),joystick:{x:0,y:0},moveInput:{x:0,y:0},lastFrame:0,lastMoveSent:0,lastMoveAt:0,lastSceneFrame:0,lastPortraitFrame:0,animatePixelPortraits(){}});
 vm.runInContext(code,c);
 (async()=>{
  c.moveDungeon(); // Request leaves before the hero touches the enemy.

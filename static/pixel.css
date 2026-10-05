@@ -1,0 +1,98 @@
+@font-face {font-family:Silkscreen;src:url('/static/fonts/Silkscreen-Regular.ttf') format('truetype');font-display:swap;}
+@font-face {font-family:VT323;src:url('/static/fonts/VT323-Regular.ttf') format('truetype');font-display:swap;}
+:root {--red:#ae5365;--red-bright:#eb8b77;--red-dark:#733a4a;--ink:#151822;--panel:#232735;--card:#2c3241;--card-light:#353e50;--line:#626477;--text:#f5e8ce;--muted:#acb2bd;--green:#87b885;--gold:#e8be76;--blue:#7da4bd;--purple:#b199cc;}
+body {background:#151822;color:var(--text);font-family:VT323,monospace;font-size:22px;padding:16px;}
+button,input,select {font:inherit;}
+h1,h2,h3,.eyebrow,.primary-button,.secondary-button,.enemy-kind,.stat-label,.dungeon-hud span,.combat-actions strong {font-family:Silkscreen,monospace;font-weight:400;}
+h1 {font-size:clamp(24px,4vw,46px);line-height:1.4;letter-spacing:-1px;}
+h2 {font-size:18px;line-height:1.6;} h3 {font-size:16px;line-height:1.6;}
+img,svg.pixel-sprite,.dungeon-map,.dungeon-map image,.pixel-effect-sprite {image-rendering:pixelated;image-rendering:crisp-edges;}
+.pixel-sprite {overflow:hidden;} .pixel-sprite image {image-rendering:pixelated;}
+#title-screen {background:linear-gradient(#141824aa,#141824c9),url('/static/assets/pixel/title-room.png') center/cover;gap:10px;}
+#title-screen::after {display:none;}
+#title-screen .title-knight {display:none;}
+#title-screen h1 {color:var(--text);text-shadow:4px 4px #131621;margin:8px 0;}
+#title-screen h1 span {color:var(--gold);}
+#title-screen .eyebrow {font-size:10px;color:var(--blue);letter-spacing:.08em;}
+.intro-copy,.end-copy,.modal-copy {font-size:23px;line-height:1.3;color:var(--text);max-width:580px;}
+.title-features {font-size:19px;gap:12px;} .title-features span {border:0;border-radius:0;background:#1b1e2cd9;}
+.primary-button,.secondary-button,.text-button,#attack-button,.choice-card,.option,.modal-card,.main-panel,.run-panel,.enemy-card,.question-card,.inventory-item,.relic-chip {border-radius:0!important;}
+.primary-button,.secondary-button,#attack-button {font-size:12px;line-height:1.5;padding:14px 20px;background:#3f594f;color:#f7e8c9;border:3px solid #97ac85;box-shadow:4px 4px #0d111a,inset 0 -4px #293b36;}
+.secondary-button {background:#343647;border-color:#828396;}
+button:hover {filter:brightness(1.15);} button:disabled {filter:none;opacity:.5;}
+.primary-button:active,.secondary-button:active,#attack-button:active {transform:translate(2px,2px);box-shadow:2px 2px #0d111a;}
+.screen-overlay,.modal-overlay {background-color:#151822f5;backdrop-filter:none;}
+.modal-card {background:#242937;border:3px solid #91949b;box-shadow:0 0 0 4px #11151f,8px 8px #0c0f17;max-height:90dvh;}
+.modal-card h2 {color:var(--gold);} .modal-close {border-radius:0;font-size:25px;}
+.main-panel,.run-panel {background:#222735;border:3px solid #676d80;box-shadow:4px 4px #0e121b;}
+.game-shell {max-width:1080px;grid-template-columns:minmax(0,1fr) 235px;gap:16px;}
+.player-hud {background:#1b202d;gap:14px;padding:14px;flex-wrap:wrap;}
+.stat-label {font-size:9px;letter-spacing:0;color:#a6b4be;}.stat strong {font-family:VT323;font-size:26px;}
+.timer {border-radius:0;background:#323846;border:2px solid #a8a184;font-family:Silkscreen;font-size:15px;}
+.timer-track,.hp-track {border-radius:0;background:#101723;border:1px solid #596173;}
+#timer-bar {background:#d4b174;} #enemy-hp-bar {background:#a65a68;} .timer.urgent {color:#ee907a;}
+.enemy-card {position:relative;display:block;min-height:258px;padding:154px 16px 14px;background:linear-gradient(#17233066,#17233088),url('/static/assets/pixel/battle-room.png') center/cover;border:0;border-bottom:3px solid #5b6276;overflow:hidden;}
+.enemy-icon {position:absolute;right:19%;top:6px;width:132px;height:148px;display:block;background:none;border:0;box-shadow:none;filter:none;}
+.enemy-card.boss .enemy-icon {width:178px;height:178px;right:10%;top:-12px;}
+.enemy-icon .game-asset {width:100%;height:100%;filter:none;transform:none;animation:none;}
+.battle-hero {position:absolute;left:15%;top:38px;width:112px;height:112px;}
+.enemy-info {position:relative;background:#202532e8;border:2px solid #737989;padding:10px;}
+.enemy-heading h2 {font-size:16px;color:var(--gold);margin:2px 0;}.enemy-heading strong {font-size:20px;}
+.enemy-kind {font-size:9px;letter-spacing:0;}.ability-list {font-size:17px;gap:8px;margin-top:8px;}.ability-list span {background:#343b4a;border-radius:0;font-size:17px;}
+.ability-rune {border-radius:0;font-style:normal;}
+.enemy-card.boss,.enemy-card.elite {background-color:#263142;box-shadow:none;border-radius:0;}
+.enemy-card.elite .enemy-portrait {filter:none;}
+.intent-panel {border-radius:0;background:#1c2330;border:2px solid #535e73;padding:10px 14px;}
+.intent-title {font-family:Silkscreen;font-size:9px;}#enemy-intent {font-family:Silkscreen;font-size:10px;}#enemy-intent-description {font-size:20px;line-height:1.15;}
+.combat-actions {gap:8px;padding:12px;background:#1a202d;}
+.combat-actions button {border-radius:0;border:2px solid #738197;background:#30394a;padding:10px 8px;box-shadow:0 3px #111722;}
+.combat-actions strong {font-size:12px;}.combat-actions span,.combat-actions small {font-size:18px;line-height:1.05;}
+.combat-actions button.selected {border-color:#e5bf79;background:#4d493b;box-shadow:inset 0 -3px #74633c;}
+.question-card {background:#293142;border:0;padding:18px;border-top:2px solid #586278;}
+.question-meta {font-family:Silkscreen;font-size:9px;}.tier {border-radius:0;font-size:9px;}
+#question {font-family:VT323;font-size:28px;line-height:1.2;max-height:none;letter-spacing:0;font-weight:400;}
+.options {gap:8px;}.option {background:#1e2635;border:2px solid #67738b;color:var(--text);font-size:23px;line-height:1.2;padding:11px 14px;min-height:52px;}
+.option span {font-family:Silkscreen;font-size:11px;color:var(--gold);}.option.selected {background:#3b4b58;border-color:#bcd0be;}
+.option.correct {background:#345540;border-color:#91b584;}.option.wrong {background:#6c3646;border-color:#dc8c85;}
+.inventory-title,.relics-title {font-family:Silkscreen;font-size:9px;}.inventory-item button {font-size:18px;}.inventory-item {background:#262d3c;border:1px solid #677185;}
+.relic-chip {font-size:17px;background:#353244;border:1px solid #8c7fa2;}.empty-build {font-size:18px;}
+.build-icon,.choice-asset,.encyclopedia-asset {filter:none;image-rendering:pixelated;}
+.choice-card {background:#293243;border:2px solid #728093;box-shadow:3px 3px #111722;font-family:VT323;font-size:22px;}.choice-card h3 {font-size:12px;}.choice-card p {font-size:21px;line-height:1.2;}
+.feedback {background:#202b36!important;border:3px solid #a3afbd;border-radius:0!important;box-shadow:0 0 0 4px #0d131f;opacity:1;}.feedback h3 {font-size:13px;}.feedback p,#feedback-text {font-size:22px;line-height:1.25;}
+.feedback .turn-highlight {border-radius:0;padding:2px 4px;}.continue-button {font-family:Silkscreen;font-size:11px;border-radius:0;}
+.run-panel p,.run-tip p,.encyclopedia-detail p,.detail-facts {font-size:21px;line-height:1.2;}.run-panel h2 {font-size:12px;}
+.room-node {border-radius:0;border:1px solid #62718a;background:#202837;}.room-node.current {border-color:#deb775;}.room-node span {font-family:Silkscreen;font-size:9px;}
+.shop-card {background:#252b36!important;border:3px solid #a6906d;}.shop-aurora {display:none;}#merchant-portrait {width:130px;height:130px;flex-shrink:0;}.merchant-intro h2 {font-size:15px;}.merchant-intro p {font-size:21px;}
+.shop-items .choice-card,.shop-grid .choice-card {background:#34333b;}.shop-credits {font-size:24px;}
+.dungeon-screen {background:#121821;padding-top:max(50px,env(safe-area-inset-top));}.dungeon-hud {background:#232b37;border:3px solid #6b7987;border-radius:0;margin:0 10px;padding:8px 14px;}.dungeon-hud span {font-size:8px;}.dungeon-hud strong {font-family:VT323;font-size:23px;}
+.dungeon-title {margin:8px 14px;}.dungeon-title .eyebrow {font-size:9px;color:#adbdc3;}.dungeon-title h2 {font-size:13px;color:var(--gold);}
+.dungeon-map {border-radius:0;background:#0e141e;box-shadow:none;}.dungeon-map image {filter:none!important;}.arena-shadow {fill:#09101888;filter:none;}.arena-actor {filter:none!important;}.arena-actor.running image,.arena-actor.roaming image {animation:none;}
+.boss-aura,.portal-spark,.portal-light {display:none;}.arena-label {font-family:Silkscreen;font-size:13px;fill:#f3d691;}.arena-actor.exit.locked {opacity:.35;filter:none;}.environment-flame {filter:none;}
+.dungeon-message {font-family:VT323;font-size:22px;line-height:1.1;background:#1b2634;border-top:2px solid #5c6c80;padding:10px;}.move-reminder {font-family:VT323;font-size:21px;border-radius:0;background:#263244;border:2px solid #8793a0;}
+.movement-stick {border-radius:4px;background:#33445399;border:3px solid #95a5aacc;box-shadow:4px 4px #0a111a;backdrop-filter:none;}#movement-knob {border-radius:2px;background:#b7c2b6;border:2px solid #e4e2c1;box-shadow:2px 2px #192734;}
+#sound-toggle {font-family:Silkscreen;font-size:9px;border-radius:0;top:10px;min-height:30px;background:#202936;border:2px solid #a4adad;}
+.pixel-effect {position:absolute;top:100px;left:65%;transform:translate(-50%,-50%);width:210px;height:230px;pointer-events:none;z-index:20;}
+.pixel-effect.target-hero {left:25%;}.pixel-effect-sprite {width:210px;height:210px;background-repeat:no-repeat;animation:pixel-effect-play var(--effect-duration) steps(var(--effect-steps)) forwards;}
+.pixel-effect strong {display:block;text-align:center;white-space:normal;font-family:Silkscreen;font-size:10px;color:#f7da9d;text-shadow:2px 2px #101722;}
+@keyframes pixel-effect-play {from {background-position:0 0;}to {background-position:100% 0;}}
+.combat-fx {font-family:Silkscreen;font-size:12px;}.combat-fx .fx-icon,.combat-fx i {display:none;}.combat-fx strong {font-size:14px;text-shadow:2px 2px #10151c;}
+.battle-cinematic,.main-panel.exploit-flash::after,.main-panel.defend-flash::after {display:none;}
+.battle-transition {background:#17202cef;}.battle-transition strong {font-family:Silkscreen;font-size:clamp(18px,5vw,32px);text-shadow:3px 3px #000;color:var(--gold);letter-spacing:0;}
+.toast {font-family:VT323;font-size:23px;border:2px solid #a1a795;border-radius:0;background:#263240;}.asset-credits {font-family:VT323;font-size:15px;text-align:center;color:#89909d;margin:18px 8px;line-height:1.2;}
+@media (max-width:850px) {
+ body {padding:0;font-size:21px;}.game-shell {display:block;width:100%;}.main-panel {border-width:0;overflow:visible;display:block;min-height:100dvh;max-height:none;padding-bottom:10px;}.run-panel {display:none;}
+ .player-hud {gap:7px;padding:8px;padding-right:80px;min-height:66px;}.stat strong {font-size:23px;}.stat-label {font-size:7px;}.timer {font-size:12px;min-width:38px;}.mobile-stage {font-family:VT323;font-size:17px;}
+ .enemy-card {min-height:228px;padding-top:125px;padding-bottom:8px;}.enemy-icon {width:112px;height:125px;right:16%;top:0;}.enemy-card.boss .enemy-icon {width:147px;height:147px;right:8%;top:-8px;}.battle-hero {width:96px;height:96px;left:12%;top:22px;}
+ .enemy-heading h2 {font-size:12px;}.enemy-heading strong {font-size:20px;}.enemy-info {padding:7px;}.ability-list {margin-top:5px;}.ability-list span {font-size:16px;}.enemy-kind {font-size:8px;}
+ .intent-panel {margin:0;padding:7px 12px;}#enemy-intent-description {font-size:18px;}.intent-title {font-size:8px;}
+ .combat-actions {padding:9px;gap:6px;flex:initial;}.combat-actions button {padding:8px 4px;min-height:62px;}.combat-actions strong {font-size:10px;}.combat-actions span {font-size:16px;}
+ .question-card {padding:12px;flex:initial;min-height:auto;overflow:visible;}.question-meta {font-size:8px;}#question {font-size:25px;line-height:1.15;overflow:visible;max-height:none;margin-bottom:12px;}
+ .options {display:grid;grid-template-columns:1fr;overflow:visible;gap:7px;}.option {font-size:22px;min-height:48px;padding:9px 12px;}.inventory {margin-top:8px;}.inventory-item button {font-size:18px;}.build-section {padding:10px;}
+ #attack-button {margin:8px 12px;width:calc(100% - 24px);min-height:48px;font-size:11px;position:sticky;bottom:0;z-index:10;}
+ .main-panel.turn-resolved #question {max-height:none;font-size:23px;}.feedback {position:relative;inset:auto;margin:10px;padding:14px;max-height:none;}.feedback h3 {font-size:11px;}#feedback-text {font-size:21px;}
+ .modal-card {width:100%;padding:16px;}.modal-overlay {padding:10px;}.choice-grid,.shop-items {grid-template-columns:1fr;}.choice-card {min-height:110px;}.merchant-intro {gap:8px;}#merchant-portrait {width:85px;height:85px;}.merchant-intro h2 {font-size:12px;}
+ #title-screen {padding:60px 20px 20px;background-size:auto 100%;}.intro-copy {font-size:23px;}.title-features {font-size:18px;flex-wrap:wrap;justify-content:center;}.primary-button,.secondary-button {font-size:10px;min-width:200px;}
+ .pixel-effect {width:160px;height:185px;top:76px;}.pixel-effect-sprite {width:160px;height:160px;}.pixel-effect strong {font-size:8px;}.asset-credits {font-size:13px;}
+ .dungeon-map-wrap {border:0;}.dungeon-title h2 {font-size:11px;}.dungeon-message {font-size:20px;}.dungeon-hud strong {font-size:21px;}
+}
+@media (prefers-reduced-motion:reduce) {.pixel-effect-sprite {animation-duration:.1s;}.screen-shake {animation:none;}}

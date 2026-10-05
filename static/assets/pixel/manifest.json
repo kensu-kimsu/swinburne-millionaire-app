@@ -1,0 +1,459 @@
+{
+  "actors": {
+    "hero": {
+      "idle": {
+        "src": "/static/assets/pixel/hero-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/hero-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/hero-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "merchant": {
+      "idle": {
+        "src": "/static/assets/pixel/merchant-idle.png",
+        "width": 64,
+        "height": 64,
+        "frames": 4,
+        "fps": 8
+      }
+    },
+    "spam_bot": {
+      "idle": {
+        "src": "/static/assets/pixel/spam_bot-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/spam_bot-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/spam_bot-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "phishing_email": {
+      "idle": {
+        "src": "/static/assets/pixel/phishing_email-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/phishing_email-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/phishing_email-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "adware_bug": {
+      "idle": {
+        "src": "/static/assets/pixel/adware_bug-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/adware_bug-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/adware_bug-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 7,
+        "fps": 12
+      }
+    },
+    "botnet_node": {
+      "idle": {
+        "src": "/static/assets/pixel/botnet_node-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/botnet_node-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/botnet_node-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "credential_thief": {
+      "idle": {
+        "src": "/static/assets/pixel/credential_thief-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/credential_thief-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/credential_thief-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "malware_loader": {
+      "idle": {
+        "src": "/static/assets/pixel/malware_loader-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/malware_loader-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/malware_loader-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "ransomware": {
+      "idle": {
+        "src": "/static/assets/pixel/ransomware-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/ransomware-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/ransomware-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "insider_threat": {
+      "idle": {
+        "src": "/static/assets/pixel/insider_threat-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/insider_threat-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/insider_threat-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "zero_day_exploit": {
+      "idle": {
+        "src": "/static/assets/pixel/zero_day_exploit-idle.png",
+        "width": 32,
+        "height": 32,
+        "frames": 4,
+        "fps": 8
+      },
+      "run": {
+        "src": "/static/assets/pixel/zero_day_exploit-run.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      },
+      "death": {
+        "src": "/static/assets/pixel/zero_day_exploit-death.png",
+        "width": 32,
+        "height": 32,
+        "frames": 6,
+        "fps": 12
+      }
+    },
+    "phishing_king": {
+      "idle": {
+        "src": "/static/assets/pixel/phishing_king-idle.png",
+        "width": 96,
+        "height": 96,
+        "frames": 4,
+        "fps": 5
+      },
+      "run": {
+        "src": "/static/assets/pixel/phishing_king-idle.png",
+        "width": 96,
+        "height": 96,
+        "frames": 4,
+        "fps": 5
+      }
+    },
+    "ransomware_overlord": {
+      "idle": {
+        "src": "/static/assets/pixel/ransomware_overlord-idle.png",
+        "width": 96,
+        "height": 96,
+        "frames": 4,
+        "fps": 5
+      },
+      "run": {
+        "src": "/static/assets/pixel/ransomware_overlord-idle.png",
+        "width": 96,
+        "height": 96,
+        "frames": 4,
+        "fps": 5
+      }
+    },
+    "root_admin": {
+      "idle": {
+        "src": "/static/assets/pixel/root_admin-idle.png",
+        "width": 96,
+        "height": 96,
+        "frames": 4,
+        "fps": 5
+      },
+      "run": {
+        "src": "/static/assets/pixel/root_admin-idle.png",
+        "width": 96,
+        "height": 96,
+        "frames": 4,
+        "fps": 5
+      }
+    }
+  },
+  "effects": {
+    "strike": {
+      "src": "/static/assets/pixel/fx-strike.png",
+      "width": 64,
+      "height": 64,
+      "frames": 7,
+      "fps": 15,
+      "source": "PNG/Impacts/directional_impact_001/directional_impact_001_large_blue"
+    },
+    "guard": {
+      "src": "/static/assets/pixel/fx-guard.png",
+      "width": 64,
+      "height": 64,
+      "frames": 18,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_defense_up_001/spell_defense_up_001_small_blue"
+    },
+    "exploit": {
+      "src": "/static/assets/pixel/fx-exploit.png",
+      "width": 128,
+      "height": 128,
+      "frames": 7,
+      "fps": 15,
+      "source": "PNG/Lightning/lightning_strike_001/lightning_strike_001_large_violet"
+    },
+    "junk_toll": {
+      "src": "/static/assets/pixel/fx-junk_toll.png",
+      "width": 64,
+      "height": 64,
+      "frames": 31,
+      "fps": 15,
+      "source": "PNG/Magic Bursts/directional_coin_burst_001/directional_coin_burst_001_small_yellow"
+    },
+    "false_beacon": {
+      "src": "/static/assets/pixel/fx-false_beacon.png",
+      "width": 64,
+      "height": 64,
+      "frames": 8,
+      "fps": 15,
+      "source": "PNG/Lightning/lightning_burst_001/lightning_burst_001_large_violet"
+    },
+    "ad_bloom": {
+      "src": "/static/assets/pixel/fx-ad_bloom.png",
+      "width": 64,
+      "height": 64,
+      "frames": 17,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_poison_001/spell_poison_001_small_green"
+    },
+    "node_bastion": {
+      "src": "/static/assets/pixel/fx-node_bastion.png",
+      "width": 64,
+      "height": 64,
+      "frames": 18,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_defense_up_001/spell_defense_up_001_small_blue"
+    },
+    "key_siphon": {
+      "src": "/static/assets/pixel/fx-key_siphon.png",
+      "width": 128,
+      "height": 128,
+      "frames": 31,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_absorb_001/spell_absorb_001_large_violet"
+    },
+    "payload_burst": {
+      "src": "/static/assets/pixel/fx-payload_burst.png",
+      "width": 64,
+      "height": 64,
+      "frames": 13,
+      "fps": 15,
+      "source": "PNG/Explosions/epic_explosion_001/epic_explosion_001_small_orange"
+    },
+    "ransom_seal": {
+      "src": "/static/assets/pixel/fx-ransom_seal.png",
+      "width": 32,
+      "height": 32,
+      "frames": 50,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_death_001/spell_death_001_small_red"
+    },
+    "backdoor_cleave": {
+      "src": "/static/assets/pixel/fx-backdoor_cleave.png",
+      "width": 80,
+      "height": 80,
+      "frames": 5,
+      "fps": 15,
+      "source": "PNG/Impacts/directional_impact_004/directional_impact_004_large_yellow"
+    },
+    "zero_rewrite": {
+      "src": "/static/assets/pixel/fx-zero_rewrite.png",
+      "width": 32,
+      "height": 32,
+      "frames": 14,
+      "fps": 15,
+      "source": "PNG/Magic Bursts/round_sparkle_burst_001/round_sparkle_burst_001_small_blue"
+    },
+    "tsunami": {
+      "src": "/static/assets/pixel/fx-tsunami.png",
+      "width": 128,
+      "height": 128,
+      "frames": 40,
+      "fps": 15,
+      "source": "PNG/Magic Bursts/directional_bubble_burst_001/directional_bubble_burst_001_large_green"
+    },
+    "petrify": {
+      "src": "/static/assets/pixel/fx-petrify.png",
+      "width": 64,
+      "height": 64,
+      "frames": 50,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_death_001/spell_death_001_large_red"
+    },
+    "meteor": {
+      "src": "/static/assets/pixel/fx-meteor.png",
+      "width": 96,
+      "height": 96,
+      "frames": 15,
+      "fps": 15,
+      "source": "PNG/Explosions/epic_explosion_002/epic_explosion_002_small_yellow"
+    },
+    "time_stop": {
+      "src": "/static/assets/pixel/fx-time_stop.png",
+      "width": 128,
+      "height": 128,
+      "frames": 10,
+      "fps": 15,
+      "source": "PNG/Sci-fi/scifi_warp_001/scifi_warp_001_large_green"
+    },
+    "heal": {
+      "src": "/static/assets/pixel/fx-heal.png",
+      "width": 128,
+      "height": 128,
+      "frames": 16,
+      "fps": 15,
+      "source": "PNG/Fantasy Spells/spell_heal_001/spell_heal_001_large_red"
+    },
+    "portal": {
+      "src": "/static/assets/pixel/fx-portal.png",
+      "width": 96,
+      "height": 96,
+      "frames": 10,
+      "fps": 15,
+      "source": "PNG/Sci-fi/scifi_warp_002/scifi_warp_002_large_red"
+    },
+    "fire": {
+      "src": "/static/assets/pixel/fx-fire.png",
+      "width": 40,
+      "height": 64,
+      "frames": 5,
+      "fps": 15,
+      "source": "PNG/Fire/fire_looping_003A/fire_looping_003A_small_orange"
+    }
+  },
+  "icons": {
+    "0": "/static/assets/pixel/icon-0.png",
+    "1": "/static/assets/pixel/icon-1.png",
+    "2": "/static/assets/pixel/icon-2.png",
+    "3": "/static/assets/pixel/icon-3.png",
+    "4": "/static/assets/pixel/icon-4.png",
+    "5": "/static/assets/pixel/icon-5.png",
+    "6": "/static/assets/pixel/icon-6.png",
+    "7": "/static/assets/pixel/icon-7.png",
+    "8": "/static/assets/pixel/icon-8.png",
+    "9": "/static/assets/pixel/icon-9.png",
+    "10": "/static/assets/pixel/icon-10.png",
+    "11": "/static/assets/pixel/icon-11.png"
+  }
+}
