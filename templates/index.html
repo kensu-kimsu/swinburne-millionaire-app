@@ -814,6 +814,7 @@
             document.querySelector('.game-shell').classList.remove('battle-active');
             document.getElementById('dungeon-screen').classList.remove('hidden');
             syncArenaHud(data);
+            if(dungeon.mode === 'market') document.getElementById('dungeon-message').textContent='Visit the merchant in the central shop. The east gate leads onward.';
             const key = `${data.room}:${dungeon.seed}`;
             const map = document.getElementById('dungeon-map');
             const changed = dungeon.enemies.some(enemy => enemy.defeated && sceneNodes.has(enemy.uid)) ||
@@ -911,7 +912,7 @@
                 actorNode({x:dungeon.feature.x,y:dungeon.feature.y-.25,name:'Cipher Market Stall'},
                     'stall',`/static/assets/pixel/market-stall.png?v=${ASSET_REVISION}`,216,108);
                 actorNode(dungeon.feature,'merchant','merchant',120,120,true);
-                for(const [i,x,y] of [[0,6.2,4.3],[1,12.4,5.8],[2,6.5,8.4],[3,11.4,8.8]])
+                for(const [i,x,y] of [[0,6.2,4.3],[1,12.4,5.8],[2,6.5,5.8],[3,12.5,7.5]])
                     actorNode({uid:`villager-${i}`,x,y,name:'Market villager'},'citizen',i%2?'villager_peasant':'villager_tavern',110,110,true);
             }
             for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', `/static/assets/pixel/chest.png?v=${ASSET_REVISION}`, 48, 48);
@@ -924,8 +925,13 @@
                 const frame = meta.death || meta.idle;
                 const size = pendingDefeat.boss ? 190 : 88;
                 const ghost = svg('svg',{x:p.x-size/2,y:p.y-size+6,width:size,height:size,
-                    viewBox:`0 0 ${frame.width} ${frame.height}`,overflow:'hidden',class:'actor-death'},actorLayer);
-                const image = svg('image',{href:frame.src,width:frame.width*frame.frames,height:frame.height},ghost);
+                    viewBox:`0 0 ${frame.width} ${frame.height}`,overflow:'hidden',class:'actor-death pixel-sprite'},actorLayer);
+                const clipId = `death-clip-${data.room}-${Math.floor(performance.now())}`;
+                const defs = svg('defs',{},ghost);
+                const clip = svg('clipPath',{id:clipId,clipPathUnits:'userSpaceOnUse'},defs);
+                svg('rect',{x:0,y:0,width:frame.width,height:frame.height},clip);
+                const clipped = svg('g',{'clip-path':`url(#${clipId})`},ghost);
+                const image = svg('image',{href:frame.src,width:frame.width*frame.frames,height:frame.height},clipped);
                 const started = performance.now();
                 function deathFrame(time) {
                     updateAtlas(image,frame,Math.min(time-started,(frame.frames-1)*1000/frame.fps));

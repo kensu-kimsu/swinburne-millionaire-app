@@ -255,3 +255,5 @@ html,body {margin:0;overscroll-behavior:none;}
  .game-shell.battle-active .main-panel.turn-resolved {grid-template-columns:minmax(0,1fr);grid-template-rows:36px 0 minmax(0,1fr) 0;}
  .game-shell.battle-active .main-panel.turn-resolved .feedback {inset:42px 12px auto;width:auto;max-height:45dvh;}
 }
+
+.actor-death.pixel-sprite {overflow:hidden!important;transform-box:view-box;}
