@@ -257,3 +257,7 @@ html,body {margin:0;overscroll-behavior:none;}
 }
 
 .actor-death.pixel-sprite {overflow:hidden!important;transform-box:view-box;}
+.password-card {gap:10px;}
+.password-card .eyebrow {font:9px Silkscreen;letter-spacing:2px;margin:0;}
+.password-card h2 {font-size:16px;line-height:1.4;margin:0;}
+.password-card p:not(.eyebrow) {font-size:21px;line-height:1.2;margin:0;}
