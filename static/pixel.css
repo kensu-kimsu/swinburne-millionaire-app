@@ -226,7 +226,12 @@ html,body {margin:0;overscroll-behavior:none;}
  .game-shell.battle-active #attack-button {font-size:9px;overflow-wrap:anywhere;}
 }
 @media(max-width:580px){
- .dungeon-hud {grid-template-columns:64px minmax(0,1fr) 54px 32px;gap:6px;padding-left:10px;padding-right:45px;}
+ .dungeon-hud {grid-template-columns:54px minmax(0,1fr) 44px 30px;gap:5px;padding-left:10px;padding-right:45px;}
  .dungeon-hud .heart-meter {flex-wrap:nowrap;max-width:none;gap:1px;}
  .dungeon-hud .pixel-heart {font-size:16px;}
+}
+
+@media(max-width:580px){
+ .dungeon-title {top:64px;}
+ .dungeon-title .eyebrow {display:block;font-size:7px;margin:0 0 5px;}
 }
