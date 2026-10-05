@@ -314,6 +314,8 @@ confirmation feedback, victory, defeat, and answer feedback sounds.
 
 ## Pixel dungeon overhaul
 
+![Live pixel title screen](docs/pixel-preview.jpg)
+
 The current game uses Pixel Crawler characters, furniture and tiles with Super
 Pixel Effects in combat. All text uses local VT323 and Silkscreen fonts. The
 battle menu, title, inventory, encyclopedia and merchant screens share the same
