@@ -96,3 +96,32 @@ button:hover {filter:brightness(1.15);} button:disabled {filter:none;opacity:.5;
  .dungeon-map-wrap {border:0;}.dungeon-title h2 {font-size:11px;}.dungeon-message {font-size:20px;}.dungeon-hud strong {font-size:21px;}
 }
 @media (prefers-reduced-motion:reduce) {.pixel-effect-sprite {animation-duration:.1s;}.screen-shake {animation:none;}}
+/* Keep the pixel layout readable even when the legacy compact-phone rules apply. */
+#title-screen h1 {font-size:clamp(24px,4vw,46px);line-height:1.4;letter-spacing:-1px;}
+#title-screen .rules {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
+#title-screen .rules span {font-family:VT323;font-size:20px;border-radius:0;background:#202737;border:1px solid #65717d;}
+#title-screen .rules img {width:20px;height:20px;image-rendering:pixelated;}
+.enemy-icon .game-asset.pixel-sprite {transform:scaleX(-1);}
+#enemy-intent-description {display:block;white-space:normal;overflow:visible;text-overflow:clip;}
+#feedback-title {font-family:Silkscreen;font-size:12px;line-height:1.5;letter-spacing:0;}
+.merchant-intro p:not(.eyebrow) {font-size:21px;line-height:1.2;max-height:none;overflow:visible;}
+.shop-wallet,.shop-wallet b {font-family:VT323;font-size:23px;}
+.choice-card strong {font-family:Silkscreen;font-size:11px;line-height:1.5;}
+.game-shell.battle-active.boss-atlantis .main-panel,.game-shell.battle-active.boss-graveyard .main-panel,.game-shell.battle-active.boss-inferno .main-panel {background:#222735;}
+@media(max-width:850px) {
+ html,body {height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;}
+ .game-shell,.main-panel {height:auto;min-height:100dvh;}
+ .main-panel.turn-resolved .enemy-card {display:block;}
+ .main-panel.turn-resolved .enemy-icon {width:112px;height:125px;}
+ .main-panel.turn-resolved .enemy-card.boss .enemy-icon {width:147px;height:147px;}
+ .build-panel {height:auto;min-height:49px;overflow:visible;padding:10px;}
+ .build-panel>div:nth-child(2) {display:block;}
+ .inventory-item>button:first-child {font-size:18px;padding:6px;}
+ .merchant-intro {grid-template-columns:85px 1fr;}
+ .merchant-intro p:not(.eyebrow) {font-size:19px;}
+ .choice-grid {grid-template-columns:1fr;}
+ .feedback {max-height:none;}
+ .feedback p {overflow:visible;}
+ .feedback .turn-highlight {font-size:18px;}
+ .next-button {font-family:Silkscreen;font-size:10px;min-height:44px;}
+}

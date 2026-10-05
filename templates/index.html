@@ -56,10 +56,10 @@
             and challenge the Leviathan, Death, and the Root Dragon.
         </p>
         <div class="rules">
-            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-heal"></use></svg>Survive</span>
-            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-combat"></use></svg>Build combos</span>
-            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-loot"></use></svg>Choose loot</span>
-            <span><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-event"></use></svg>Shape your route</span>
+            <span><img src="/static/assets/pixel/icon-0.png" alt="">Survive</span>
+            <span><img src="/static/assets/pixel/icon-1.png" alt="">Build combos</span>
+            <span><img src="/static/assets/pixel/icon-2.png" alt="">Choose loot</span>
+            <span><img src="/static/assets/pixel/icon-3.png" alt="">Shape your route</span>
         </div>
         <div class="title-actions">
             <button class="primary-button" onclick="startGame()">START RUN</button>
@@ -205,7 +205,7 @@
                     <span id="tier" class="tier easy">EASY</span>
                 </div>
                 <div class="combat-actions" id="combat-actions">
-                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#ui-combat"></use></svg> ATTACK</strong><span>2 damage and +1 Focus; surviving enemies hit back</span></button>
+                    <button data-action="attack" onclick="selectCombatAction('attack')"><strong><img src="/static/assets/pixel/icon-1.png" alt=""> ATTACK</strong><span>2 damage and +1 Focus; surviving enemies hit back</span></button>
                     <button data-action="defend" onclick="selectCombatAction('defend')"><strong><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#relic-zero_trust"></use></svg> DEFEND</strong><span>Safely interrupt the enemy; does not build Focus</span></button>
                     <button data-action="exploit" onclick="selectCombatAction('exploit')"><strong><svg><use href="{{ url_for('static', filename='assets/ui/game-icons.svg') }}#item-zero_day"></use></svg> EXPLOIT <em>2◇</em></strong><span>4 damage + interrupt; wrong answers are punished</span></button>
                 </div>
@@ -558,6 +558,8 @@
 
         function renderEnemy(enemy) {
             const card = document.getElementById('enemy-card');
+            const stage = Math.max(1,Math.min(15,currentState?.room || 1));
+            card.style.backgroundImage = `linear-gradient(#17233066,#17233088),url('/static/assets/pixel/level-${String(stage).padStart(2,'0')}.png')`;
             if (!enemy) {
                 document.getElementById('enemy-icon').innerHTML = gameAsset('ui', 'event', 'enemy-portrait');
                 document.getElementById('enemy-kind').textContent = 'EXPLORING';
