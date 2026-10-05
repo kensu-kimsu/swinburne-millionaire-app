@@ -235,3 +235,23 @@ html,body {margin:0;overscroll-behavior:none;}
  .dungeon-title {top:64px;}
  .dungeon-title .eyebrow {display:block;font-size:7px;margin:0 0 5px;}
 }
+/* Finished battles retain the arena, with one compact summary over it. */
+.game-shell.battle-active .main-panel.turn-resolved {grid-template-rows:42px 0 minmax(0,1fr) 0;background:transparent;}
+.game-shell.battle-active .main-panel.turn-resolved .question-card,
+.game-shell.battle-active .main-panel.turn-resolved .command-menu {display:none;}
+.game-shell.battle-active .main-panel.turn-resolved .enemy-card {grid-column:1/-1;grid-row:3;}
+.game-shell.battle-active .main-panel.turn-resolved .feedback {inset:54px 12px auto;width:auto;max-width:840px;max-height:40dvh;margin:0 auto;background:#292235!important;border-color:#beaa85;box-shadow:0 3px 0 #18131e;}
+.game-shell.battle-active #enemy-card[data-enemy="phishing_king"] .enemy-icon .game-asset {transform:none;}
+.floating-damage {position:absolute;z-index:65;pointer-events:none;color:#fff0cc;font:28px Silkscreen;text-shadow:2px 2px #452239,-2px -2px #452239,2px -2px #452239,-2px 2px #452239;animation:damage-rise .9s ease-out forwards;white-space:nowrap;}
+.floating-damage.healing {color:#99eea1;}
+@keyframes damage-rise {0%{transform:translate(-50%,0) scale(.8);opacity:1;}20%{transform:translate(-50%,-9px) scale(1.12);}70%{opacity:1;}100%{transform:translate(-50%,-45px);opacity:0;}}
+.password-card {max-width:480px;display:flex;flex-direction:column;gap:14px;}
+.password-card p {font-size:23px;line-height:1.2;}
+.password-card label {font:11px Silkscreen;}
+#stage-password {width:100%;box-sizing:border-box;min-height:54px;font:24px Silkscreen;text-transform:uppercase;letter-spacing:5px;background:#171d2d;color:#ffe2a8;border:2px solid #b09b74;padding:10px;}
+#password-error {color:#ff9d9d;margin:0;}
+.stage-code {font:18px Silkscreen!important;color:#ffe2a8;letter-spacing:3px;}
+@media(orientation:landscape) and (max-height:550px){
+ .game-shell.battle-active .main-panel.turn-resolved {grid-template-columns:minmax(0,1fr);grid-template-rows:36px 0 minmax(0,1fr) 0;}
+ .game-shell.battle-active .main-panel.turn-resolved .feedback {inset:42px 12px auto;width:auto;max-height:45dvh;}
+}

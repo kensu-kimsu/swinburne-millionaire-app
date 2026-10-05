@@ -286,3 +286,7 @@ if (ROOT.parent/'craftpix').exists():
  from build_craftpix_stages import build_stages
  build_stages(ROOT.parent/'craftpix')
 print('Built',len(list(OUT.glob('*.png'))),'pixel assets')
+
+# Keep the village reconstruction when rebuilding the full asset pack.
+from build_market_town import build as build_market
+build_market()

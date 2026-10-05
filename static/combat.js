@@ -90,7 +90,7 @@ async function poseDuring(node,actor,action,duration) {
  await new Promise(resolve=>{function frame(t){updateAtlas(sprite.querySelector('image'),meta,t-start);if(t-start<duration)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
  delete sprite.dataset.attacking;updateAtlas(sprite.querySelector('image'),PIXEL_ASSETS.actors[actor].idle,performance.now());
 }
-async function strikeOpponent(side,actor,effect,label,melee=true) {
+async function strikeOpponent(side,actor,effect,label,melee=true,damage=0) {
  const striker=document.getElementById(side==='hero'?'battle-hero':'enemy-icon');
  const target=document.getElementById(side==='hero'?'enemy-icon':'battle-hero');
  combatAnnouncement(label);
@@ -98,17 +98,28 @@ async function strikeOpponent(side,actor,effect,label,melee=true) {
   const a=striker.getBoundingClientRect(),b=target.getBoundingClientRect();
   const distance=b.left+b.width/2-a.left-a.width/2;
   const dx=distance-Math.sign(distance)*Math.min(55,(a.width+b.width)*.15);
-  const travel=striker.animate([{transform:'translateX(0)'},{transform:`translateX(${dx}px)`}],{duration:420,easing:'ease-in',fill:'forwards'});
-  await poseDuring(striker,actor,'run',420);
+  const travel=striker.animate([{transform:'translateX(0)'},{transform:`translateX(${dx}px)`}],{duration:250,easing:'ease-in',fill:'forwards'});
+  await poseDuring(striker,actor,'run',250);
+  floatingDamage(target,damage);
   playPixelEffect(effect,label,side==='hero'?'enemy':'hero');playEffect(side==='hero'?'snd-attack':'snd-enemy');
   const hit=target.animate([{transform:'translateX(0)'},{transform:`translateX(${Math.sign(dx)*10}px)`},{transform:'translateX(0)'}],{duration:220});
-  await poseDuring(striker,actor,'attack',480);
-  const retreat=striker.animate([{transform:`translateX(${dx}px)`},{transform:'translateX(0)'}],{duration:350,easing:'ease-out',fill:'forwards'});
-  await poseDuring(striker,actor,'run',350);travel.cancel();retreat.cancel();hit.cancel();
+  await poseDuring(striker,actor,'attack',300);
+  const retreat=striker.animate([{transform:`translateX(${dx}px)`},{transform:'translateX(0)'}],{duration:230,easing:'ease-out',fill:'forwards'});
+  await poseDuring(striker,actor,'run',230);travel.cancel();retreat.cancel();hit.cancel();
  }else{
+  floatingDamage(target,damage);
   playPixelEffect(effect,label,side==='enemy'&&['heal','guard','ad_bloom','zero_rewrite','node_bastion'].includes(effect)?'enemy':side==='hero'?'enemy':'hero');
-  await poseDuring(striker,actor,'attack',800);
+  await poseDuring(striker,actor,'attack',600);
  }
+}
+function floatingDamage(target,amount) {
+ if(!amount)return;
+ const stage=document.getElementById('enemy-card'),bounds=stage.getBoundingClientRect(),actor=target.getBoundingClientRect();
+ const text=document.createElement('strong');text.className='floating-damage'+(amount<0?' healing':'');
+ text.textContent=amount<0?`+${-amount}`:`−${amount}`;
+ text.style.left=(actor.left+actor.width/2-bounds.left)+'px';
+ text.style.top=Math.max(28,actor.top-bounds.top+12)+'px';
+ stage.appendChild(text);setTimeout(()=>text.remove(),900);
 }
 async function performCombat(data,opponent) {
  combatAnimating=true;
@@ -117,18 +128,20 @@ async function performCombat(data,opponent) {
   const enemyTurn=async()=>{
    const action=data.enemy_action;if(!action||action.canceled)return;
    const effect=action.pixel_effect||({attack:'strike',heavy_attack:'payload_burst',heal:'heal',defend:'guard',tsunami:'tsunami',meteor:'meteor',time_stop:'time_stop',petrify:'petrify',encrypt:'ransom_seal',jammer:'false_beacon'}[action.id]||'strike');
-   await strikeOpponent('enemy',id,effect,`${action.first_strike?'FIRST STRIKE · ':''}${action.name}`,['attack','heavy_attack'].includes(action.id));
+   await strikeOpponent('enemy',id,effect,`${action.first_strike?'FIRST STRIKE · ':''}${action.name}`,['attack','heavy_attack'].includes(action.id),data.damage_taken);
   };
   if(data.first_strike)await enemyTurn();
   if(data.player_acted!==false&&data.is_correct){
    if(data.combat_action==='defend'){combatAnnouncement('AEGIS GUARD');playPixelEffect('guard','GUARD','hero');await battleSleep(650);}
-   else await strikeOpponent('hero','hero',data.combat_action==='exploit'?'exploit':'strike',data.combat_action==='exploit'?'ARCANE STRIKE':'BLADE STRIKE');
+   else await strikeOpponent('hero','hero',data.combat_action==='exploit'?'exploit':'strike',data.combat_action==='exploit'?'ARCANE STRIKE':'BLADE STRIKE',true,data.damage_dealt);
   }
   if(!data.first_strike)await enemyTurn();
   if(data.enemy_action?.canceled)combatAnnouncement(`${data.enemy_action.name} INTERRUPTED`);
   document.getElementById('battle-enemy-hearts').innerHTML=heartMarkup(data.enemy?.hp||0,opponent?.max_hp||1,true);
   updateCompactHud(data);
- } finally {combatAnimating=false;beginAutoContinue();}
+  if(data.recovered_hp)floatingDamage(document.getElementById('battle-hero'),-data.recovered_hp);
+  if(!data.is_correct)combatAnnouncement(`Correct answer: ${data.correct_answer}`);
+ } finally {combatAnimating=false;}
 }
 function fitBattleQuestion() {
  const card=document.querySelector('.question-card'),question=document.getElementById('question'),options=[...document.querySelectorAll('.option')];

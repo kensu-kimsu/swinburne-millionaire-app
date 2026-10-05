@@ -385,3 +385,19 @@ is bounded by the map height, and exploration sprites leave more paths visible.
 Reachability checks include all 15 spawns, enemies, chests and exits; browser and
 server collision are compared at 47,520 positions. Runtime art and supplied
 license notices are shipped; source archives remain outside the repository.
+
+
+### Stage passwords and fluid battles
+
+Use **STAGE PASSWORD** on the title menu to start a fresh run with full health at a chosen stage. Codes are case-insensitive. Travel does not unlock skipped stage codes. Defeating every enemy on a stage saves its code in **Encyclopedia → Stage Passwords**; discoveries persist in the same browser session.
+
+| Stages | Testing codes |
+| --- | --- |
+| Dungeon 1–5 | `DNG001`, `DNG002`, `DNG003`, `DNG004`, `DNG005` |
+| Undead 6–10 | `UND006`, `UND007`, `UND008`, `UND009`, `UND010` |
+| Cursedland 11–15 | `CRS011`, `CRS012`, `CRS013`, `CRS014`, `CRS015` |
+| Lantern Village market | `MKT000` (interlude; its exit leads to stage 2) |
+
+The market code is saved when leaving the village through its gate. The village uses original Pixel Crawler timber/glass building modules, farm crops, trees and props. Rebuild it with `python scripts/build_market_town.py`. Its collision mask is shipped as `market-layout.json`, shared by browser and server.
+
+During combat, damage numbers rise above the fighters at impact. Once the action animations finish, the next question loads without a turn-summary pause. Only the final battle summary remains, over the expanded arena. The Leviathan retains its original left-facing sprite orientation.

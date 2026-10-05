@@ -64,9 +64,22 @@
         <div class="title-actions">
             <button class="primary-button" onclick="startGame()">START RUN</button>
             <button class="secondary-button" onclick="openEncyclopedia()">ENCYCLOPEDIA</button>
+            <button class="secondary-button" onclick="openStagePassword()">STAGE PASSWORD</button>
         </div>
         <p class="sound-hint" id="sound-hint">TAP ANYWHERE TO AWAKEN THE SOUNDTRACK</p>
         <button class="text-button danger-text" onclick="confirmResetProgress()">Reset all progress</button>
+    </section>
+
+    <section id="password-overlay" class="modal-overlay hidden">
+        <form class="modal-card password-card" onsubmit="event.preventDefault(); startFromPassword()">
+            <button type="button" class="modal-close" onclick="closeStagePassword()" aria-label="Close stage password">×</button>
+            <p class="eyebrow">STAGE TRAVEL</p><h2>Enter stage password</h2>
+            <p>A six-character code starts a fresh run at that stage. Beat a stage to save its code in the encyclopedia.</p>
+            <label for="stage-password">PASSWORD</label>
+            <input id="stage-password" maxlength="6" minlength="6" pattern="[A-Za-z0-9]{6}" autocomplete="off" autocapitalize="characters" spellcheck="false" required placeholder="DNG001">
+            <p id="password-error" role="alert"></p>
+            <button class="primary-button" type="submit">TRAVEL TO STAGE</button>
+        </form>
     </section>
 
     <section id="end-screen" class="screen-overlay hidden">
@@ -588,6 +601,7 @@
                 return;
             }
             document.getElementById('enemy-icon').innerHTML = gameAsset('enemy', enemy.id, 'enemy-portrait');
+            card.dataset.enemy = enemy.id;
             document.getElementById('battle-hero').innerHTML = pixelSprite('hero');
             document.getElementById('enemy-kind').textContent = enemy.kind;
             document.getElementById('enemy-name').textContent = enemy.name;
@@ -667,7 +681,24 @@
             document.getElementById('active-effects').textContent = active.join(' • ') || 'None';
         }
 
-        async function startGame() {
+        function openStagePassword() {
+            document.getElementById('password-error').textContent='';
+            document.getElementById('password-overlay').classList.remove('hidden');
+            document.getElementById('stage-password').focus();
+        }
+        function closeStagePassword() {document.getElementById('password-overlay').classList.add('hidden');}
+        async function startFromPassword() {
+            const password=document.getElementById('stage-password').value.trim().toUpperCase();
+            await startGame(password);
+        }
+        async function startGame(password = null) {
+            const response = await fetch('/api/start', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(password === null ? {} : {password})});
+            const data = await response.json();
+            if (!response.ok) {
+                if(password !== null) {document.getElementById('password-error').textContent=data.error;return;}
+                return showFatalError(data.error || 'The run could not start.');
+            }
+            closeStagePassword();
             stopAllSounds();
             dungeonFloorKey = null;
             heroPosition = null;
@@ -683,9 +714,6 @@
             closeShop();
             document.getElementById('title-screen').classList.add('hidden');
             document.getElementById('end-screen').classList.add('hidden');
-            const response = await fetch('/api/start', { method: 'POST' });
-            const data = await response.json();
-            if (!response.ok) return showFatalError(data.error || 'The run could not start.');
             await processGameState(data);
         }
 
@@ -881,9 +909,9 @@
             }
             if (dungeon.mode === 'market' && dungeon.feature) {
                 actorNode({x:dungeon.feature.x,y:dungeon.feature.y-.25,name:'Cipher Market Stall'},
-                    'stall',`/static/assets/pixel/market-stall.png?v=${ASSET_REVISION}`,216,144);
+                    'stall',`/static/assets/pixel/market-stall.png?v=${ASSET_REVISION}`,216,108);
                 actorNode(dungeon.feature,'merchant','merchant',120,120,true);
-                for(const [i,x,y] of [[0,5.2,4.3],[1,13.6,4.8],[2,5.5,8.4],[3,12.8,9.4]])
+                for(const [i,x,y] of [[0,6.2,4.3],[1,12.4,5.8],[2,6.5,8.4],[3,11.4,8.8]])
                     actorNode({uid:`villager-${i}`,x,y,name:'Market villager'},'citizen',i%2?'villager_peasant':'villager_tavern',110,110,true);
             }
             for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', `/static/assets/pixel/chest.png?v=${ASSET_REVISION}`, 48, 48);
@@ -1238,7 +1266,8 @@
         function showAnswerResult(data, answer) {
             const opponent=currentState?.enemy;
             const previousHp=currentState?.hp;
-            document.querySelector('.main-panel').classList.add('turn-resolved');
+            const battleFinished = ['enemy_defeated','won','game_over'].includes(data.status);
+            document.querySelector('.main-panel').classList.remove('turn-resolved');
             const correct = document.getElementById(`option-${data.correct_answer}`);
             const selected = answer ? document.getElementById(`option-${answer}`) : null;
             if (correct) correct.classList.add('correct');
@@ -1247,18 +1276,25 @@
             const feedback = document.getElementById('feedback');
             const title = document.getElementById('feedback-title');
             const text = document.getElementById('feedback-text');
-            feedback.classList.remove('hidden', 'good', 'bad');
+            feedback.classList.add('hidden');
+            feedback.classList.remove('good','bad');
 
             if(opponent) {renderEnemy({...opponent,hp:data.enemy?.hp||0});}
             if(opponent) {document.getElementById('battle-enemy-hearts').innerHTML=heartMarkup(opponent.hp,opponent.max_hp,true);}
             document.getElementById('battle-player-hearts').innerHTML=heartMarkup(previousHp,data.max_hp,true);
-            performCombat(data,opponent);
+            performCombat(data,opponent).then(() => {
+                if(battleFinished) {
+                    document.querySelector('.main-panel').classList.add('turn-resolved');
+                    feedback.classList.remove('hidden');
+                    beginAutoContinue();
+                } else continueRun();
+            });
             playCombatAudio(data);
             if (data.status === 'game_over') {
                 title.textContent = 'SYSTEM FAILURE';
                 text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('bad');
-            } else if (!data.is_correct) {
+            } else if (!data.is_correct && !battleFinished) {
                 title.textContent = data.was_timeout ? 'TIME EXPIRED' : 'INCORRECT';
                 text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('bad');
@@ -1696,6 +1732,16 @@
             `;
             const area = document.getElementById('encyclopedia-content');
             area.innerHTML = '';
+            const codes=document.createElement('section');codes.className='encyclopedia-section';
+            codes.innerHTML='<h3>Stage Passwords <small>'+ (15-data.stage_passwords.filter(entry=>entry.stage>0).length) +' locked</small></h3>';
+            const codeGrid=document.createElement('div');codeGrid.className='encyclopedia-grid';
+            for(const entry of data.stage_passwords) {
+                const item=document.createElement('div');item.className='encyclopedia-entry';
+                item.innerHTML=`<strong>${entry.stage ? 'STAGE '+entry.stage+' · ' : ''}${escapeHtml(entry.name)}</strong><p class="stage-code">${escapeHtml(entry.password)}</p>`;
+                codeGrid.appendChild(item);
+            }
+            if(!data.stage_passwords.length) codeGrid.textContent='Beat a stage to unlock its travel password.';
+            codes.appendChild(codeGrid);area.appendChild(codes);
             const sections = [
                 ['Mechanics', data.mechanics, data.locked_counts.mechanics, 'ui'],
                 ['Room Types', data.rooms, data.locked_counts.rooms, 'ui'],

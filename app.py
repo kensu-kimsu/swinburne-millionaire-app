@@ -16,6 +16,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 3600
 
 TOTAL_ROOMS = 15
+STAGE_PASSWORDS = {stage: f"{'DNG' if stage <= 5 else 'UND' if stage <= 10 else 'CRS'}{stage:03}" for stage in range(1, TOTAL_ROOMS + 1)}
 INVENTORY_LIMIT = None
 PLAYER_MAX_HP = 12
 ELITE_SPAWN_CHANCE = 0.22
@@ -316,6 +317,8 @@ def get_tier(room):
 
 def default_progress():
     return {
+        "cleared_stages": [],
+        "cleared_market": False,
         "runs_started": 0,
         "runs_completed": 0,
         "best_room": 0,
@@ -331,6 +334,8 @@ def default_progress():
 def get_progress():
     if "meta_progress" not in session:
         session["meta_progress"] = default_progress()
+    session["meta_progress"].setdefault("cleared_stages", [])
+    session["meta_progress"].setdefault("cleared_market", False)
     return session["meta_progress"]
 
 
@@ -575,13 +580,16 @@ def create_dungeon_floor(state):
 
 def create_market_floor(state):
     """An optional interlude between levels; current_room remains unchanged."""
+    with open(os.path.join(app.static_folder, "assets/pixel/market-layout.json")) as layout_file:
+        market = json.load(layout_file)
     state["dungeon"] = {
+        "walk_tiles": market["walk_tiles"], "layout_version": 3,
         "width": 18, "height": 11, "theme": "market", "mode": "market", "layout_id": "market",
         "seed": random.randint(0, 999999999),
-        "obstacles": ((1.9,5.0,2.0,.45),(14.0,5.15,2.0,.45),(3.45,8.75,2.0,.45),(12.5,9.7,2.0,.45)), "floor_bounds": FLOOR_BOUNDS,
+        "obstacles": (), "floor_bounds": FLOOR_BOUNDS,
         "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(), "last_roam_at": time.monotonic(),
-        "exit": {"x": 14.45, "y": 2.6},
-        "portal_visual": {"x": 14.45, "y": 2.6},
+        "exit": {"x": market["exit"][0], "y": market["exit"][1]},
+        "portal_visual": {"x": market["exit"][0], "y": market["exit"][1]},
         "enemies": [], "chests": [], "decor": [],
         "feature": {"x": 9.0, "y": 6.35, "type": "shop", "used": False},
     }
@@ -870,6 +878,11 @@ def complete_combat(state):
             marker["defeated"] = True
     state["enemy"] = None
     remaining = sum(not entry["defeated"] for entry in dungeon["enemies"]) if dungeon else 0
+    if (dungeon and encounter_uid and remaining == 0) or (not dungeon and defeated_kind in {"MINIBOSS", "MAJOR BOSS", "FINAL BOSS"}):
+        progress = get_progress()
+        if state["current_room"] not in progress["cleared_stages"]:
+            progress["cleared_stages"].append(state["current_room"])
+            session.modified = True
     if state["current_room"] == TOTAL_ROOMS and (not dungeon or not encounter_uid or remaining == 0):
         state["game_over"] = True
         state["won"] = True
@@ -1007,7 +1020,7 @@ def index():
     with open(os.path.join(app.static_folder, "pixel.css"), "rb") as css_file:
         revision_bytes = css_file.read()
     # Art-only deployments also invalidate phone/browser image caches.
-    revision_files = ["combat.js", "assets/pixel/manifest.json"]
+    revision_files = ["combat.js", "assets/pixel/manifest.json", "assets/pixel/market.png"]
     revision_files += [f"assets/pixel/level-{stage:02}.png" for stage in range(1,16)]
     revision_files += [f"assets/pixel/battle-{theme}.png" for theme in range(1,4)]
     for filename in revision_files:
@@ -1019,6 +1032,18 @@ def index():
 
 @app.route("/api/start", methods=["POST"])
 def start_game():
+    payload = request.get_json(silent=True) or {}
+    stage = 1
+    market_travel = False
+    if "password" in payload:
+        password = payload["password"]
+        if not isinstance(password, str):
+            return jsonify({"error": "Enter a six-character stage password."}), 400
+        password = password.strip().upper()
+        market_travel = password == "MKT000"
+        stage = 1 if market_travel else next((number for number, code in STAGE_PASSWORDS.items() if code == password), None)
+        if stage is None:
+            return jsonify({"error": "Unknown stage password. Use six letters and numbers."}), 400
     progress = get_progress()
     progress["runs_started"] += 1
     bonus_hp = 1 if progress["runs_completed"] >= 1 else 0
@@ -1026,7 +1051,7 @@ def start_game():
     session["game_state"] = {
         "question_orders": shuffled_question_orders(),
         "question_positions": {tier: 0 for tier in QUESTION_FILES},
-        "current_room": 1,
+        "current_room": stage,
         "hp": PLAYER_MAX_HP + bonus_hp,
         "max_hp": PLAYER_MAX_HP + bonus_hp,
         "credits": starting_credits,
@@ -1058,8 +1083,11 @@ def start_game():
         },
     }
     state = session["game_state"]
-    create_dungeon_floor(state)
-    record_room(1)
+    if market_travel:
+        create_market_floor(state)
+    else:
+        create_dungeon_floor(state)
+    record_room(stage)
     session.modified = True
     return jsonify({"status": "started", **public_state(state)})
 
@@ -1160,6 +1188,8 @@ def move_in_dungeon():
             session.modified = True
             return jsonify({"status": "exit_locked", "message": f"Defeat {remaining} remaining enemies to unlock the gate.", **public_state(state)})
         if state["current_room"] < TOTAL_ROOMS:
+            if dungeon.get("mode") == "market":
+                get_progress()["cleared_market"] = True
             if dungeon.get("mode") == "market" or random.random() >= .3:
                 advance_dungeon_floor(state)
             else:
@@ -1589,6 +1619,9 @@ def encyclopedia():
             "runs_completed": progress["runs_completed"],
             "best_room": progress["best_room"],
         },
+        "stage_passwords": [{"stage": number, "name": STAGES[number-1]["name"], "password": STAGE_PASSWORDS[number]}
+                            for number in sorted(progress["cleared_stages"])] +
+                           ([{"stage":0,"name":"Lantern Village","password":"MKT000"}] if progress["cleared_market"] else []),
         "mechanics": [{"id": key, **MECHANICS[key]} for key in progress["unlocked_mechanics"]],
         "items": [item_view(key) for key in progress["unlocked_items"]],
         "relics": [relic_view(key) for key in progress["unlocked_relics"]],

@@ -312,7 +312,8 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(market['room'], 1)
         self.assertEqual(market['dungeon']['mode'], 'market')
         self.assertEqual(market['dungeon']['remaining'], 0)
-        self.assertEqual(len(market['dungeon']['obstacles']), 4)
+        self.assertEqual(len(market['dungeon']['walk_tiles']), 22)
+        self.assertTrue(walkable(market['dungeon'],9,6.35))
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
             state['dungeon']['player'] = {'x':state['dungeon']['feature']['x'],
@@ -1045,6 +1046,79 @@ class RoguelikeGameTests(unittest.TestCase):
             self.assertTrue((project_root / "static/assets/enemies" / f"{enemy_id}.webp").is_file())
         self.assertTrue((project_root / "static/assets/npcs/cipher_merchant.webp").is_file())
 
+
+class StagePasswordTests(unittest.TestCase):
+    def setUp(self):
+        app.config.update(TESTING=True, SECRET_KEY="test-secret")
+        self.client=app.test_client()
+
+    def test_all_passwords_start_correct_stage_without_unlocking_codes(self):
+        from app import STAGE_PASSWORDS
+        self.assertEqual(len(set(STAGE_PASSWORDS.values())),15)
+        for stage,code in STAGE_PASSWORDS.items():
+            with self.subTest(stage=stage):
+                self.assertRegex(code,r"^[A-Z0-9]{6}$")
+                self.assertTrue(any(c.isdigit() for c in code))
+                self.assertTrue(any(c.isalpha() for c in code))
+                response=self.client.post('/api/start',json={'password':' '+code.lower()+' '})
+                self.assertEqual(response.status_code,200)
+                state=response.get_json()
+                self.assertEqual(state['room'],stage)
+                self.assertEqual(state['pending'],'dungeon')
+                self.assertEqual(state['hp'],12)
+                self.assertFalse(state['dungeon']['exit_unlocked'])
+                self.assertTrue(walkable(state['dungeon'],**state['dungeon']['player']))
+        self.assertEqual(self.client.get('/api/encyclopedia').get_json()['stage_passwords'],[])
+
+    def test_invalid_code_preserves_current_run(self):
+        self.client.post('/api/start',json={'password':'UND009'})
+        before=self.client.get('/api/state').get_json()
+        for code in ['BAD999','',None,123456,'DNG001x']:
+            self.assertEqual(self.client.post('/api/start',json={'password':code}).status_code,400)
+            self.assertEqual(self.client.get('/api/state').get_json(),before)
+
+    def test_codes_unlock_after_final_enemy_only_and_persist_across_runs(self):
+        from app import STAGE_PASSWORDS,complete_combat,create_enemy
+        from flask import session
+        for stage in [1,5,15]:
+            self.client.post('/api/start',json={'password':STAGE_PASSWORDS[stage]})
+            with self.client.session_transaction() as saved:
+                state=saved['game_state']
+            markers=state['dungeon']['enemies']
+            state['enemy']=create_enemy(stage,enemy_id=markers[0]['enemy_id'])
+            state['current_enemy_uid']=markers[0]['uid']
+            with app.test_request_context('/'):
+                session['meta_progress']={'cleared_stages':[], **__import__('app').default_progress()}
+                if len(markers)>1:
+                    complete_combat(state)
+                    self.assertEqual(session['meta_progress']['cleared_stages'],[])
+                for marker in markers[:-1]:marker['defeated']=True
+                state['enemy']=create_enemy(stage,enemy_id=markers[-1]['enemy_id'])
+                state['current_enemy_uid']=markers[-1]['uid']
+                complete_combat(state)
+                self.assertEqual(session['meta_progress']['cleared_stages'],[stage])
+                progress=dict(session['meta_progress'])
+            with self.client.session_transaction() as saved:saved['meta_progress']=progress
+            codes=self.client.get('/api/encyclopedia').get_json()['stage_passwords']
+            self.assertEqual(codes[0]['password'],STAGE_PASSWORDS[stage])
+            self.client.post('/api/start')
+            self.assertEqual(self.client.get('/api/encyclopedia').get_json()['stage_passwords'],codes)
+
+    def test_market_routes_reach_merchant_and_exit(self):
+        from app import create_market_floor
+        from collections import deque
+        state=self.client.post('/api/start',json={'password':'MKT000'}).get_json();d=state['dungeon']
+        self.assertEqual(d['mode'],'market')
+        spawn=d['player'];self.assertTrue(walkable(d,**spawn))
+        queue=deque([(round(spawn['x']*4),round(spawn['y']*4))]);seen=set(queue)
+        while queue:
+            x,y=queue.popleft()
+            for nx,ny in [(x+1,y),(x-1,y),(x,y+1),(x,y-1)]:
+                if (nx,ny) not in seen and walkable(d,nx/4,ny/4):seen.add((nx,ny));queue.append((nx,ny))
+        for point in [d['feature'],d['exit']]:
+            self.assertTrue(any(abs(x/4-point['x'])<.3 and abs(y/4-point['y'])<.3 for x,y in seen))
+        self.assertFalse(walkable(d,9,3))
+        self.assertFalse(walkable(d,3,7))
 
 if __name__ == "__main__":
     unittest.main()
