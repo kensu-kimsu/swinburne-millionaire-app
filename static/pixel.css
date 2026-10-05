@@ -261,3 +261,37 @@ html,body {margin:0;overscroll-behavior:none;}
 .password-card .eyebrow {font:9px Silkscreen;letter-spacing:2px;margin:0;}
 .password-card h2 {font-size:16px;line-height:1.4;margin:0;}
 .password-card p:not(.eyebrow) {font-size:21px;line-height:1.2;margin:0;}
+
+/* Exploration leaves the map unobstructed: one message, then unboxed stats. */
+.dungeon-screen {padding:0;}
+.dungeon-title,.dungeon-screen .move-reminder {display:none!important;}
+.dungeon-message,.toast.map-toast {
+ position:absolute;top:max(4px,env(safe-area-inset-top));bottom:auto;
+ left:8px;right:46px;transform:none;width:auto;max-width:none;
+ min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;
+ box-shadow:none;color:#fff4db;text-align:left;font:20px/24px VT323,monospace;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
+ text-shadow:1px 1px #10131a,-1px -1px #10131a,1px -1px #10131a,-1px 1px #10131a;
+}
+.dungeon-screen.has-map-toast .dungeon-message {visibility:hidden;}
+.dungeon-hud {
+ top:calc(max(4px,env(safe-area-inset-top)) + 28px);left:8px;right:8px;
+ transform:none;width:auto;max-width:600px;margin:0;padding:0;
+ grid-template-columns:minmax(0,1fr) auto auto 24px;gap:10px;
+ background:none;border:0;border-radius:0;box-shadow:none;
+ color:#fff4db;text-shadow:1px 1px #10131a,-1px -1px #10131a;
+}
+.dungeon-hud > div {flex-direction:row;align-items:center;gap:5px;min-width:0;white-space:nowrap;}
+.dungeon-hud span {color:#fff4db;font-size:8px;letter-spacing:0;}
+.dungeon-hud strong,.dungeon-hud #dungeon-hp {font:22px/24px VT323,monospace;white-space:nowrap;}
+.dungeon-hud .heart-meter {display:inline-flex;flex-wrap:nowrap;max-width:none;gap:1px;}
+.dungeon-hud .pixel-heart {font-size:16px;}
+.dungeon-hud .map-coins svg {width:18px;height:18px;fill:currentColor;filter:drop-shadow(1px 1px #10131a);}
+.dungeon-hud .icon-button {width:24px;height:24px;min-height:0;padding:0;background:none;border:0;box-shadow:none;}
+.dungeon-hud .icon-button svg {width:22px;height:22px;}
+@media(max-width:580px){
+ .dungeon-hud {gap:6px;}
+ .dungeon-hud > div {gap:3px;}
+ .dungeon-message,.toast.map-toast {font-size:18px;}
+ .dungeon-hud .map-stage span,.dungeon-hud #dungeon-hp + span {display:none;}
+}
