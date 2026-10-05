@@ -1086,7 +1086,7 @@
             selectedAnswer = null;
             selectedCombatAction = 'attack';
             document.querySelectorAll('.combat-actions button').forEach(button => {
-                button.classList.remove('selected');
+                button.classList.toggle('selected', button.dataset.action === 'attack');
                 button.disabled = false;
             });
             let data = initialQuestion;
@@ -1116,6 +1116,7 @@
                 button.onclick = () => selectAnswer(key);
                 area.appendChild(button);
             });
+            requestAnimationFrame(fitBattleQuestion);
             startTimer(data.time_limit, data.threat_warning?.level, () =>
                 applyAnswerLock(data.answer_lock, data.answer_lock_source)
             );

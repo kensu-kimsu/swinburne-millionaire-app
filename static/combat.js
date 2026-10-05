@@ -130,7 +130,19 @@ async function performCombat(data,opponent) {
   updateCompactHud(data);
  } finally {combatAnimating=false;beginAutoContinue();}
 }
+function fitBattleQuestion() {
+ const card=document.querySelector('.question-card'),question=document.getElementById('question'),options=[...document.querySelectorAll('.option')];
+ if(!card||!card.clientHeight)return;
+ question.style.fontSize='';options.forEach(option=>option.style.fontSize='');
+ for(let step=0;step<8;step++){
+  const overflowing=card.scrollHeight>card.clientHeight+1||options.some(option=>option.scrollHeight>option.clientHeight+1);
+  if(!overflowing)break;
+  question.style.fontSize=Math.max(15,parseFloat(getComputedStyle(question).fontSize)-1)+'px';
+  options.forEach(option=>option.style.fontSize=Math.max(14,parseFloat(getComputedStyle(option).fontSize)-1)+'px');
+ }
+}
 function setupCompactBattle() {
+ window.addEventListener('resize',()=>requestAnimationFrame(fitBattleQuestion));
  const question=document.querySelector('.question-card'),commands=document.getElementById('combat-actions');
  const menu=document.createElement('section');menu.className='command-menu';
  menu.appendChild(commands);menu.appendChild(document.querySelector('.actions'));
