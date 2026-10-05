@@ -337,6 +337,15 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(next_floor['room'], 2)
         self.assertEqual(next_floor['dungeon']['mode'], 'combat')
 
+    def test_pixel_styles_are_versioned_for_deployments(self):
+        import hashlib
+        css = (Path(__file__).parent/'static/pixel.css').read_bytes()
+        revision = hashlib.sha256(css).hexdigest()[:12]
+        page = self.client.get('/').get_data(as_text=True)
+        url = f'/static/pixel.css?v={revision}'
+        self.assertIn(url,page)
+        self.assertEqual(self.client.get(url).status_code,200)
+
     def test_portal_and_battle_art_share_map_enemies(self):
         from pathlib import Path
         root = Path(__file__).parent

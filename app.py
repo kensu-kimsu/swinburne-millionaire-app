@@ -1,3 +1,4 @@
+import hashlib
 import json
 import math
 import os
@@ -1018,7 +1019,9 @@ def resolve_enemy_intent(state, combat_action, canceled=False):
 def index():
     with open(os.path.join(app.static_folder, "assets/pixel/manifest.json")) as asset_file:
         pixel_assets = json.load(asset_file)
-    return render_template("index.html", pixel_assets=pixel_assets)
+    with open(os.path.join(app.static_folder, "pixel.css"), "rb") as css_file:
+        pixel_revision = hashlib.sha256(css_file.read()).hexdigest()[:12]
+    return render_template("index.html", pixel_assets=pixel_assets, pixel_revision=pixel_revision)
 
 
 @app.route("/api/start", methods=["POST"])
