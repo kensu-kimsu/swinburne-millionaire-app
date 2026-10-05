@@ -48,6 +48,16 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertNotIn("intent", data["enemy"])
         self.assertNotIn("intent_detail", data["enemy"])
 
+    def test_surviving_turn_includes_next_question_without_an_extra_request(self):
+        before=self.client.get('/api/question').get_json()
+        answer=self.answer_for_current_question()
+        result=self.client.post('/api/answer',json={'answer':answer,'combat_action':'defend'}).get_json()
+        self.assertIsNotNone(result['enemy'])
+        self.assertNotEqual(result['question'],before['question'])
+        fetched=self.client.get('/api/question').get_json()
+        for key in ['question','options','domain','time_limit','answer_lock']:
+            self.assertEqual(result[key],fetched[key])
+
     def test_session_cookie_stays_within_browser_limit(self):
         response = self.client.post("/api/start")
         cookie = response.headers.get("Set-Cookie", "")

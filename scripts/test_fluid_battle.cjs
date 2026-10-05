@@ -7,10 +7,10 @@ let animations=[],continues=0,summaries=0;
 const c=vm.createContext({document:{getElementById:node,querySelector:()=>node('panel')},
  currentState:{hp:12,enemy:{hp:8,max_hp:8}},heartMarkup:()=>'',renderState:()=>{},renderEnemy:()=>{},
  performCombat:()=>new Promise(resolve=>animations.push(resolve)),playCombatAudio:()=>{},buildTurnMessage:()=>'',
- continueRun:()=>{continues++;},beginAutoContinue:()=>{summaries++;}});
+ fetchQuestion:data=>{assert.equal(data.question,"Next question");continues++;},continueRun:()=>{throw Error("Unnecessary state request between questions");},beginAutoContinue:()=>{summaries++;}});
 vm.runInContext(template.slice(start,end),c);
 (async()=>{
- c.showAnswerResult({status:'answered',hp:11,max_hp:12,is_correct:true,damage_dealt:2,enemy:{hp:6}},'A');
+ c.showAnswerResult({status:'answered',question:'Next question',hp:11,max_hp:12,is_correct:true,damage_dealt:2,enemy:{hp:6}},'A');
  assert.equal(continues,0,'wait for physical strike before next question');
  assert.equal(node('feedback').classList.values.has('hidden'),true,'no turn-summary overlay');
  animations.shift()();await Promise.resolve();

@@ -1293,7 +1293,7 @@
                     document.querySelector('.main-panel').classList.add('turn-resolved');
                     feedback.classList.remove('hidden');
                     beginAutoContinue();
-                } else continueRun();
+                } else fetchQuestion(data);
             });
             playCombatAudio(data);
             if (data.status === 'game_over') {

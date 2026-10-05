@@ -1393,7 +1393,7 @@ def submit_answer():
         "phase_changed": phase_changed, "defeated_enemy": defeated_enemy,
         "defeated_enemy_kind": defeated_enemy_kind, "defeated_enemy_id": defeated_enemy_id,
         "recovered_hp": recovered_hp,
-        **public_state(state),
+        **(battle_question_payload(state) if state["enemy"] and not state["game_over"] else public_state(state)),
     })
 
 
