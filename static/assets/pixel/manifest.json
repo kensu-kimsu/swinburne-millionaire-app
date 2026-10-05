@@ -3,24 +3,31 @@
     "hero": {
       "idle": {
         "src": "/static/assets/pixel/hero-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/hero-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/hero-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/hero-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "merchant": {
@@ -32,211 +39,292 @@
         "fps": 8
       }
     },
+    "villager_peasant": {
+      "idle": {
+        "src": "/static/assets/pixel/villager_peasant-idle.png",
+        "width": 64,
+        "height": 64,
+        "frames": 4,
+        "fps": 8
+      }
+    },
+    "villager_tavern": {
+      "idle": {
+        "src": "/static/assets/pixel/villager_tavern-idle.png",
+        "width": 64,
+        "height": 64,
+        "frames": 4,
+        "fps": 8
+      }
+    },
     "spam_bot": {
       "idle": {
         "src": "/static/assets/pixel/spam_bot-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/spam_bot-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/spam_bot-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/spam_bot-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "phishing_email": {
       "idle": {
         "src": "/static/assets/pixel/phishing_email-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/phishing_email-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/phishing_email-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/phishing_email-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "adware_bug": {
       "idle": {
         "src": "/static/assets/pixel/adware_bug-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/adware_bug-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/adware_bug-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 7,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/adware_bug-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "botnet_node": {
       "idle": {
         "src": "/static/assets/pixel/botnet_node-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/botnet_node-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/botnet_node-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/botnet_node-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "credential_thief": {
       "idle": {
         "src": "/static/assets/pixel/credential_thief-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/credential_thief-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/credential_thief-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/credential_thief-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "malware_loader": {
       "idle": {
         "src": "/static/assets/pixel/malware_loader-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/malware_loader-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/malware_loader-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/malware_loader-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "ransomware": {
       "idle": {
         "src": "/static/assets/pixel/ransomware-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/ransomware-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/ransomware-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/ransomware-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "insider_threat": {
       "idle": {
         "src": "/static/assets/pixel/insider_threat-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/insider_threat-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/insider_threat-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/insider_threat-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "zero_day_exploit": {
       "idle": {
         "src": "/static/assets/pixel/zero_day_exploit-idle.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 4,
         "fps": 8
       },
       "run": {
         "src": "/static/assets/pixel/zero_day_exploit-run.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
       },
       "death": {
         "src": "/static/assets/pixel/zero_day_exploit-death.png",
-        "width": 32,
-        "height": 32,
+        "width": 48,
+        "height": 48,
         "frames": 6,
         "fps": 12
+      },
+      "attack": {
+        "src": "/static/assets/pixel/zero_day_exploit-attack.png",
+        "width": 48,
+        "height": 48,
+        "frames": 8,
+        "fps": 16
       }
     },
     "phishing_king": {

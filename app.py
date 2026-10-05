@@ -15,7 +15,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 3600
 
 TOTAL_ROOMS = 15
-INVENTORY_LIMIT = 4
+INVENTORY_LIMIT = None
 PLAYER_MAX_HP = 12
 ELITE_SPAWN_CHANCE = 0.22
 
@@ -254,7 +254,7 @@ MECHANICS = {
     "combat": {"name": "Active Quiz Combat", "description": "Enemy actions are hidden. Attack builds Focus and softens incoming damage; spend 2 Focus on Exploit."},
     "combo": {"name": "Combo Damage", "description": "Every third consecutive correct answer deals additional damage."},
     "routes": {"name": "Route Choices", "description": "Support rooms happen between fights. Only completed combat advances the 15 stages."},
-    "inventory": {"name": "Inventory", "description": "Carry up to four consumable items and choose when to use them."},
+    "inventory": {"name": "Inventory", "description": "Carry unlimited stacked consumables in the Relics menu and choose when to use them."},
     "loot": {"name": "Loot", "description": "Defeated enemies and data caches offer a choice of rewards."},
     "relics": {"name": "Relics", "description": "Relics provide passive bonuses that last for the entire run."},
     "shops": {"name": "Shops", "description": "Credits earned in combat can purchase useful consumables."},
@@ -499,6 +499,13 @@ LEVEL_OBSTACLES = tuple(tuple((round(x + w / 2 - .58, 2),
                                 round(y + h / 2 - .5, 2), 1.16, 1.0)
                                for x, y, w, h in layout)
                         for layout in LEVEL_LAYOUTS)
+# Interior partitions create connected chambers with broad doorways. Boss
+# arenas remain open so the giant opponent and ritual floor stay visible.
+LEVEL_WALLS = tuple(() if stage%5==0 else (
+    ((2.4,6.8,3.2,.45),(8.5,6.8,2.8,.45),(14.0,6.8,2.6,.45)) if stage%3==1 else
+    ((5.3,2.2,.45,2.8),(5.3,7.2,.45,2.7),(12.3,2.2,.45,2.8)) if stage%3==2 else
+    ((2.5,4.8,3.0,.45),(8.5,4.8,3.0,.45),(12.3,7.5,.45,2.2))
+) for stage in range(1,16))
 FLOOR_BOUNDS = (1.0, 1.75, 17.0, 10.25)
 LEVEL_DOORS = (16.15, 16.0, 15.95, 15.9, 16.2,
                16.25, 15.95, 16.2, 15.9, 9.0,
@@ -535,10 +542,16 @@ FIRE_FIXTURES = (
      (1.9, 9.65), (16.25, 9.65), (17.9, 7.7)),
 )
 
+# Every new room has paired, animated wall torches.
+FIRE_FIXTURES = tuple(tuple((x,1.5) for x in (3.0,7.0,11.0,15.0)) for _ in range(15))
+
 
 def walkable(dungeon, x, y, clearance=.23):
     left, top, right, bottom = dungeon.get("floor_bounds", (0, 0, dungeon["width"], dungeon["height"]))
     if not (left + clearance < x < right - clearance and top + clearance < y < bottom - clearance):
+        return False
+    if any(ox-clearance < x < ox+width+clearance and oy-clearance < y < oy+height+clearance
+           for ox,oy,width,height in dungeon.get("solid_walls", ())):
         return False
     # The prop images contain transparent margins. Collide with their solid
     # center so the painted passages around them remain traversable.
@@ -572,7 +585,7 @@ def create_dungeon_floor(state):
         candidate_pool = ((6.5, 5.5), (10, 4.5), (13.5, 6),
                           (7, 3.5), (11.5, 8.5), (15.5, 6.5), (8, 8))
         arena = {"width": 18, "height": 11, "floor_bounds": FLOOR_BOUNDS,
-                 "obstacles": LEVEL_OBSTACLES[stage - 1]}
+                 "obstacles": LEVEL_OBSTACLES[stage - 1], "solid_walls":LEVEL_WALLS[stage-1]}
         candidates = [(x, y) for x, y in candidate_pool
                       if walkable(arena, x, y, .5)][:3]
         for index in range(3):
@@ -591,10 +604,11 @@ def create_dungeon_floor(state):
     chest_candidates = ((8, 3.0), (3, 3.1), (11, 9.2), (15, 8.8))
     chest_x, chest_y = next((x, y) for x, y in chest_candidates if all(
         not (ox - .4 < x < ox + width + .4 and oy - .4 < y < oy + height + .4)
-        for ox, oy, width, height in LEVEL_OBSTACLES[stage - 1]))
+        for ox, oy, width, height in (*LEVEL_OBSTACLES[stage - 1],*LEVEL_WALLS[stage-1])))
     state["dungeon"] = {
         "width": 18, "height": 11, "theme": theme, "mode": "combat", "layout_id": stage,
         "seed": random.randint(0, 999999999), "obstacles": LEVEL_OBSTACLES[stage - 1],
+        "solid_walls":LEVEL_WALLS[stage-1],
         "floor_bounds": FLOOR_BOUNDS,
         "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(), "last_roam_at": time.monotonic(),
         "exit": {"x": LEVEL_DOORS[stage - 1], "y": 2.6},
@@ -616,7 +630,7 @@ def create_market_floor(state):
     state["dungeon"] = {
         "width": 18, "height": 11, "theme": "market", "mode": "market", "layout_id": "market",
         "seed": random.randint(0, 999999999),
-        "obstacles": (), "floor_bounds": FLOOR_BOUNDS,
+        "obstacles": ((1.9,5.0,2.0,.45),(14.0,5.15,2.0,.45),(3.45,8.75,2.0,.45),(12.5,9.7,2.0,.45)), "floor_bounds": FLOOR_BOUNDS,
         "player": {"x": 1.6, "y": 9.4}, "last_move_at": time.monotonic(), "last_roam_at": time.monotonic(),
         "exit": {"x": 14.45, "y": 2.6},
         "portal_visual": {"x": 14.45, "y": 2.6},
@@ -734,6 +748,24 @@ def threat_warning(state):
     }
 
 
+def bag_counts(bag):
+    if isinstance(bag, dict):
+        return {key: int(count) for key, count in bag.items() if count > 0}
+    return {key: bag.count(key) for key in dict.fromkeys(bag)}
+
+
+def add_to_bag(state, bag, item_id):
+    state[bag] = bag_counts(state[bag])
+    state[bag][item_id] = state[bag].get(item_id, 0) + 1
+
+
+def take_from_bag(state, bag, item_id):
+    state[bag] = bag_counts(state[bag])
+    state[bag][item_id] -= 1
+    if state[bag][item_id] <= 0:
+        del state[bag][item_id]
+
+
 def public_state(state):
     return {
         "room": state["current_room"],
@@ -745,8 +777,8 @@ def public_state(state):
         "focus": state.get("focus", 0),
         "max_focus": 2,
         "inventory_limit": INVENTORY_LIMIT,
-        "inventory": [item_view(item) for item in state["inventory"]],
-        "relics": [relic_view(relic) for relic in state["relics"]],
+        "inventory": [{**item_view(item), "quantity": count} for item, count in bag_counts(state["inventory"]).items()],
+        "relics": [{**relic_view(relic), "quantity": count} for relic, count in bag_counts(state["relics"]).items()],
         "effects": state["effects"],
         "enemy": public_enemy(state.get("enemy")),
         "threat_warning": threat_warning(state),
@@ -867,8 +899,13 @@ def start_room(state, room_type):
 def remove_random_item(state):
     if not state["inventory"]:
         return None
-    index = random.randrange(len(state["inventory"]))
-    return state["inventory"].pop(index)
+    counts = bag_counts(state["inventory"])
+    index = random.randrange(sum(counts.values()))
+    for item, count in counts.items():
+        if index < count:
+            take_from_bag(state, "inventory", item)
+            return item
+        index -= count
 
 
 def complete_combat(state):
@@ -920,7 +957,7 @@ def finish_failed_run(state):
 
 def revive_if_possible(state):
     if state["hp"] == 0 and "backup" in state["inventory"]:
-        state["inventory"].remove("backup")
+        take_from_bag(state, "inventory", "backup")
         state["hp"] = 1
         return True
     return False
@@ -1020,7 +1057,11 @@ def index():
     with open(os.path.join(app.static_folder, "assets/pixel/manifest.json")) as asset_file:
         pixel_assets = json.load(asset_file)
     with open(os.path.join(app.static_folder, "pixel.css"), "rb") as css_file:
-        pixel_revision = hashlib.sha256(css_file.read()).hexdigest()[:12]
+        revision_bytes = css_file.read()
+    for filename in ("combat.js", "assets/pixel/manifest.json"):
+        with open(os.path.join(app.static_folder, filename), "rb") as revision_file:
+            revision_bytes += revision_file.read()
+    pixel_revision = hashlib.sha256(revision_bytes).hexdigest()[:12]
     return render_template("index.html", pixel_assets=pixel_assets, pixel_revision=pixel_revision)
 
 
@@ -1039,8 +1080,9 @@ def start_game():
         "credits": starting_credits,
         "combo": 0,
         "focus": 0,
-        "inventory": ["packet_sniffer"],
-        "relics": [],
+        "inventory": {"packet_sniffer":1},
+        "initiative_enabled": True,
+        "relics": {},
         "effects": {"firewall": 0, "sandbox": 0, "root_lock": 0},
         "answer_lock": 0,
         "answer_lock_source": None,
@@ -1136,10 +1178,22 @@ def move_in_dungeon():
     for chest in dungeon.get("chests", []):
         if not chest["opened"] and math.hypot(chest["x"] - player["x"], chest["y"] - player["y"]) < .48:
             chest["opened"] = True
-            set_reward(state, "relic" if random.random() < .2 else "item")
-            state["return_to_dungeon_after_reward"] = True
+            roll = random.random()
+            if roll < .2:
+                item_id = random.choice(list(RELICS))
+                add_to_bag(state, "relics", item_id)
+                discover("relics", item_id)
+                prize = {"type":"relic", **relic_view(item_id), "quantity":1}
+            elif roll < .85:
+                item_id = random.choice(list(ITEMS))
+                add_to_bag(state, "inventory", item_id)
+                discover("items", item_id)
+                prize = {"type":"item", **item_view(item_id), "quantity":1}
+            else:
+                state["credits"] += 50
+                prize = {"type":"credits", "name":"50 credits", "quantity":50}
             session.modified = True
-            return jsonify({"status": "chest_opened", **public_state(state)})
+            return jsonify({"status": "chest_opened", "prize":prize, **public_state(state)})
     feature = dungeon.get("feature")
     if feature and not feature["used"] and math.hypot(feature["x"] - player["x"], feature["y"] - player["y"]) < .42:
         activate_dungeon_feature(state, feature)
@@ -1290,7 +1344,15 @@ def submit_answer():
     if combat_action == "exploit":
         state["focus"] -= 2
 
-    if is_correct:
+    # A single enemy action is resolved first on a 20% initiative roll. A
+    # defeated player cannot strike afterward, and the enemy never acts twice.
+    first_strike = state.get("initiative_enabled", False) and random.random() < .2
+    if first_strike:
+        enemy_action = resolve_enemy_intent(state, combat_action)
+        enemy_action["first_strike"] = True
+        revived = revive_if_possible(state)
+    can_act = state["hp"] > 0
+    if is_correct and can_act:
         state["stats"]["correct_answers"] += 1
         state["combo"] += 1
         if combat_action == "attack":
@@ -1319,13 +1381,17 @@ def submit_answer():
     defeated_enemy = enemy["name"] if enemy["hp"] == 0 else None
     defeated_enemy_kind = enemy["kind"] if enemy["hp"] == 0 else None
     defeated_enemy_id = enemy["id"] if enemy["hp"] == 0 else None
-    if enemy["hp"] == 0:
+    if state["hp"] == 0:
+        finish_failed_run(state)
+        status = "game_over"
+    elif enemy["hp"] == 0:
         hp_before_recovery = state["hp"]
         status = complete_combat(state)
         recovered_hp = state["hp"] - hp_before_recovery
     else:
         canceled = is_correct and combat_action in {"defend", "exploit"}
-        enemy_action = resolve_enemy_intent(state, combat_action, canceled=canceled)
+        if not first_strike:
+            enemy_action = resolve_enemy_intent(state, combat_action, canceled=canceled)
         revived = revive_if_possible(state)
         if state["hp"] == 0:
             finish_failed_run(state)
@@ -1338,7 +1404,7 @@ def submit_answer():
     session.modified = True
     return jsonify({
         "status": status, "is_correct": is_correct, "was_timeout": is_timeout,
-        "combat_action": combat_action, "correct_answer": correct_answer,
+        "combat_action": combat_action, "first_strike":first_strike, "player_acted":can_act, "correct_answer": correct_answer,
         "explanation": question.get("explanation", ""), "damage_dealt": damage_dealt,
         "armor_blocked": armor_blocked, "credits_earned": credits_earned,
         "damage_taken": enemy_action["damage_taken"] if enemy_action else 0,
@@ -1373,13 +1439,10 @@ def choose_reward():
     if not reward:
         return jsonify({"error": "Invalid reward"}), 400
     if reward["type"] == "item":
-        if len(state["inventory"]) >= INVENTORY_LIMIT:
-            return jsonify({"error": "Inventory full. Use or discard an item first."}), 400
-        state["inventory"].append(reward_id)
+        add_to_bag(state, "inventory", reward_id)
         discover("items", reward_id)
     elif reward["type"] == "relic":
-        if reward_id not in state["relics"]:
-            state["relics"].append(reward_id)
+        add_to_bag(state, "relics", reward_id)
         discover("relics", reward_id)
     else:
         state["credits"] += 50
@@ -1422,10 +1485,8 @@ def buy_shop_item():
     item = ITEMS[item_id]
     if state["credits"] < item["price"]:
         return jsonify({"error": "Not enough credits"}), 400
-    if len(state["inventory"]) >= INVENTORY_LIMIT:
-        return jsonify({"error": "Inventory full"}), 400
     state["credits"] -= item["price"]
-    state["inventory"].append(item_id)
+    add_to_bag(state, "inventory", item_id)
     state["shop_items"] = [entry for entry in state["shop_items"] if entry["id"] != item_id]
     discover("items", item_id)
     session.modified = True
@@ -1460,9 +1521,9 @@ def choose_event():
         state["credits"] += 35
         message = "The scan found useful data. You gained 35 credits."
     elif event_id == "suspicious_usb":
-        if random.random() < 0.6 and len(state["inventory"]) < INVENTORY_LIMIT:
+        if random.random() < 0.6:
             item_id = random.choice(list(ITEMS))
-            state["inventory"].append(item_id)
+            add_to_bag(state, "inventory", item_id)
             discover("items", item_id)
             message = f"The USB contained {ITEMS[item_id]['name']}."
         else:
@@ -1472,8 +1533,8 @@ def choose_event():
         state["credits"] += 25
         message = "Passive monitoring revealed useful intelligence. You gained 25 credits."
     elif event_id == "open_wifi":
-        if random.random() < 0.5 and len(state["inventory"]) < INVENTORY_LIMIT:
-            state["inventory"].append("packet_sniffer")
+        if random.random() < 0.5:
+            add_to_bag(state, "inventory", "packet_sniffer")
             discover("items", "packet_sniffer")
             message = "You captured a Packet Sniffer."
         else:
@@ -1492,9 +1553,9 @@ def choose_event():
         state["hp"] = min(state["max_hp"], state["hp"] + 2)
         message = f"You spent {cost} credits and restored 2 HP."
     else:
-        if random.random() < 0.55 and len(state["inventory"]) < INVENTORY_LIMIT:
+        if random.random() < 0.55:
             item_id = random.choice(["zero_day", "backup", "sandbox"])
-            state["inventory"].append(item_id)
+            add_to_bag(state, "inventory", item_id)
             discover("items", item_id)
             message = f"The exploit succeeded. You found {ITEMS[item_id]['name']}."
         else:
@@ -1547,7 +1608,7 @@ def use_item():
             result["recovered_hp"] = state["hp"] - hp_before_recovery
     elif item_id == "backup":
         return jsonify({"error": "Backup activates automatically when damage would defeat you"}), 400
-    state["inventory"].remove(item_id)
+    take_from_bag(state, "inventory", item_id)
     state["stats"]["items_used"] += 1
     session.modified = True
     return jsonify({**result, **public_state(state)})
@@ -1559,7 +1620,7 @@ def discard_item():
     item_id = (request.get_json() or {}).get("item_id")
     if not state or item_id not in state["inventory"]:
         return jsonify({"error": "Item is not available"}), 400
-    state["inventory"].remove(item_id)
+    take_from_bag(state, "inventory", item_id)
     session.modified = True
     return jsonify({"status": "discarded", **public_state(state)})
 

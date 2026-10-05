@@ -344,3 +344,30 @@ node scripts/test_patrol_audio.cjs
 Generated boss-source.png is retained so the build is repeatable. Only current
 actors and looping effects preload during exploration; combat atlases load when
 used to keep mobile downloads small.
+
+## Mobile battle and equipment update
+
+Body sprites are composited with the supplied hands, weapons and shields. Each
+fighter has a strike atlas and moves to contact distance before attacking, then
+returns to formation. Enemies have a 20% chance to act first each turn. Only one
+enemy action resolves per turn, and a defeated hero cannot retaliate.
+
+The full-screen battle keeps the quiz above the fight and the command menu
+below it. HP uses full and half hearts (one heart equals two HP). Enemy actions
+appear as temporary announcements. Relics opens an unlimited, quantity-based
+bag containing usable items and passive relics. Chests grant a random prize
+immediately. Exploration uses an invisible floating joystick from any empty
+part of the screen; pointer cancellation and window blur release movement.
+
+Music and SFX use one Web Audio context resumed directly by a user gesture,
+with HTML audio as a fallback. Tracks, mute and ticking cleanup are tested.
+This follows MDN's Web Audio autoplay guidance, including Firefox activation.
+
+Interior walls use the same rectangular collision coordinates in the renderer
+and server. A reachability test checks every enemy, chest and exit in all 15
+rooms. Boss arenas retain open ritual floors; the market has grass paths,
+shops, trees and animated villagers.
+
+For a manual phone viewport check open `/static/mobile-check.html`, choose a
+portrait or landscape size, and play inside the frame. Run the existing checks
+plus `node scripts/test_combat_upgrade.cjs`.

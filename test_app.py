@@ -14,6 +14,7 @@ class RoguelikeGameTests(unittest.TestCase):
         # dungeon-flow tests below exercise the exploration layer end to end.
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
+            state["initiative_enabled"] = False
             state["dungeon"] = None
             state["pending"] = None
             state["enemy"] = create_enemy(1)
@@ -303,10 +304,9 @@ class RoguelikeGameTests(unittest.TestCase):
         found = self.client.post('/api/dungeon/move', json={'x':1.5,'y':9.5}).get_json()
         self.assertEqual(found['status'], 'chest_opened')
         self.assertTrue(found['dungeon']['chests'][0]['opened'])
-        self.assertEqual(found['pending'], 'reward')
-        reward = found['reward_options'][0]
-        resumed = self.client.post('/api/reward/choose',json={'reward_id':reward['id']}).get_json()
-        self.assertEqual(resumed['room'], 1)
+        self.assertEqual(found['pending'], 'dungeon')
+        self.assertIn(found['prize']['type'], ('item','relic','credits'))
+        self.assertEqual(found['room'], 1)
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
             for enemy in state['dungeon']['enemies']: enemy['defeated'] = True
@@ -317,7 +317,7 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(market['room'], 1)
         self.assertEqual(market['dungeon']['mode'], 'market')
         self.assertEqual(market['dungeon']['remaining'], 0)
-        self.assertEqual(market['dungeon']['obstacles'], [])
+        self.assertEqual(len(market['dungeon']['obstacles']), 4)
         with self.client.session_transaction() as flask_session:
             state = flask_session['game_state']
             state['dungeon']['player'] = {'x':state['dungeon']['feature']['x'],
@@ -337,14 +337,74 @@ class RoguelikeGameTests(unittest.TestCase):
         self.assertEqual(next_floor['room'], 2)
         self.assertEqual(next_floor['dungeon']['mode'], 'combat')
 
+    def test_authored_chambers_keep_all_encounters_and_exit_reachable(self):
+        from app import create_dungeon_floor
+        with self.client.session_transaction() as session:
+            state=session['game_state']
+        for stage in range(1,16):
+            state['current_room']=stage
+            with app.test_request_context():
+                create_dungeon_floor(state)
+            dungeon=state['dungeon'];step=.2
+            cells={(i,j) for i in range(85) for j in range(52) if walkable(dungeon,i*step,j*step)}
+            start=min(cells,key=lambda c:(c[0]*step-1.6)**2+(c[1]*step-9.4)**2)
+            visited={start};queue=[start]
+            for x,y in queue:
+                for cell in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
+                    if cell in cells and cell not in visited:visited.add(cell);queue.append(cell)
+            for target in [*dungeon['enemies'],dungeon['exit'],*dungeon['chests']]:
+                nearest=min(cells,key=lambda c:(c[0]*step-target['x'])**2+(c[1]*step-target['y'])**2)
+                self.assertIn(nearest,visited,(stage,target))
+
+    def test_stacked_items_have_no_carry_limit_and_consume_one(self):
+        from app import add_to_bag
+        with self.client.session_transaction() as session:
+            state=session['game_state']
+            state['inventory']={'firewall':5000,'health_patch':7}
+            state['relics']={'zero_trust':6}
+            session['game_state']=state
+        result=self.client.post('/api/item/use',json={'item_id':'firewall'}).get_json()
+        self.assertIsNone(result['inventory_limit'])
+        self.assertEqual(next(i for i in result['inventory'] if i['id']=='firewall')['quantity'],4999)
+        self.assertEqual(result['relics'][0]['quantity'],6)
+        with self.client.session_transaction() as session:
+            self.assertLess(len(str(session['game_state']['inventory'])),100)
+
+    def test_random_initiative_acts_once_before_hero(self):
+        with self.client.session_transaction() as session:
+            state=session['game_state'];state['initiative_enabled']=True
+            state['enemy']['intent']='attack';state['hp']=1
+            session['game_state']=state
+        answer=self.answer_for_current_question()
+        with patch('app.random.random',return_value=.1):
+            result=self.client.post('/api/answer',json={'answer':answer,'combat_action':'attack'}).get_json()
+        self.assertTrue(result['first_strike'])
+        self.assertFalse(result['player_acted'])
+        self.assertEqual(result['damage_dealt'],0)
+        self.assertEqual(result['status'],'game_over')
+        self.assertEqual(result['stats']['damage_taken'],1)
+
+    def test_initiative_miss_resolves_normal_attack_once(self):
+        with self.client.session_transaction() as session:
+            state=session['game_state'];state['initiative_enabled']=True
+            state['enemy']['hp']=9;state['enemy']['intent']='attack'
+            session['game_state']=state
+        answer=self.answer_for_current_question()
+        with patch('app.random.random',return_value=.9):
+            result=self.client.post('/api/answer',json={'answer':answer,'combat_action':'attack'}).get_json()
+        self.assertFalse(result['first_strike'])
+        self.assertEqual(result['damage_taken'],1)
+        self.assertEqual(result['damage_dealt'],2)
+
     def test_pixel_styles_are_versioned_for_deployments(self):
         import hashlib
-        css = (Path(__file__).parent/'static/pixel.css').read_bytes()
+        css = b''.join((Path(__file__).parent/'static'/name).read_bytes() for name in ('pixel.css','combat.js','assets/pixel/manifest.json'))
         revision = hashlib.sha256(css).hexdigest()[:12]
         page = self.client.get('/').get_data(as_text=True)
         url = f'/static/pixel.css?v={revision}'
         self.assertIn(url,page)
-        self.assertEqual(self.client.get(url).status_code,200)
+        with self.client.get(url) as response:
+            self.assertEqual(response.status_code,200)
 
     def test_portal_and_battle_art_share_map_enemies(self):
         from pathlib import Path
@@ -585,7 +645,7 @@ class RoguelikeGameTests(unittest.TestCase):
     def test_firewall_blocks_the_next_wrong_answer(self):
         with self.client.session_transaction() as flask_session:
             state = flask_session["game_state"]
-            state["inventory"].append("firewall")
+            state["inventory"]["firewall"] = 1
             flask_session["game_state"] = state
 
         used = self.client.post("/api/item/use", json={"item_id": "firewall"})

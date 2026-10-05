@@ -6,7 +6,7 @@ import argparse,json,random,sys,struct
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageEnhance
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from app import LEVEL_OBSTACLES,LEVEL_DOORS,FIRE_FIXTURES
+from app import LEVEL_OBSTACLES,LEVEL_DOORS,FIRE_FIXTURES,LEVEL_WALLS
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'static/assets/pixel';OUT.mkdir(parents=True,exist_ok=True)
 parser=argparse.ArgumentParser(description=__doc__)
@@ -31,7 +31,7 @@ def actor(name,folder,tint=None):
    raise ValueError(f'Invalid source atlas: {files[0]}')
   # Pack run/death cells include extra canvas padding. Keep a fixed native
   # footprint so switching from idle to running never clips or shrinks actors.
-  size=64 if name=='merchant' else 32
+  size=64 if name=='merchant' or name.startswith('villager') else 32
   normalized=Image.new('RGBA',(size*count,size))
   for i in range(count):
    x=i*frame_width+(frame_width-size)//2
@@ -45,6 +45,7 @@ def actor(name,folder,tint=None):
 
 sources={
  'hero':"Entities/Npc's/Knight",'merchant':"Entities/Npc's/Citizen_F/Tavern_A",
+ 'villager_peasant':"Entities/Npc's/Citizen_F/Peasant_A",'villager_tavern':"Entities/Npc's/Citizen_F/Tavern_B",
  'spam_bot':'Entities/Mobs/Orc Crew/Orc',
  'phishing_email':'Entities/Mobs/Skeleton Crew/Skeleton - Rogue',
  'adware_bug':'Entities/Mobs/Orc Crew/Orc - Shaman',
@@ -54,6 +55,47 @@ sources={
  'ransomware':'Entities/Mobs/Skeleton Crew/Skeleton - Mage',
  'insider_threat':"Entities/Npc's/Knight",'zero_day_exploit':"Entities/Npc's/Wizzard"}
 for name,folder in sources.items():actor(name,folder,(120,65,180,255) if name=='insider_threat' else None)
+# Characters in this pack intentionally separate body, hands and equipment.
+# Composite original parts at native pixels; retain a fixed 48px frame canvas.
+wood=Image.open(PC/'Weapons/Wood/Wood.png').convert('RGBA')
+bone=Image.open(PC/'Weapons/Bone/Bone.png').convert('RGBA')
+hands=Image.open(PC/'Weapons/Hands/Hands.png').convert('RGBA')
+weapons={
+ 'blade':wood.crop((0,0,16,48)).resize((10,30),Image.Resampling.NEAREST),
+ 'staff':wood.crop((96,16,112,64)).resize((10,30),Image.Resampling.NEAREST),
+ 'bone':bone.crop((0,0,16,48)).resize((10,30),Image.Resampling.NEAREST)}
+shield=wood.crop((128,0,144,16))
+for name,record in manifest['actors'].items():
+ if name=='merchant' or name.startswith('villager'):continue
+ skeletal=name in ('phishing_email','botnet_node','ransomware')
+ caster=name in ('adware_bug','ransomware','zero_day_exploit')
+ hand=hands.crop((0,32 if skeletal else 64 if name in ('spam_bot','adware_bug','credential_thief','malware_loader') else 48,16,48 if skeletal else 80 if name in ('spam_bot','adware_bug','credential_thief','malware_loader') else 64))
+ hand=hand.crop(hand.getbbox())
+ weapon=weapons['staff' if caster else 'bone' if skeletal else 'blade']
+ def equip(body,angle=0,swing=0,death=False):
+  frame=Image.new('RGBA',(48,48));frame.alpha_composite(body,(8,16))
+  if death:return frame
+  held=weapon.rotate(angle,resample=Image.Resampling.NEAREST,expand=True)
+  frame.alpha_composite(held,(min(48-held.width,32)+swing,8+abs(swing)))
+  frame.alpha_composite(hand,(29+swing,35+abs(swing)))
+  frame.alpha_composite(hand,(8,35))
+  if not caster:frame.alpha_composite(shield,(1,31))
+  return frame
+ for action,meta in list(record.items()):
+  original=Image.open(ROOT/meta['src'].lstrip('/')).convert('RGBA')
+  sheet=Image.new('RGBA',(48*meta['frames'],48))
+  for i in range(meta['frames']):
+   body=original.crop((i*32,0,(i+1)*32,32))
+   sheet.alpha_composite(equip(body,(-4 if i%2 else 0),0,action=='death'),(i*48,0))
+  meta.update(src=save(sheet,f'{name}-{action}.png'),width=48,height=48)
+ idle=Image.open(ROOT/record['idle']['src'].lstrip('/'))
+ # Separate strike poses move the held weapon through a clear slash arc.
+ original=Image.open(PC/sources[name]/'Idle'/next((PC/sources[name]/'Idle').glob('*.png')).name).convert('RGBA').crop((0,0,32,32))
+ sheet=Image.new('RGBA',(48*8,48))
+ for i,angle in enumerate((0,15,35,-25,-65,-85,-35,0)):
+  sheet.alpha_composite(equip(original,angle,0),(i*48,0))
+ record['attack']={'src':save(sheet,name+'-attack.png'),'width':48,'height':48,'frames':8,'fps':16}
+
 # Citizen animation folder uses Walk; retain the original four-frame idle.
 for name in ('merchant',):
  if 'idle' not in manifest['actors'][name]:raise ValueError('Missing merchant idle')
@@ -102,6 +144,7 @@ for key,(category,type_name,color) in effects.items():
  manifest['effects'][key]={'src':save(sheet,'fx-'+key+'.png'),'width':w,'height':h,'frames':len(frames),'fps':15,'source':str(chosen.relative_to(FX))}
 
 tiles=Image.open(PC/'Environment/Tilesets/Dungeon_Tiles.png').convert('RGBA')
+terrain=Image.open(PC/'Environment/Tilesets/Floors_Tiles.png').convert('RGBA')
 furniture=Image.open(PC/'Environment/Props/Static/Furniture.png').convert('RGBA')
 resources=Image.open(PC/'Environment/Props/Static/Resources.png').convert('RGBA')
 esoteric=Image.open(PC/'Environment/Props/Static/Esoteric.png').convert('RGBA')
@@ -144,7 +187,8 @@ for stage in range(1,17):
  for y in range(56,328,16):
   for x in range(32,544,16):
    tile=floor_tiles[rand.randrange(len(floor_tiles))].copy()
-   if market:tile=tiles.crop((224,0,240,16))
+   if market:tile=terrain.crop((16,176,32,192))
+   elif 6<=stage<=9:tile=ImageEnhance.Color(terrain.crop((16,176,32,192))).enhance(.3)
    elif theme>=1:
     alpha=tile.getchannel('A');shade=(58,49,71,255) if theme==1 else (85,41,35,255)
     tile=Image.blend(tile,Image.new('RGBA',tile.size,shade),.2);tile.putalpha(alpha)
@@ -163,6 +207,68 @@ for stage in range(1,17):
   for x,y in FIRE_FIXTURES[stage-1]:
    # Out-of-floor fixtures sit on the surrounding dark border.
    draw.rectangle((round(x*32)-2,round(y*32)-3,round(x*32)+2,round(y*32)+2),fill='#b87f41')
+ # Furnish each room: wall alcoves, carpets, grates, shelving, banners.
+ for x in (48,144,240,336,432):
+  canvas.alpha_composite(tiles.crop((32,112,64,160)),(x,8))
+  canvas.alpha_composite(furniture.crop((0,8,24,24)),(x,332))
+ if not market:
+  for ox,oy,w,h in LEVEL_OBSTACLES[stage-1]:
+   x,y=round(ox*32),round(oy*32)
+   patch=tiles.crop((112,160,144,192)) if stage%3==0 else furniture.crop((0,24,16,48))
+   canvas.alpha_composite(patch.resize((round(w*32),round(h*32)),Image.Resampling.NEAREST),(x,y))
+  # Inlaid centre carpets are walkable decoration.
+  if stage%5==0:
+   danger=['#15455a','#473154','#612d28'][theme]
+   draw.ellipse((175,100,401,300),fill=danger,outline='#a96a53',width=3)
+   draw.ellipse((192,117,384,283),outline='#d4a377',width=2)
+   for x in (184,360):
+    canvas.alpha_composite(props.crop((96,0,112,24)),(x,105))
+   for k in range(8):
+    import math
+    x=288+int(math.cos(k*math.pi/4)*74);y=200+int(math.sin(k*math.pi/4)*62)
+    draw.polygon(((x,y-7),(x+4,y),(x,y+7),(x-4,y)),fill='#c48155')
+   if theme==2:
+    for x in (48,512):draw.rectangle((x,60,x+10,315),fill='#b94f28')
+  else:
+   carpet=tiles.crop((80,160,96,192))
+   for y in range(94,286,32):canvas.alpha_composite(carpet,(280,y))
+   for x,y in ((64,68),(496,68),(64,300),(496,300)):
+    canvas.alpha_composite(furniture.crop((348,32,364,48)),(x,y))
+ # Put solid obstacle furnishings on top of decorative inlays.
+ if not market:
+  for ox,oy,w,h in LEVEL_OBSTACLES[stage-1]:
+   patch=props.crop((96,0,112,24)) if 6<=stage<=10 else furniture.crop((0,24,16,48))
+   canvas.alpha_composite(patch.resize((round(w*32),round(h*32)),Image.Resampling.NEAREST),(round(ox*32),round(oy*32)))
+  if 6<=stage<=9:
+   tree_sheet=Image.open(PC/'Environment/Props/Static/Trees/Model_01/Size_03.png').convert('RGBA')
+   for x in (0,535):
+    for y in (40,150,255):canvas.alpha_composite(tree_sheet.crop((96,0,144,96)),(x,y))
+ if market:
+  # Town buildings stay north of the walking area; small citizens animate
+  # along the perimeter. The merchant's physical shop occupies the centre.
+  tree_sheet=Image.open(PC/'Environment/Props/Static/Trees/Model_01/Size_03.png').convert('RGBA')
+  tree=tree_sheet.crop((0,0,48,96))
+  for x in (0,530):
+   for y in (30,150,260):canvas.alpha_composite(tree,(x,y))
+  for bx in (70,210,360):
+   draw.rectangle((bx,4,bx+90,48),fill='#97663e',outline='#2b2524',width=2)
+   draw.polygon(((bx-5,22),(bx+45,0),(bx+95,22)),fill='#466c7a',outline='#a2b8aa')
+   for wx in (bx+10,bx+60):
+    canvas.alpha_composite(furniture.crop((32,152,48,176)),(wx,23))
+  for x,y in ((60,130),(450,135),(110,250),(400,280)):
+   canvas.alpha_composite(Image.open(OUT/'market-stall.png').resize((64,43),Image.Resampling.NEAREST),(x,y))
+  for x in (160,350):
+   for y in range(65,320,16):
+    draw.rectangle((x,y,x+12,y+12),fill='#867359',outline='#554c3b')
+ if not market:
+  for ox,oy,w,h in LEVEL_WALLS[stage-1]:
+   ww,hh=round(w*32),round(h*32)
+   section=Image.new('RGBA',(ww,hh))
+   for y in range(0,hh,16):
+    for x in range(0,ww,16):section.alpha_composite(wall,(x,y))
+   canvas.alpha_composite(section,(round(ox*32),round(oy*32)))
+  for x,y in FIRE_FIXTURES[stage-1]:
+   canvas.alpha_composite(furniture.crop((368,64,384,80)),(round(x*32)-8,round(y*32)-8))
  # Stage runes distinguish the 15 fixed rooms without introducing invisible walls.
  for k in range(stage%5+1):draw.rectangle((250+k*16,165,257+k*16,172),outline=['#667f79','#977bba','#ba683d'][min(theme,2)])
  save(canvas,'market.png' if market else f'level-{stage:02}.png')

@@ -148,6 +148,9 @@
 
     <div id="battle-transition" class="battle-transition hidden" aria-hidden="true"><strong>ENCOUNTER!</strong></div>
 
+    <section id="relic-bag" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Relics and items">
+        <div class="modal-card"><button class="modal-close" onclick="closeRelicBag()" aria-label="Close relic bag">×</button><h2>RELICS & ITEMS</h2><p>Unlimited carry · passive relics stay active.</p><div id="relic-bag-items"></div></div>
+    </section>
     <div id="toast" class="toast hidden"></div>
 
     <main class="game-shell">
@@ -179,8 +182,8 @@
             <div class="timer-track"><div id="timer-bar"></div></div>
 
             <section class="enemy-card" id="enemy-card">
-                <div class="battle-hero" id="battle-hero" aria-label="Your knight"></div>
-                <div class="enemy-icon" id="enemy-icon">?</div>
+                <div class="battle-hero" id="battle-hero" aria-label="Your knight"></div><div id="battle-player-hearts" class="actor-hearts hero-hearts"></div>
+                <div class="enemy-icon" id="enemy-icon">?</div><div id="battle-enemy-hearts" class="actor-hearts enemy-hearts"></div><div id="skill-announcement" class="skill-announcement hidden" aria-live="polite"></div>
                 <div class="enemy-info">
                     <div class="enemy-heading">
                         <div>
@@ -258,8 +261,13 @@
         </aside>
     </main>
 
+    <script src="{{ url_for('static', filename='combat.js', v=pixel_revision) }}"></script>
     <script>
         const PIXEL_ASSETS = {{ pixel_assets|tojson }};
+        const ASSET_REVISION = '{{ pixel_revision }}';
+        for(const records of Object.values(PIXEL_ASSETS.actors)) for(const meta of Object.values(records)) meta.src += `?v=${ASSET_REVISION}`;
+        for(const meta of Object.values(PIXEL_ASSETS.effects)) meta.src += `?v=${ASSET_REVISION}`;
+        for(const key of Object.keys(PIXEL_ASSETS.icons)) PIXEL_ASSETS.icons[key] += `?v=${ASSET_REVISION}`;
         let selectedAnswer = null;
         let selectedCombatAction = null;
         let timerInterval = null;
@@ -334,11 +342,13 @@
                 sound.onended = null;
             });
             currentMusic = null;
+            haltGameAudio(true);
         }
 
         function stopTransientSounds() {
             soundTimeouts.forEach(clearTimeout);
             soundTimeouts = [];
+            haltGameAudio();
             document.querySelectorAll('audio:not(.music)').forEach(sound => {
                 sound.pause();
                 sound.currentTime = 0;
@@ -347,6 +357,7 @@
         }
 
         function playSound(id, loop = false) {
+            if (gameAudioContext) {stopTransientSounds();webEffect(id,loop);return;}
             const sound = audio(id);
             if (!sound || !soundEnabled) return;
             sound.dataset.priming = "no";
@@ -357,6 +368,7 @@
         }
 
         function playEffect(id) {
+            if (gameAudioContext) {webEffect(id);return;}
             const sound = audio(id);
             if (!sound || !soundEnabled) return;
             sound.dataset.priming = "no";
@@ -374,11 +386,12 @@
 
         function updateSoundButton(playing) {
             const button = document.getElementById('sound-toggle');
-            button.textContent = !soundEnabled ? 'Sound off' : playing ? 'Sound on' : 'Enable sound';
-            button.setAttribute('aria-label', button.textContent);
+            button.textContent = soundEnabled ? '🔊' : '🔇';
+            button.setAttribute('aria-label', !soundEnabled ? 'Enable sound' : playing ? 'Mute sound' : 'Enable sound');
         }
 
         function setMusic(id) {
+            if (gameAudioContext) {currentMusic=id;webMusic(id);return;}
             // Reuse the element unlocked by the user's tap for every stage track.
             const track = audio('music-menu'), source = audio(id);
             if (!track || !source) return;
@@ -404,6 +417,7 @@
         function awakenSound(event) {
             if (event?.target?.closest?.("#sound-toggle")) return;
             if (!soundEnabled) return;
+            if (unlockGameAudio()) {setMusic(currentMusic || 'music-menu');return;}
             // Prime effects inside the trusted gesture, before any API response.
             if (!effectsUnlocked) {
                 effectsUnlocked = true;
@@ -470,12 +484,13 @@
 
         function animatePixelPortraits(time) {
             document.querySelectorAll('svg.pixel-sprite').forEach(node => {
-                if (node.closest('.hidden')) return;
+                if (node.closest('.hidden') || node.dataset.attacking) return;
                 updateAtlas(node.querySelector('image'),PIXEL_ASSETS.actors[node.dataset.actor]?.idle,time);
             });
         }
 
         function stopTimer() {
+            haltSpecificAudio('snd-ticking');
             clearInterval(timerInterval);
             clearAnswerLock();
             const ticking = audio('snd-ticking');
@@ -554,12 +569,13 @@
             renderRelics(data.relics);
             renderEffects(data.effects);
             updateCombatActionAvailability();
+            updateCompactHud(data);
         }
 
         function renderEnemy(enemy) {
             const card = document.getElementById('enemy-card');
             const stage = Math.max(1,Math.min(15,currentState?.room || 1));
-            card.style.backgroundImage = `linear-gradient(#17233066,#17233088),url('/static/assets/pixel/level-${String(stage).padStart(2,'0')}.png')`;
+            card.style.backgroundImage = `linear-gradient(#17233066,#17233088),url('/static/assets/pixel/level-${String(stage).padStart(2,'0')}.png?v=${ASSET_REVISION}')`;
             if (!enemy) {
                 document.getElementById('enemy-icon').innerHTML = gameAsset('ui', 'event', 'enemy-portrait');
                 document.getElementById('enemy-kind').textContent = 'EXPLORING';
@@ -615,7 +631,7 @@
         }
 
         function renderInventory(items, limit) {
-            document.getElementById('inventory-count').textContent = `${items.length}/${limit}`;
+            document.getElementById('inventory-count').textContent = `${items.reduce((n,item)=>n+(item.quantity||1),0)}`;
             const area = document.getElementById('inventory');
             area.innerHTML = '';
             if (!items.length) area.innerHTML = '<span class="empty-build">Empty</span>';
@@ -626,7 +642,7 @@
                 const combatOnly = ['packet_sniffer', 'overclock', 'zero_day'].includes(item.id);
                 const disabled = combatOnly && !questionLoaded ? 'disabled' : '';
                 holder.innerHTML = `
-                    <button ${disabled} onclick="useItem('${item.id}')"><span>${gameAsset('item', item.id, 'build-icon')}</span>${escapeHtml(item.name)}</button>
+                    <button ${disabled} onclick="useItem('${item.id}')"><span>${gameAsset('item', item.id, 'build-icon')}</span>${escapeHtml(item.name)} ×${item.quantity||1}</button>
                     <button class="discard-button" onclick="discardItem('${item.id}')" title="Discard">×</button>
                 `;
                 area.appendChild(holder);
@@ -640,7 +656,7 @@
                 const entry = document.createElement('span');
                 entry.className = 'relic-chip';
                 entry.title = relic.description;
-                entry.innerHTML = `${gameAsset('relic', relic.id, 'build-icon')}<span>${escapeHtml(relic.name)}</span>`;
+                entry.innerHTML = `${gameAsset('relic', relic.id, 'build-icon')}<span>${escapeHtml(relic.name)} ×${relic.quantity||1}</span>`;
                 area.appendChild(entry);
             });
         }
@@ -727,6 +743,7 @@
             const r = .23;
             const [left,top,right,bottom] = dungeon.floor_bounds || [0,0,dungeon.width,dungeon.height];
             return x > left+r && y > top+r && x < right-r && y < bottom-r &&
+                (dungeon.solid_walls||[]).every(([ox,oy,w,h])=>!(x>ox-r&&x<ox+w+r&&y>oy-r&&y<oy+h+r)) &&
                 dungeon.obstacles.every(([ox, oy, w, h]) =>
                     ((x-ox-w/2)/(w*.34+r))**2 + ((y-oy-h/2)/(h*.32+r))**2 >= 1);
         }
@@ -744,7 +761,7 @@
         function stageName(room) { return {5: 'atlantis', 10: 'graveyard', 15: 'inferno'}[room] || 'catacomb'; }
         function syncArenaHud(data) {
             document.getElementById('dungeon-floor').textContent = data.dungeon.mode === 'market' ? `MARKET · ${data.room} / ${data.total_rooms}` : `${data.room} / ${data.total_rooms}`;
-            document.getElementById('dungeon-hp').textContent = `${data.hp} / ${data.max_hp}`;
+            document.getElementById('dungeon-hp').innerHTML = heartMarkup(data.hp,data.max_hp,true);
             document.getElementById('dungeon-remaining').textContent = data.dungeon.remaining;
             document.getElementById('dungeon-status').textContent = data.dungeon.mode === 'market' ? 'THE LANTERN MARKET' : data.dungeon.exit_unlocked ? 'THE EXIT IS OPEN' :
                 [5, 10, 15].includes(data.room) ? 'THE BOSS AWAITS' : 'HUNT EVERY ENEMY';
@@ -793,7 +810,7 @@
                 parent.appendChild(node); return node;
             };
             const background = dungeon.mode === 'market' ? 'market' : `level-${String(data.room).padStart(2,'0')}`;
-            svg('image', {href: `/static/assets/pixel/${background}.png`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
+            svg('image', {href: `/static/assets/pixel/${background}.png?v=${ASSET_REVISION}`, x: 0, y: 0, width: dungeon.width * 72, height: dungeon.height * 72,
                 preserveAspectRatio: 'none', class: 'stage-painting'});
             const ambience = svg('g',{class:`arena-ambience ambience-${dungeon.theme}`});
             for (const item of dungeon.decor || []) {
@@ -849,18 +866,20 @@
             for (const enemy of dungeon.enemies) {
                 if (enemy.defeated) continue;
                 const boss = enemy.kind.includes('BOSS');
-                actorNode(enemy,boss?'boss':'enemy',enemy.enemy_id,boss?205:88,boss?205:88,true);
+                actorNode(enemy,boss?'boss':'enemy',enemy.enemy_id,boss?205:132,boss?205:132,true);
                 roamVisuals.set(enemy.uid, {x: enemy.x, y: enemy.y});
             }
             if (dungeon.mode === 'market' && dungeon.feature) {
                 actorNode({x:dungeon.feature.x,y:dungeon.feature.y-.25,name:'Cipher Market Stall'},
-                    'stall','/static/assets/pixel/market-stall.png',216,144);
+                    'stall',`/static/assets/pixel/market-stall.png?v=${ASSET_REVISION}`,216,144);
                 actorNode(dungeon.feature,'merchant','merchant',120,120,true);
+                for(const [i,x,y] of [[0,5.2,4.3],[1,13.6,4.8],[2,5.5,8.4],[3,12.8,9.4]])
+                    actorNode({uid:`villager-${i}`,x,y,name:'Market villager'},'citizen',i%2?'villager_peasant':'villager_tavern',110,110,true);
             }
-            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', '/static/assets/pixel/chest.png', 48, 48);
+            for (const chest of dungeon.chests || []) if (!chest.opened) actorNode({...chest, uid:'chest', name:'Supply chest'}, 'chest', `/static/assets/pixel/chest.png?v=${ASSET_REVISION}`, 48, 48);
             actorNode(dungeon.exit,
                 'exit', 'portal', 80, 80,true);
-            actorNode(dungeon.player, 'hero', 'hero', 88, 88,true);
+            actorNode(dungeon.player, 'hero', 'hero', 132, 132,true);
             if (pendingDefeat && pendingDefeat.floor === data.room) {
                 const p = arenaPoint(pendingDefeat.x, pendingDefeat.y);
                 const meta = PIXEL_ASSETS.actors[pendingDefeat.id];
@@ -916,6 +935,7 @@
             const portal = sceneNodes.get('exit')?.querySelector('.portal-frame');
             if (portal) updateAtlas(portal,PIXEL_ASSETS.effects.portal,time);
             setArenaSprite(sceneNodes.get('merchant'),'merchant','idle',time);
+            for(let i=0;i<4;i++)setArenaSprite(sceneNodes.get(`villager-${i}`),i%2?'villager_peasant':'villager_tavern','idle',time+i*190);
             followCamera();
             for (const {node,x,y,phase,kind} of decorNodes) {
                 const sway = Math.sin(time*.0017+phase);
@@ -1035,11 +1055,12 @@
             dungeonMoving = false;
             if (!data) { cancelBattleContact(); return; }
             if (data.message) document.getElementById('dungeon-message').textContent = data.message;
+            if (data.prize) {playEffect('snd-loot');showToast(`CHEST · ${data.prize.name}`,3600);renderDungeon(data);return;}
             if (data.status === 'encounter_started') { await enterBattle(data); return; }
             if (data.status === 'floor_advanced') {
                 cancelBattleContact();
                 heroPosition = null;
-                document.getElementById('dungeon-message').textContent = data.dungeon.mode === 'market' ? 'A deserted market lies beyond the gate.' : 'A deeper arena materializes around you.';
+                document.getElementById('dungeon-message').textContent = data.dungeon.mode === 'market' ? 'A lively lantern market lies beyond the gate.' : 'A deeper arena materializes around you.';
                 await processGameState(data); return;
             }
             if (data.pending !== 'dungeon') { cancelBattleContact(); await processGameState(data); return; }
@@ -1063,7 +1084,7 @@
             document.getElementById('feedback').classList.add('hidden');
             document.getElementById('attack-button').disabled = true;
             selectedAnswer = null;
-            selectedCombatAction = null;
+            selectedCombatAction = 'attack';
             document.querySelectorAll('.combat-actions button').forEach(button => {
                 button.classList.remove('selected');
                 button.disabled = false;
@@ -1207,6 +1228,8 @@
         }
 
         function showAnswerResult(data, answer) {
+            const opponent=currentState?.enemy;
+            const previousHp=currentState?.hp;
             document.querySelector('.main-panel').classList.add('turn-resolved');
             const correct = document.getElementById(`option-${data.correct_answer}`);
             const selected = answer ? document.getElementById(`option-${answer}`) : null;
@@ -1218,7 +1241,10 @@
             const text = document.getElementById('feedback-text');
             feedback.classList.remove('hidden', 'good', 'bad');
 
-            flashCombat(data);
+            if(opponent) {renderEnemy({...opponent,hp:data.enemy?.hp||0});}
+            if(opponent) {document.getElementById('battle-enemy-hearts').innerHTML=heartMarkup(opponent.hp,opponent.max_hp,true);}
+            document.getElementById('battle-player-hearts').innerHTML=heartMarkup(previousHp,data.max_hp,true);
+            performCombat(data,opponent);
             playCombatAudio(data);
             if (data.status === 'game_over') {
                 title.textContent = 'SYSTEM FAILURE';
@@ -1240,7 +1266,6 @@
                 text.innerHTML = buildTurnMessage(data);
                 feedback.classList.add('good');
             }
-            beginAutoContinue();
         }
 
         function cancelAutoContinue() {
@@ -1384,7 +1409,7 @@
 
         function playPixelEffect(effect, label, target = 'enemy') {
             const meta = PIXEL_ASSETS.effects[effect] || PIXEL_ASSETS.effects.strike;
-            const layer = document.getElementById('combat-fx-layer');
+            const layer = document.getElementById('enemy-card');
             const scene = document.createElement('div');
             scene.className = `pixel-effect target-${target}`;
             const sprite = document.createElement('div');
@@ -1490,7 +1515,7 @@
                 'Choose one reward',
                 data.reward_kind === 'relic'
                     ? 'Relics provide passive bonuses for the rest of this run.'
-                    : 'Consumables occupy one inventory slot and disappear after use.'
+                    : 'Consumables stack without a carry limit and disappear after use.'
             );
             const area = document.getElementById('decision-options');
             playEffect('snd-loot');
@@ -1500,7 +1525,7 @@
                 const id = reward.type === 'credits' ? 'credits' : reward.id;
                 area.appendChild(choiceButton(reward, () => chooseReward(reward.id), rarity, kind, id));
             });
-            if (data.inventory.length >= data.inventory_limit && data.reward_kind !== 'relic') {
+            if (data.inventory_limit && data.inventory.length >= data.inventory_limit && data.reward_kind !== 'relic') {
                 const warning = document.createElement('div');
                 warning.className = 'inventory-warning';
                 warning.innerHTML = '<strong>Inventory full</strong><p>Choose credits or discard an item:</p>';
@@ -1817,9 +1842,10 @@
         setMusic('music-menu');
         document.addEventListener('pointerdown', awakenSound, {capture: true});
         document.getElementById('sound-toggle').addEventListener('click', () => {
-            const playing = !audio('music-menu').paused;
+            const playing = gameAudioContext ? !!gameMusicVoice : !audio('music-menu').paused;
             if (soundEnabled && playing) {
                 soundEnabled = false;
+                haltGameAudio(true);
                 document.querySelectorAll('audio').forEach(sound => sound.pause());
                 updateSoundButton(false);
             } else {
@@ -1861,6 +1887,8 @@
         window.addEventListener('resize', followCamera);
         requestAnimationFrame(movementFrame);
         setInterval(tickRoaming, 750);
+        setupCompactBattle();
+        updateSoundButton(false);
     </script>
 <footer class="asset-credits">PIXEL CRAWLER · ANOKOLISA / SUPER PIXEL EFFECTS · WILL TICE, UNTIED GAMES</footer>
 </body>
